@@ -1,0 +1,339 @@
+<script>
+import ArticleBadge from '../components/ArticleBadge.vue'
+
+export default {
+    components: {
+        ArticleBadge,
+    },
+    data() {
+        return {
+            articles: [
+                {
+                    title: '欢迎造访本博客',
+                    isTop: true,
+                    url: '/show/20130119074245.html',
+                    content:
+                        '2016-03-02更新：本站已转为VPS，Heroku云免费的太慢，收费的太贵~ 本站点是基于Heroku云平台建立的轻巧型个人博客，纯属自娱自乐。 其实在早些时候，就一直有编写一个自己的个人博客的想法，但由于种种原因而搁浅，一方面是由于早些时候个人的技术还不过关,另一方面就是没有找到免费且服务器稳定的空间提供商。直到去年实习学习RUBY的时候在网页上知道了HEROKU这个平台，渐而燃起了希望。 一直有人问我为什么对做博客这样的感兴趣，CSDN，博客园，开源中国等不是提供了现成的了吗？我想说的是，作为一个程序员如果连一个完全属于自己的博客都没有是一件很遗憾的事，那些现成的博客不能正真让你感觉那个博客就是你的，因为出于一些安全考虑会有很多的限制。 最初本来打算使用RUBY来做的，而且也己经做成了一个初步的版本，但由于HEORKU上提供的RAILS框架是3.0以上的，而我学习使用的是2.3...',
+                },
+                {
+                    title: '《被讨厌的勇气》讲了什么',
+                    isTop: false,
+                    url: '/show/20190421031312.html',
+                    content: `最近读了一本书《被讨厌的勇气》，觉得很有必要写一篇读后总结，个人认为其中的一些观点值得被分享。当然了制造这篇文章并不是为了强调它有多么的好或者说它绝对的正确，而只是觉得可以为我们提供另外的一个视角去看待或处理一些小情绪，从而更加全面的思考小情绪的本质。由于每个人的身处环境，积累的经验与知识都不一样，势必形成的认知不同，很难做到让每一个人都认同。但如果有哪本书能够引发部分读者的共鸣，那么它就应该值得被称为一本好书，这本书对于我而言就是这样。特别是根据他的"目地论"来推导我自己的某些想法时，感觉后脊梁会有一身冷汗。废话不多说，言归正传。 打下基调 世界是我们的主观感受 在全书的开头就提出了一个"井水"推论：人并不是住在客观的世界里，而是住在自我营造的主观世界里，即我们看到世界的样子都是我们的主观感受。 提出这个推论的依据是说，井水的温度是恒定的，长年在18度左右，无论谁测都是一样，但是夏天喝到...`,
+                },
+            ],
+            page: 1,
+            totalPages: 4,
+            totalArticles: 51,
+            categories: [
+                { name: '杂谈', num: 10, url: '/select/1' },
+                { name: 'PHP', num: 9, url: '/select/2' },
+                { name: 'Linux', num: 8, url: '/select/3' },
+                { name: 'Java', num: 7, url: '/select/4' },
+                { name: 'JavaScript', num: 6, url: '/select/5' },
+                { name: 'Python', num: 5, url: '/select/6' },
+            ],
+            top10: [
+                {
+                    title: '欢迎访问本博客',
+                    read: '60k+',
+                    url: '/show/20130119074245.html',
+                },
+                {
+                    title: '解决近期heroku push timeout错误',
+                    read: '33k+',
+                    url: '/show/20130119074245.html',
+                },
+                {
+                    title: 'Spring Boot 2.x 新特性',
+                    read: '25k+',
+                    url: '/show/20130119074245.html',
+                },
+                {
+                    title: 'Vue3 迁移指南',
+                    read: '18k+',
+                    url: '/show/20130119074245.html',
+                },
+                {
+                    title: 'Docker 入门实践',
+                    read: '15k+',
+                    url: '/show/20130119074245.html',
+                },
+            ],
+            links: [
+                { path: 'http://blog.csdn.net/lzqwebsoft', name: 'CSDN' },
+                { path: 'https://twitter.com/lzqwebsoft', name: 'Twitter' },
+                { path: 'https://github.com/lzqwebsoft', name: 'GitHub' },
+                { path: 'https://stackoverflow.com/users/lzqwebsoft', name: 'StackOverflow' },
+            ],
+            currentPage: 1,
+            visiblePages: 6,
+            sidebarOpen: false,
+        }
+    },
+    methods: {
+        paginationPages() {
+            const pages = []
+            const start = Math.max(1, this.currentPage - Math.floor(this.visiblePages / 2))
+            const end = Math.min(this.totalPages, start + this.visiblePages - 1)
+
+            for (let i = start; i <= end; i++) {
+                pages.push(i)
+            }
+            return pages
+        },
+        changePage(pageNum) {
+            if (pageNum >= 1 && pageNum <= this.totalPages) {
+                this.currentPage = pageNum
+            }
+        },
+        toggleSidebar() {
+            this.sidebarOpen = !this.sidebarOpen
+        },
+    },
+}
+</script>
+
+<template>
+    <div class="container">
+        <div class="row content-wrapper">
+            <div class="main-content">
+                <div class="article-list">
+                    <div class="card" v-for="(article, index) in articles" :key="index">
+                        <div class="card-header">
+                            <h3 class="article-title">
+                                <ArticleBadge type="original" />
+                                <RouterLink :to="article.url">{{ article.title }}</RouterLink>
+                                <ArticleBadge v-if="article.isTop" type="top" />
+                            </h3>
+                            <div class="article-time">发表于：2013-01-20 08:42:45</div>
+                        </div>
+
+                        <div class="card-body">
+                            <p class="article-excerpt">
+                                {{ article.content.substring(0, 200) }}...
+                            </p>
+                        </div>
+
+                        <div class="card-footer">
+                            <div style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                ">
+                                <div>
+                                    <button class="btn btn-secondary btn-sm">阅读(11K)</button>
+                                    <button class="btn btn-secondary btn-sm" style="margin-left: 0.5rem">
+                                        评论(0)
+                                    </button>
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary btn-sm">编辑</button>
+                                    <button class="btn btn-danger btn-sm" style="margin-left: 0.5rem">
+                                        删除
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagination">
+                    <button class="btn btn-sm" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
+                        上一页
+                    </button>
+
+                    <button v-for="pageNum in paginationPages()" :key="pageNum" class="btn btn-sm"
+                        :class="{ 'btn-primary': pageNum === currentPage }" @click="changePage(pageNum)">
+                        {{ pageNum }}
+                    </button>
+
+                    <button class="btn btn-sm" @click="changePage(currentPage + 1)"
+                        :disabled="currentPage === totalPages">
+                        下一页
+                    </button>
+                </div>
+
+                <div class="page-label">{{ totalArticles }}篇文章, 共{{ totalPages }}页</div>
+            </div>
+
+            <div class="sidebar-wrapper">
+                <div class="sidebar">
+                    <h3>文章分类</h3>
+                    <div class="list-group">
+                        <div class="sidebar-item" v-for="(category, index) in categories" :key="index">
+                            <RouterLink :to="category.url">{{ category.name }}</RouterLink>
+                            <span>{{ category.num }}篇</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <h3>阅读排行</h3>
+                    <div class="list-group">
+                        <div class="sidebar-item" v-for="(top, index) in top10" :key="index">
+                            <RouterLink :to="top.url">{{ top.title }}</RouterLink>
+                            <span>{{ top.read }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <h3>相关链接</h3>
+                    <div class="list-group">
+                        <div class="sidebar-item" v-for="(link, index) in links" :key="index">
+                            <a :href="link.path" target="_blank" rel="noopener noreferrer">
+                                {{ link.name }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <h3>联系我</h3>
+                    <div class="list-group">
+                        <div class="sidebar-item">
+                            <a href="mailto:lzqwebsoft@gmail.com">lzqwebsoft@gmail.com</a>
+                        </div>
+                        <div class="sidebar-item">
+                            <a href="mailto:751939573@qq.com">751939573@qq.com</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <!-- <iframe
+                        frameborder="no"
+                        border="0"
+                        marginwidth="0"
+                        marginheight="0"
+                        width="100%"
+                        height="110"
+                        src="//music.163.com/outchain/player?type=0&id=75000240&auto=1&height=90"
+                    ></iframe> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.article-list {
+    padding: 0 10px 10px 0;
+}
+
+.article-title {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.article-title a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.article-title a:hover {
+    color: #007bff;
+}
+
+.article-time {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.article-excerpt {
+    color: #666;
+    line-height: 1.6;
+}
+
+.page-label {
+    margin-top: 15px;
+    padding: 0 15px;
+    color: #666;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.sidebar-item a {
+    color: #333;
+    text-decoration: none;
+    flex: 1;
+}
+
+.sidebar-item a:hover {
+    color: #007bff;
+}
+
+.content-wrapper {
+    display: flex;
+    gap: 20px;
+    flex-direction: row;
+    margin-top: 20px;
+}
+
+.main-content {
+    flex: 1;
+    width: 70%;
+}
+
+.sidebar-wrapper {
+    width: 30%;
+    position: sticky;
+    top: 20px;
+}
+
+.sidebar {
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.sidebar-item:last-child {
+    border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        flex-direction: row;
+        /* 保持水平排列 */
+        flex-wrap: wrap;
+        /* 允许在小屏幕上换行 */
+    }
+
+    .main-content {
+        flex: 1 1 65%;
+        min-width: 300px;
+    }
+
+    .sidebar-wrapper {
+        flex: 1 1 30%;
+        min-width: 250px;
+    }
+
+    .hidden-sm {
+        display: none;
+    }
+}
+</style>
