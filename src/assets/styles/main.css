@@ -5,16 +5,39 @@
   box-sizing: border-box;
 }
 
+:root {
+  --bg-color: #f8f9fa;
+  --text-color: #333;
+  --header-bg: #fff;
+  --border-color: #ddd;
+  --card-bg: #fff;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --hover-bg: #f8f9fa;
+  --link-color: #007bff;
+}
+
+:root.dark-theme {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --header-bg: #2d2d2d;
+  --border-color: #404040;
+  --card-bg: #2d2d2d;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --hover-bg: #404040;
+  --link-color: #66b3ff;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
-  color: #333;
-  background-color: #f8f9fa;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
   text-decoration: none;
-  color: #007bff;
+  color: var(--link-color);
 }
 
 a:hover {
@@ -59,12 +82,12 @@ a:hover {
 
 /* Header styles */
 .header {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: var(--header-bg);
+  box-shadow: 0 2px 4px var(--shadow-color);
   position: sticky;
   top: 0;
   z-index: 1000;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .header.hidden {
@@ -84,7 +107,7 @@ a:hover {
 }
 
 .nav-brand a {
-  color: #333;
+  color: var(--text-color);
   text-decoration: none;
 }
 
@@ -99,19 +122,23 @@ a:hover {
   border: none;
   background: none;
   cursor: pointer;
-  color: #333;
+  color: var(--text-color);
 }
 
 .nav-item:hover {
-  background-color: #f8f9fa;
+  background-color: var(--hover-bg);
   border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
 .search-input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   margin-right: 1rem;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Main content */
@@ -122,16 +149,18 @@ a:hover {
 
 /* Card styles */
 .card {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px var(--shadow-color);
   margin-bottom: 1rem;
   overflow: hidden;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card-header {
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 }
 
 .card-body {
@@ -140,8 +169,9 @@ a:hover {
 
 .card-footer {
   padding: 1rem;
-  border-top: 1px solid #eee;
-  background-color: #f8f9fa;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--hover-bg);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 /* Button styles */
@@ -239,9 +269,10 @@ a:hover {
 
 .list-group-item {
   padding: 0.75rem 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-bottom: none;
-  background: #fff;
+  background: var(--card-bg);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .list-group-item:first-child {
@@ -265,18 +296,20 @@ a:hover {
 
 /* Sidebar styles */
 .sidebar {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px var(--shadow-color);
   padding: 1rem;
   margin-bottom: 1rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .sidebar h3 {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   font-size: 1.1rem;
+  transition: border-color 0.3s ease;
 }
 
 .sidebar-item {
@@ -284,7 +317,8 @@ a:hover {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 }
 
 .sidebar-item:last-child {
