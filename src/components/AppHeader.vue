@@ -1,33 +1,40 @@
 <template>
     <header class="header" :class="{ hidden: isHidden }">
-        <div class="container">
-            <nav class="nav">
-                <div class="nav-brand">
-                    <RouterLink to="/">飘痕の博客</RouterLink>
+        <nav class="nav">
+            <div class="nav-left">
+                <img src="@/assets/images/avatar.jpg" alt="头像" class="avatar">
+                <div class="brand-slogan">
+                    <div class="nav-brand">
+                        <RouterLink to="/">飘痕の博客</RouterLink>
+                    </div>
+                    <div class="slogan">自由自在的学习编程艺术</div>
                 </div>
+            </div>
 
-                <div class="nav-menu">
-                    <input type="text" class="search-input" placeholder="搜索" />
+            <div class="header-search">
+                <font-awesome-icon icon="magnifying-glass" class="search-icon" />
+                <input type="text" class="search-input" placeholder="搜索博客内容...">
+            </div>
 
-                    <button class="theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
-                        <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
+            <div class="nav-menu">
+                <button class="nav-item theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
+                    <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
+                </button>
+
+                <div class="dropdown">
+                    <button class="nav-item" @click="showMenu = !showMenu">
+                        <font-awesome-icon icon="bars" class="menu" />
                     </button>
-
-                    <div class="dropdown">
-                        <button class="nav-item" @click="showMenu = !showMenu">
-                            <font-awesome-icon icon="bars" class="menu" />
-                        </button>
-                        <div class="dropdown-content" v-show="showMenu">
-                            <RouterLink v-for="(item, index) in menuItems" :key="index" :to="item.url"
-                                class="dropdown-item">
-                                <font-awesome-icon :icon="item.icon" class="menu-icon" />
-                                <span v-html="item.title"></span>
-                            </RouterLink>
-                        </div>
+                    <div class="dropdown-content" v-show="showMenu">
+                        <RouterLink v-for="(item, index) in menuItems" :key="index" :to="item.url"
+                            class="dropdown-item">
+                            <font-awesome-icon :icon="item.icon" class="menu-icon" />
+                            <span v-html="item.title"></span>
+                        </RouterLink>
                     </div>
                 </div>
-            </nav>
-        </div>
+            </div>
+        </nav>
     </header>
 </template>
 
@@ -106,7 +113,7 @@ export default {
 
 <style scoped>
 .header {
-    background: #fff;
+    background: var(--header-bg);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: fixed;
     top: 0;
@@ -123,7 +130,31 @@ export default {
 .nav {
     display: flex;
     align-items: center;
-    padding: 1rem 0;
+    padding: 0.5rem 1rem;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+    transition: transform 0.3s ease;
+}
+
+.avatar:hover {
+    transform: scale(1.1);
+}
+
+.brand-slogan {
+    display: flex;
+    flex-direction: column;
 }
 
 .nav-brand {
@@ -132,8 +163,15 @@ export default {
 }
 
 .nav-brand a {
-    color: #333;
+    color: var(--text-color);
     text-decoration: none;
+}
+
+.slogan {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    font-style: italic;
 }
 
 .nav-menu {
@@ -143,11 +181,40 @@ export default {
     gap: 1rem;
 }
 
+.header-search {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 400px;
+    margin: 0 2rem 0 4rem;
+    position: relative;
+}
+
 .search-input {
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    min-width: 200px;
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    padding-left: 3rem;
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.2);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 1.2rem;
 }
 
 .dropdown {
@@ -158,9 +225,9 @@ export default {
     position: absolute;
     right: 0;
     top: 100%;
-    background: #fff;
+    background: var(--header-bg);
     min-width: 150px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px var(--shadow-color);
     border-radius: 4px;
     z-index: 1001;
 }
@@ -168,13 +235,17 @@ export default {
 .dropdown-item {
     display: block;
     padding: 0.75rem 1rem;
-    color: #333;
     text-decoration: none;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--hover-bg);
+    color: var(--text-color);
 }
 
 .dropdown-item:hover {
-    background: #f8f9fa;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+:root.dark-theme .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .dropdown-item:last-child {
@@ -187,7 +258,7 @@ export default {
     text-align: center;
 }
 
-.theme-toggle {
+.nav-item {
     background: none;
     border: none;
     cursor: pointer;
@@ -198,19 +269,36 @@ export default {
     transition: background-color 0.3s ease;
 }
 
-.theme-toggle:hover {
+.nav-item:hover {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-:root.dark-theme .theme-toggle {
-    color: #fff;
+:root.dark-theme .nav-item {
+    color: var(--text-color);
 }
 
-:root.dark-theme .theme-toggle:hover {
+:root.dark-theme .nav-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 768px) {
+    .nav-left {
+        gap: 0.75rem;
+    }
+
+    .avatar {
+        width: 50px;
+        height: 50px;
+    }
+
+    .nav-brand {
+        font-size: 1.25rem;
+    }
+
+    .slogan {
+        font-size: 0.8rem;
+    }
+
     .search-input {
         min-width: 120px;
     }
