@@ -18,11 +18,13 @@ export default {
 
 <style scoped>
 .footer {
-    background: #343a40;
-    color: #fff;
+    background-color: var(--card-bg);
+    color: var(--text-color);
     padding: 2rem 0;
     text-align: center;
     margin-top: auto;
+    transition: var(--transition);
+    border-top: 1px solid var(--border-color);
 }
 
 .footer a {
