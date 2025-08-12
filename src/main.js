@@ -3,13 +3,22 @@ import './assets/styles/main.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faEdit, faLock, faCog, faSignOutAlt, faMoon, faSun, faBars, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
+import {
+    faEdit, faLock, faCog, faSignOutAlt, faMoon, faSun, faBars,
+    faMagnifyingGlass, faGear, faArrowUp, faPenToSquare, faTrash,
+    faFileLines, faCommentDots, faFolder, faLink, faFire, faAddressCard
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import App from './App.vue'
 import router from './router'
 
-library.add(faEdit, faLock, faCog, faSignOutAlt, faMoon, faSun, faBars, faMagnifyingGlass)
+library.add(
+    faEdit, faLock, faCog, faSignOutAlt, faMoon,
+    faSun, faBars, faMagnifyingGlass, faGear, faArrowUp,
+    faPenToSquare, faTrash, faFileLines, faCommentDots,
+    faFolder, faLink, faFire, faAddressCard
+)
 
 const app = createApp(App)
 

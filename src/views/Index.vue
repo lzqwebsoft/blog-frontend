@@ -99,8 +99,8 @@ export default {
         <div class="row content-wrapper">
             <div class="main-content">
                 <div class="article-list">
-                    <div class="card" v-for="(article, index) in articles" :key="index">
-                        <div class="card-header">
+                    <div class="article-card" v-for="(article, index) in articles" :key="index">
+                        <div class="article-card-header">
                             <h3 class="article-title">
                                 <ArticleBadge type="original" />
                                 <RouterLink :to="article.url">{{ article.title }}</RouterLink>
@@ -109,27 +109,35 @@ export default {
                             <div class="article-time">发表于：2013-01-20 08:42:45</div>
                         </div>
 
-                        <div class="card-body">
+                        <div class="article-card-body">
                             <p class="article-excerpt">
                                 {{ article.content.substring(0, 200) }}...
                             </p>
                         </div>
 
-                        <div class="card-footer">
+                        <div class="article-card-footer">
                             <div style="
                                     display: flex;
                                     justify-content: space-between;
                                     align-items: center;
                                 ">
                                 <div>
-                                    <button class="btn btn-secondary btn-sm">阅读(11K)</button>
-                                    <button class="btn btn-secondary btn-sm" style="margin-left: 0.5rem">
+                                    <button class="btn btn-secondary">
+                                        <font-awesome-icon icon="file-lines" />
+                                        阅读(11K)
+                                    </button>
+                                    <button class="btn btn-secondary" style="margin-left: 0.5rem">
+                                        <font-awesome-icon icon="comment-dots" />
                                         评论(0)
                                     </button>
                                 </div>
                                 <div>
-                                    <button class="btn btn-primary btn-sm">编辑</button>
-                                    <button class="btn btn-danger btn-sm" style="margin-left: 0.5rem">
+                                    <button class="btn btn-primary">
+                                        <font-awesome-icon icon="pen-to-square" />
+                                        编辑
+                                    </button>
+                                    <button class="btn btn-danger" style="margin-left: 0.5rem">
+                                        <font-awesome-icon icon="trash" />
                                         删除
                                     </button>
                                 </div>
@@ -139,17 +147,16 @@ export default {
                 </div>
 
                 <div class="pagination">
-                    <button class="btn btn-sm" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
+                    <button class="btn" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
                         上一页
                     </button>
 
-                    <button v-for="pageNum in paginationPages()" :key="pageNum" class="btn btn-sm"
-                        :class="{ 'btn-primary': pageNum === currentPage }" @click="changePage(pageNum)">
+                    <button v-for="pageNum in paginationPages()" :key="pageNum" class="btn"
+                        :class="{ 'active': pageNum === currentPage }" @click="changePage(pageNum)">
                         {{ pageNum }}
                     </button>
 
-                    <button class="btn btn-sm" @click="changePage(currentPage + 1)"
-                        :disabled="currentPage === totalPages">
+                    <button class="btn" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">
                         下一页
                     </button>
                 </div>
@@ -159,7 +166,7 @@ export default {
 
             <div class="sidebar-wrapper">
                 <div class="sidebar">
-                    <h3>文章分类</h3>
+                    <h3><font-awesome-icon icon="folder" class="sidebar-icon" />文章分类</h3>
                     <div class="list-group">
                         <div class="sidebar-item" v-for="(category, index) in categories" :key="index">
                             <RouterLink :to="category.url">{{ category.name }}</RouterLink>
@@ -169,7 +176,7 @@ export default {
                 </div>
 
                 <div class="sidebar">
-                    <h3>阅读排行</h3>
+                    <h3><font-awesome-icon icon="fire" class="sidebar-icon" />阅读排行</h3>
                     <div class="list-group">
                         <div class="sidebar-item" v-for="(top, index) in top10" :key="index">
                             <RouterLink :to="top.url">{{ top.title }}</RouterLink>
@@ -179,7 +186,7 @@ export default {
                 </div>
 
                 <div class="sidebar">
-                    <h3>相关链接</h3>
+                    <h3><font-awesome-icon icon="link" class="sidebar-icon" />相关链接</h3>
                     <div class="list-group">
                         <div class="sidebar-item" v-for="(link, index) in links" :key="index">
                             <a :href="link.path" target="_blank" rel="noopener noreferrer">
@@ -190,7 +197,7 @@ export default {
                 </div>
 
                 <div class="sidebar">
-                    <h3>联系我</h3>
+                    <h3><font-awesome-icon icon="address-card" class="sidebar-icon" />联系我</h3>
                     <div class="list-group">
                         <div class="sidebar-item">
                             <a href="mailto:lzqwebsoft@gmail.com">lzqwebsoft@gmail.com</a>
@@ -222,58 +229,75 @@ export default {
     padding: 0 10px 10px 0;
 }
 
+.article-card {
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.article-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.article-card-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: border-color 0.3s ease;
+}
+
+.article-card-body {
+    padding: 1rem;
+}
+
+.article-card-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--hover-bg);
+    transition:
+        border-color 0.3s ease,
+        background-color 0.3s ease;
+}
+
 .article-title {
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .article-title a {
-    color: #333;
+    color: #007bff;
     text-decoration: none;
-    font-size: 1.25rem;
-    font-weight: bold;
+    font-size: 1.5rem;
+    font-weight: 400;
 }
 
 .article-title a:hover {
-    color: #007bff;
+    color: #0056b3;
+    text-decoration: underline;
 }
 
 .article-time {
     font-size: 0.875rem;
-    color: #666;
+    color: var(--text-color);
     margin-top: 0.5rem;
 }
 
 .article-excerpt {
-    color: #666;
+    color: var(--text-color);
     line-height: 1.6;
 }
 
-.page-label {
-    margin-top: 15px;
-    padding: 0 15px;
-    color: #666;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin: 2rem 0;
-    flex-wrap: wrap;
-}
-
 .sidebar-item a {
-    color: #333;
+    color: var(--text-color);
     text-decoration: none;
     flex: 1;
-}
-
-.sidebar-item a:hover {
-    color: #007bff;
 }
 
 .content-wrapper {
@@ -294,20 +318,40 @@ export default {
     top: 20px;
 }
 
+
+/* Sidebar styles */
+
 .sidebar {
-    background-color: #fff;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    margin-bottom: 1rem;
+    transition:
+        background-color 0.3s ease,
+        box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.sidebar h3 {
+    color: var(--text-color);
+    padding: 1rem 1rem 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.1rem;
+    transition: border-color 0.3s ease;
+    background-color: var(--hover-bg);
+}
+
+.sidebar-icon {
+    margin-right: 0.5rem;
 }
 
 .sidebar-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: border-color 0.3s ease;
 }
 
 .sidebar-item:last-child {

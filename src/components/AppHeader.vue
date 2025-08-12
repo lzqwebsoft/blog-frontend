@@ -23,7 +23,7 @@
 
                 <div class="dropdown">
                     <button class="nav-item" @click="showMenu = !showMenu">
-                        <font-awesome-icon icon="bars" class="menu" />
+                        <font-awesome-icon icon="gear" class="menu" />
                     </button>
                     <div class="dropdown-content" v-show="showMenu">
                         <RouterLink v-for="(item, index) in menuItems" :key="index" :to="item.url"
@@ -59,14 +59,14 @@ export default {
     mounted() {
         window.addEventListener('scroll', this.handleScroll)
         this.initializeTheme()
+        document.addEventListener('click', this.handleClickOutside)
     },
     unmounted() {
         window.removeEventListener('scroll', this.handleScroll)
+        document.removeEventListener('click', this.handleClickOutside)
     },
     methods: {
         handleScroll() {
-            this.showTop = window.scrollY > 200
-
             if (!this.scrolling) {
                 this.scrolling = true
                 window.requestAnimationFrame
@@ -105,6 +105,12 @@ export default {
                 document.documentElement.classList.add('dark-theme')
             } else {
                 document.documentElement.classList.remove('dark-theme')
+            }
+        },
+        handleClickOutside(event) {
+            const dropdown = this.$el.querySelector('.dropdown')
+            if (dropdown && !dropdown.contains(event.target)) {
+                this.showMenu = false
             }
         },
     },
@@ -171,7 +177,6 @@ export default {
     font-size: 0.9rem;
     color: var(--text-color);
     opacity: 0.8;
-    font-style: italic;
 }
 
 .nav-menu {
