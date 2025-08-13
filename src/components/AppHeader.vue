@@ -17,6 +17,10 @@
             </div>
 
             <div class="nav-menu">
+                <button class="nav-item search-button" @click="showSearchDialog = true">
+                    <font-awesome-icon icon="magnifying-glass" />
+                </button>
+
                 <button class="nav-item theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
                     <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
                 </button>
@@ -36,6 +40,20 @@
             </div>
         </nav>
     </header>
+
+    <!-- 搜索对话框 -->
+    <div class="search-dialog" v-if="showSearchDialog" @click.self="showSearchDialog = false">
+        <div class="search-dialog-content">
+            <div class="search-dialog-input-group">
+                <font-awesome-icon icon="magnifying-glass" class="dialog-search-icon" />
+                <input id="search-input" type="text" v-model="searchText" class="dialog-search-input"
+                    placeholder="搜索博客内容..." @keyup.enter="handleSearch" ref="searchInput" />
+                <button class="dialog-search-button" @click="handleSearch">
+                    搜索
+                </button>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -48,6 +66,8 @@ export default {
             previousTop: 0,
             scrolling: false,
             isDark: false,
+            showSearchDialog: false,
+            searchText: '',
             menuItems: [
                 { title: '发表博客', url: '/article/new.html', icon: 'edit' },
                 { title: '修改密码', url: '/changepwd.html', icon: 'lock' },
@@ -64,6 +84,15 @@ export default {
     unmounted() {
         window.removeEventListener('scroll', this.handleScroll)
         document.removeEventListener('click', this.handleClickOutside)
+    },
+    watch: {
+        showSearchDialog(newVal) {
+            if (newVal) {
+                this.$nextTick(() => {
+                    this.$refs.searchInput?.focus();
+                });
+            }
+        }
     },
     methods: {
         handleScroll() {
@@ -111,6 +140,13 @@ export default {
             const dropdown = this.$el.querySelector('.dropdown')
             if (dropdown && !dropdown.contains(event.target)) {
                 this.showMenu = false
+            }
+        },
+        handleSearch() {
+            if (this.searchText.trim()) {
+                console.log('搜索:', this.searchText);
+                this.showSearchDialog = false;
+                this.searchText = '';
             }
         },
     },
@@ -263,6 +299,10 @@ export default {
     text-align: center;
 }
 
+.search-button {
+    display: none;
+}
+
 .nav-item {
     background: none;
     border: none;
@@ -286,7 +326,87 @@ export default {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.search-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 1100;
+    padding-top: 100px;
+    backdrop-filter: blur(4px);
+}
+
+.search-dialog-content {
+    background: var(--header-bg);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.search-dialog-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.dialog-search-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+}
+
+.dialog-search-input {
+    flex: 1;
+    padding: 0.8rem 1.2rem 0.8rem 3rem;
+    border: 2px solid var(--border-color);
+    font-size: 1rem;
+    border-radius: 30px;
+    flex-grow: 2;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.dialog-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.dialog-search-button {
+    flex-shrink: 0;
+    padding: 0.5rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dialog-search-button:hover {
+    background: var(--primary-hover);
+}
+
+:root.dark-theme .search-dialog-content {
+    border: 1px solid var(--border-color);
+}
+
+:root.dark-theme .dialog-search-input {
+    background: var(--header-bg);
+}
+
 @media (max-width: 768px) {
+    .nav {
+        padding: 0.5rem;
+    }
+
     .nav-left {
         gap: 0.75rem;
     }
@@ -304,8 +424,19 @@ export default {
         font-size: 0.8rem;
     }
 
-    .search-input {
-        min-width: 120px;
+    .header-search {
+        display: none;
+        /* 隐藏搜索框 */
+    }
+
+    .nav-menu {
+        margin-left: auto;
+        gap: 0.5rem;
+        /* 减小间距 */
+    }
+
+    .search-button {
+        display: block;
     }
 }
 </style>
