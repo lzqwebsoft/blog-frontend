@@ -8,6 +8,7 @@
 :root {
     --bg-color: #f8f9fa;
     --text-color: #333;
+    --text-secondary: #6c757d;
     --header-bg: #fff;
     --border-color: #ddd;
     --card-bg: #fff;
@@ -30,6 +31,7 @@
 :root.dark-theme {
     --bg-color: #1a1a1a;
     --text-color: #FFFFFF;
+    --text-secondary: #adb5bd;
     --header-bg: #2d2d2d;
     --border-color: #404040;
     --card-bg: #2d2d2d;
@@ -63,19 +65,6 @@ a {
 
 a:hover {
     text-decoration: underline;
-}
-
-/* Layout containers */
-.container {
-    max-width: 1750px;
-    margin: 0 auto;
-    padding: 0 15px;
-}
-
-.row {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0 -15px;
 }
 
 .col {

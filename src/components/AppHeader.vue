@@ -25,7 +25,7 @@
                     <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
                 </button>
 
-                <div class="dropdown">
+                <div class="dropdown" ref="dropdownRef">
                     <button class="nav-item" @click="showMenu = !showMenu">
                         <font-awesome-icon icon="gear" class="menu" />
                     </button>
@@ -137,7 +137,7 @@ export default {
             }
         },
         handleClickOutside(event) {
-            const dropdown = this.$el.querySelector('.dropdown')
+            const dropdown = this.$refs.dropdownRef
             if (dropdown && !dropdown.contains(event.target)) {
                 this.showMenu = false
             }
@@ -363,12 +363,10 @@ export default {
 }
 
 .dialog-search-input {
-    flex: 1;
     padding: 0.8rem 1.2rem 0.8rem 3rem;
     border: 2px solid var(--border-color);
     font-size: 1rem;
     border-radius: 30px;
-    flex-grow: 2;
     background: var(--bg-color);
     color: var(--text-color);
 }

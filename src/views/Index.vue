@@ -90,126 +90,129 @@ export default {
         toggleSidebar() {
             this.sidebarOpen = !this.sidebarOpen
         },
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
     },
 }
 </script>
 
 <template>
     <div class="container">
-        <div class="row content-wrapper">
-            <div class="main-content">
-                <div class="article-list">
-                    <div class="article-card" v-for="(article, index) in articles" :key="index">
-                        <div class="article-card-header">
-                            <h3 class="article-title">
-                                <ArticleBadge type="original" />
-                                <RouterLink :to="article.url">{{ article.title }}</RouterLink>
-                                <ArticleBadge v-if="article.isTop" type="top" />
-                            </h3>
-                            <div class="article-time">发表于：2013-01-20 08:42:45</div>
-                        </div>
-
-                        <div class="article-card-body">
-                            <p class="article-excerpt">
-                                {{ article.content.substring(0, 200) }}...
-                            </p>
-                        </div>
-
-                        <div class="article-card-footer">
-                            <div style="
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: center;
-                                ">
-                                <div>
-                                    <button class="btn btn-secondary">
-                                        <font-awesome-icon icon="file-lines" />
-                                        阅读(11K)
-                                    </button>
-                                    <button class="btn btn-secondary" style="margin-left: 0.5rem">
-                                        <font-awesome-icon icon="comment-dots" />
-                                        评论(0)
-                                    </button>
-                                </div>
-                                <div>
-                                    <button class="btn btn-primary">
-                                        <font-awesome-icon icon="pen-to-square" />
-                                        编辑
-                                    </button>
-                                    <button class="btn btn-danger" style="margin-left: 0.5rem">
-                                        <font-awesome-icon icon="trash" />
-                                        删除
-                                    </button>
-                                </div>
+        <div class="main-content">
+            <div class="article-list">
+                <div class="article-card" v-for="(article, index) in articles" :key="index">
+                    <div class="article-card-header">
+                        <h3 class="article-title">
+                            <ArticleBadge type="original" />
+                            <RouterLink :to="article.url">{{ article.title }}</RouterLink>
+                            <ArticleBadge v-if="article.isTop" type="top" />
+                        </h3>
+                        <div class="article-info">
+                            <div class="article-info-item">
+                                <font-awesome-icon icon="calendar-day" />
+                                {{ formatDate('2013-01-20 08:42:45') }}
+                            </div>
+                            <div class="article-info-item">
+                                <font-awesome-icon icon="eye" />
+                                11K 阅读
+                            </div>
+                            <div class="article-info-item">
+                                <font-awesome-icon icon="comment-dots" />
+                                0 评论
                             </div>
                         </div>
                     </div>
+
+                    <div class="article-card-body">
+                        <p class="article-excerpt">
+                            {{ article.content }}...
+                        </p>
+                    </div>
+
+                    <div class="article-card-footer">
+                        <div>
+                            <button class="btn btn-primary">
+                                <font-awesome-icon icon="pen-to-square" />
+                                编辑
+                            </button>
+                            <button class="btn btn-danger" style="margin-left: 0.5rem">
+                                <font-awesome-icon icon="trash" />
+                                删除
+                            </button>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="pagination">
-                    <button class="btn" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
-                        上一页
-                    </button>
-
-                    <button v-for="pageNum in paginationPages()" :key="pageNum" class="btn"
-                        :class="{ 'active': pageNum === currentPage }" @click="changePage(pageNum)">
-                        {{ pageNum }}
-                    </button>
-
-                    <button class="btn" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">
-                        下一页
-                    </button>
-                </div>
-
-                <div class="page-label">{{ totalArticles }}篇文章, 共{{ totalPages }}页</div>
             </div>
 
-            <div class="sidebar-wrapper">
-                <div class="sidebar">
-                    <h3><font-awesome-icon icon="folder" class="sidebar-icon" />文章分类</h3>
-                    <div class="list-group">
-                        <div class="sidebar-item" v-for="(category, index) in categories" :key="index">
-                            <RouterLink :to="category.url">{{ category.name }}</RouterLink>
-                            <span>{{ category.num }}篇</span>
-                        </div>
+            <div class="pagination">
+                <button class="btn" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
+                    上一页
+                </button>
+
+                <button v-for="pageNum in paginationPages()" :key="pageNum" class="btn"
+                    :class="{ 'active': pageNum === currentPage }" @click="changePage(pageNum)">
+                    {{ pageNum }}
+                </button>
+
+                <button class="btn" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">
+                    下一页
+                </button>
+            </div>
+
+            <div class="page-label">{{ totalArticles }}篇文章, 共{{ totalPages }}页</div>
+        </div>
+
+        <div class="sidebar-wrapper">
+            <div class="sidebar">
+                <h3><font-awesome-icon icon="folder" class="sidebar-icon" />文章分类</h3>
+                <div class="list-group">
+                    <div class="sidebar-item" v-for="(category, index) in categories" :key="index">
+                        <RouterLink :to="category.url">{{ category.name }}</RouterLink>
+                        <span>{{ category.num }}篇</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="sidebar">
-                    <h3><font-awesome-icon icon="fire" class="sidebar-icon" />阅读排行</h3>
-                    <div class="list-group">
-                        <div class="sidebar-item" v-for="(top, index) in top10" :key="index">
-                            <RouterLink :to="top.url">{{ top.title }}</RouterLink>
-                            <span>{{ top.read }}</span>
-                        </div>
+            <div class="sidebar">
+                <h3><font-awesome-icon icon="fire" class="sidebar-icon" />阅读排行</h3>
+                <div class="list-group">
+                    <div class="sidebar-item" v-for="(top, index) in top10" :key="index">
+                        <RouterLink :to="top.url">{{ top.title }}</RouterLink>
+                        <span>{{ top.read }}</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="sidebar">
-                    <h3><font-awesome-icon icon="link" class="sidebar-icon" />相关链接</h3>
-                    <div class="list-group">
-                        <div class="sidebar-item" v-for="(link, index) in links" :key="index">
-                            <a :href="link.path" target="_blank" rel="noopener noreferrer">
-                                {{ link.name }}
-                            </a>
-                        </div>
+            <div class="sidebar">
+                <h3><font-awesome-icon icon="link" class="sidebar-icon" />相关链接</h3>
+                <div class="list-group">
+                    <div class="sidebar-item" v-for="(link, index) in links" :key="index">
+                        <a :href="link.path" target="_blank" rel="noopener noreferrer">
+                            {{ link.name }}
+                        </a>
                     </div>
                 </div>
+            </div>
 
-                <div class="sidebar">
-                    <h3><font-awesome-icon icon="address-card" class="sidebar-icon" />联系我</h3>
-                    <div class="list-group">
-                        <div class="sidebar-item">
-                            <a href="mailto:lzqwebsoft@gmail.com">lzqwebsoft@gmail.com</a>
-                        </div>
-                        <div class="sidebar-item">
-                            <a href="mailto:751939573@qq.com">751939573@qq.com</a>
-                        </div>
+            <div class="sidebar">
+                <h3><font-awesome-icon icon="address-card" class="sidebar-icon" />联系我</h3>
+                <div class="list-group">
+                    <div class="sidebar-item">
+                        <a href="mailto:lzqwebsoft@gmail.com">lzqwebsoft@gmail.com</a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a href="mailto:751939573@qq.com">751939573@qq.com</a>
                     </div>
                 </div>
+            </div>
 
-                <div class="sidebar">
-                    <!-- <iframe
+            <div class="sidebar">
+                <!-- <iframe
                         frameborder="no"
                         border="0"
                         marginwidth="0"
@@ -218,7 +221,6 @@ export default {
                         height="110"
                         src="//music.163.com/outchain/player?type=0&id=75000240&auto=1&height=90"
                     ></iframe> -->
-                </div>
             </div>
         </div>
     </div>
@@ -226,7 +228,7 @@ export default {
 
 <style scoped>
 .article-list {
-    padding: 0 10px 10px 0;
+    padding-bottom: 10px;
 }
 
 .article-card {
@@ -237,11 +239,6 @@ export default {
     position: relative;
     overflow: hidden;
     margin-bottom: 1rem;
-}
-
-.article-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 .article-card-header {
@@ -264,10 +261,9 @@ export default {
 }
 
 .article-title {
-    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.4rem;
 }
 
@@ -276,6 +272,9 @@ export default {
     text-decoration: none;
     font-size: 1.5rem;
     font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .article-title a:hover {
@@ -283,9 +282,16 @@ export default {
     text-decoration: underline;
 }
 
-.article-time {
+.article-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    flex-direction: row;
+}
+
+.article-info-item {
     font-size: 0.875rem;
-    color: var(--text-color);
+    color: var(--text-secondary);
     margin-top: 0.5rem;
 }
 
@@ -300,11 +306,11 @@ export default {
     flex: 1;
 }
 
-.content-wrapper {
+.container {
     display: flex;
-    gap: 20px;
     flex-direction: row;
     margin-top: 20px;
+    gap: 20px;
 }
 
 .main-content {
@@ -359,16 +365,16 @@ export default {
 }
 
 @media (max-width: 768px) {
-    .content-wrapper {
+    .container {
         flex-direction: row;
-        /* 保持水平排列 */
         flex-wrap: wrap;
-        /* 允许在小屏幕上换行 */
+        margin-top: 0px;
     }
 
     .main-content {
         flex: 1 1 65%;
         min-width: 300px;
+        margin: 0 10px;
     }
 
     .sidebar-wrapper {

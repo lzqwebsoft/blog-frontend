@@ -6,7 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import {
     faEdit, faLock, faCog, faSignOutAlt, faMoon, faSun, faBars,
     faMagnifyingGlass, faGear, faArrowUp, faPenToSquare, faTrash,
-    faFileLines, faCommentDots, faFolder, faLink, faFire, faAddressCard
+    faCalendarDay, faEye, faCommentDots, faFolder, faLink, faFire, faAddressCard
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -16,7 +16,7 @@ import router from './router'
 library.add(
     faEdit, faLock, faCog, faSignOutAlt, faMoon,
     faSun, faBars, faMagnifyingGlass, faGear, faArrowUp,
-    faPenToSquare, faTrash, faFileLines, faCommentDots,
+    faPenToSquare, faTrash, faCalendarDay, faEye, faCommentDots,
     faFolder, faLink, faFire, faAddressCard
 )
 

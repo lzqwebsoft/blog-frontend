@@ -69,8 +69,9 @@ export default {
 
 .main {
     flex: 1;
-    margin-top: 80px;
     min-height: calc(100vh - 120px);
+    max-width: 1750px;
+    margin: 80px auto 0;
 }
 
 .scroll-to-top {
