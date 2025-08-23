@@ -6,7 +6,8 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import {
     faEdit, faLock, faCog, faSignOutAlt, faMoon, faSun, faBars,
     faMagnifyingGlass, faGear, faArrowUp, faPenToSquare, faTrash,
-    faCalendarDay, faEye, faCommentDots, faFolder, faLink, faFire, faAddressCard
+    faCalendarDay, faEye, faCommentDots, faFolder, faLink, faFire, 
+    faAddressCard, faTimes, faAngleRight
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -17,7 +18,7 @@ library.add(
     faEdit, faLock, faCog, faSignOutAlt, faMoon,
     faSun, faBars, faMagnifyingGlass, faGear, faArrowUp,
     faPenToSquare, faTrash, faCalendarDay, faEye, faCommentDots,
-    faFolder, faLink, faFire, faAddressCard
+    faFolder, faLink, faFire, faAddressCard, faTimes, faAngleRight
 )
 
 const app = createApp(App)

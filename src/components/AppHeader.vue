@@ -109,9 +109,11 @@ export default {
             if (this.previousTop - currentTop > 10) {
                 // Scroll up - show header
                 this.isHidden = false
+                document.documentElement.style.setProperty('--sidebar-nav-top', '68px')
             } else if (currentTop - this.previousTop > 10 && currentTop > 150) {
                 // Scroll down - hide header
                 this.isHidden = true
+                document.documentElement.style.setProperty('--sidebar-nav-top', '0px')
             }
 
             this.previousTop = currentTop

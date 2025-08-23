@@ -105,4 +105,22 @@ export default {
     background: var(--scroll-to-top-button-hover-bg, #dddddd);
     transform: scale(1.1) rotate(0deg);
 }
+
+@media (max-width: 768px) {
+    .main {
+        margin-top: 130px;
+    }
+}
+
+@media (max-width: 1080px) {
+    .main {
+        max-width: 1024px;
+    }
+}
+
+@media (max-width: 1550px) {
+    .main {
+        max-width: 1450px;
+    }
+}
 </style>

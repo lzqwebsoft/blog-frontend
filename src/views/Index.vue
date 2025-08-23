@@ -167,7 +167,16 @@ export default {
             <div class="page-label">{{ totalArticles }}篇文章, 共{{ totalPages }}页</div>
         </div>
 
-        <div class="sidebar-wrapper">
+        <!-- 小屏时顶部显示 -->
+        <div class="sidebar-navigation-button" @click="toggleSidebar">
+            <span>分类&排行&友链</span>
+            <font-awesome-icon icon="angle-right" class="nav-button-icon" :class="{ 'arrow-show': sidebarOpen }" />
+        </div>
+
+        <!-- 移动端侧边栏遮罩 -->
+        <div class="sidebar-backdrop" :class="{ 'backdrop-visible': sidebarOpen }" @click="toggleSidebar"></div>
+
+        <div class="sidebar-wrapper" :class="{ 'sidebar-open': sidebarOpen }">
             <div class="sidebar">
                 <h3><font-awesome-icon icon="folder" class="sidebar-icon" />文章分类</h3>
                 <div class="list-group">
@@ -252,12 +261,18 @@ export default {
 }
 
 .article-card-footer {
+    clear: both;
     padding: 1rem;
     border-top: 1px solid var(--border-color);
     background-color: var(--hover-bg);
     transition:
         border-color 0.3s ease,
         background-color 0.3s ease;
+    overflow: hidden;
+}
+
+.article-card-footer div {
+    float: right;
 }
 
 .article-title {
@@ -318,6 +333,59 @@ export default {
     width: 70%;
 }
 
+.sidebar-navigation-button {
+    display: none;
+    position: fixed;
+    top: var(--sidebar-nav-top, 68px);
+    left: 0;
+    right: 0;
+    z-index: 900;
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+    filter: blur(1px);
+}
+
+.sidebar-navigation-button:hover {
+    background-color: var(--hover-bg);
+}
+
+.nav-button-icon {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.nav-button-icon.arrow-show {
+    transform: rotate(90deg);
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    top: var(--sidebar-nav-top, 68px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 799;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-backdrop.backdrop-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
 .sidebar-wrapper {
     width: 30%;
     position: sticky;
@@ -373,16 +441,52 @@ export default {
 
     .main-content {
         flex: 1 1 65%;
-        min-width: 300px;
+        width: 100%;
+    }
+
+    .article-list {
         margin: 0 10px;
     }
 
+    .sidebar-navigation-button {
+        display: flex;
+    }
+
     .sidebar-wrapper {
-        flex: 1 1 30%;
-        min-width: 250px;
+        position: fixed;
+        top: 0;
+        right: -280px;
+        width: 280px;
+        height: 100vh;
+        background: var(--bg-color);
+        z-index: 800;
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        box-shadow: -2px 0 8px var(--shadow-color);
+        padding: calc(var(--sidebar-nav-top, 68px) + 60px) 16px 16px;
+    }
+
+    .sidebar-wrapper.sidebar-open {
+        transform: translateX(-280px);
+    }
+
+    .sidebar {
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px var(--shadow-color);
     }
 
     .hidden-sm {
+        display: none;
+    }
+
+    .sidebar-backdrop {
+        display: block;
+    }
+}
+
+/* 桌面端隐藏遮罩 */
+@media (min-width: 769px) {
+    .sidebar-backdrop {
         display: none;
     }
 }
