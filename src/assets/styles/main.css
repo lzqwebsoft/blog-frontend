@@ -135,15 +135,17 @@ a:hover {
 .form-control {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     font-size: 1rem;
+    color: var(--text-color);
 }
 
 .form-control:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.2);
 }
 
 /* List styles */

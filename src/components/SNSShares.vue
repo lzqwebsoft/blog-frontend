@@ -72,14 +72,14 @@ export default {
 .sns-share {
     margin: 2rem 0;
     padding: 1rem;
-    background: #f8f9fa;
+    background: var(--hover-bg, #f9f9f9);
     border-radius: 8px;
 }
 
 .share-title {
     margin-bottom: 1rem;
     font-size: 1.1rem;
-    color: #333;
+    color: var(--text-color, #333);
 }
 
 .share-buttons {
@@ -90,9 +90,9 @@ export default {
 
 .share-btn {
     padding: 0.5rem 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(border-color, #ccc);
     border-radius: 4px;
-    background: white;
+    background: var(--hover-bg);
     cursor: pointer;
     display: flex;
     align-items: center;

@@ -1,6 +1,55 @@
 <script>
-import ArticleBadge from '../components/ArticleBadge.vue'
-import SNSShares from '../components/SNSShares.vue'
+// PrismJS 代码高亮
+import Prism from 'prismjs';
+import "prismjs/plugins/line-numbers/prism-line-numbers.css";
+import "prismjs/plugins/line-numbers/prism-line-numbers.js";
+import "prismjs/plugins/autolinker/prism-autolinker.css";
+import "prismjs/plugins/autolinker/prism-autolinker.js";
+import "prismjs/plugins/toolbar/prism-toolbar.css";
+import "prismjs/plugins/toolbar/prism-toolbar.js";
+import "prismjs/plugins/show-language/prism-show-language.js";
+import "prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.js";
+
+// PrismJS 语言组件批量导入
+import "prismjs/components/prism-markup.min.js";
+import "prismjs/components/prism-css.min.js";
+import "prismjs/components/prism-clike.min.js";
+import "prismjs/components/prism-javascript.min.js";
+import "prismjs/components/prism-apacheconf.min.js";
+import "prismjs/components/prism-c.min.js";
+import "prismjs/components/prism-csharp.min.js";
+import "prismjs/components/prism-bash.min.js";
+import "prismjs/components/prism-basic.min.js";
+import "prismjs/components/prism-cpp.min.js";
+import "prismjs/components/prism-nasm.min.js";
+import "prismjs/components/prism-ruby.min.js";
+import "prismjs/components/prism-markup-templating.min.js";
+import "prismjs/components/prism-git.min.js";
+import "prismjs/components/prism-go.min.js";
+import "prismjs/components/prism-groovy.min.js";
+import "prismjs/components/prism-http.min.js";
+import "prismjs/components/prism-hsts.min.js";
+import "prismjs/components/prism-ini.min.js";
+import "prismjs/components/prism-java.min.js";
+import "prismjs/components/prism-json.min.js";
+import "prismjs/components/prism-jsonp.min.js";
+import "prismjs/components/prism-markdown.min.js";
+import "prismjs/components/prism-nginx.min.js";
+import "prismjs/components/prism-php.min.js";
+import "prismjs/components/prism-sql.min.js";
+import "prismjs/components/prism-python.min.js";
+import "prismjs/components/prism-sass.min.js";
+import "prismjs/components/prism-scss.min.js";
+import "prismjs/components/prism-scala.min.js";
+import "prismjs/components/prism-scheme.min.js";
+import "prismjs/components/prism-swift.min.js";
+import "prismjs/components/prism-vbnet.min.js";
+import "prismjs/components/prism-vim.min.js";
+import "prismjs/components/prism-visual-basic.min.js";
+import "prismjs/components/prism-yaml.min.js";
+
+import ArticleBadge from '../components/ArticleBadge.vue';
+import SNSShares from '../components/SNSShares.vue';
 
 export default {
     components: {
@@ -116,8 +165,11 @@ export default {
         }
     },
     mounted() {
-        this.initCodeHighlight()
-        this.initSNSShare()
+        this.initCodeHighlight();
+        this.initSNSShare();
+    },
+    updated() {
+        Prism.highlightAll();
     },
     methods: {
         scrollToComments() {
@@ -127,16 +179,39 @@ export default {
         },
 
         initCodeHighlight() {
-            // 简单的代码高亮处理
-            this.$nextTick(() => {
-                const preElements = document.querySelectorAll('.article-content pre')
-                preElements.forEach((pre) => {
-                    const code = pre.querySelector('code')
+            // prism.js代码高亮显示
+            let docPre = document.querySelectorAll('.article-content pre');
+            if (docPre && docPre.length > 0) {
+                console.log('文章中有代码块', Prism);
+                docPre.forEach(function (item) {
+                    let code = item.querySelector("code");
                     if (code) {
-                        code.classList.add('line-numbers')
+                        let classVal = code.getAttribute("class");
+                        if (typeof classVal == typeof undefined || !classVal) {
+                            code.setAttribute("class", "language-none line-numbers");
+                        } else {
+                            code.classList.add("line-numbers"); // 开启显示行号
+                        }
+                    } else {
+                        let classValue = item.getAttribute("class");
+                        if (classValue && classValue != "") {
+                            let classArr = [];
+                            classArr = classValue.split(";");
+                            classArr = classArr[0].split(":");
+                            var lan = classArr[1].trim();
+                            var lanClass = "language-" + lan;
+                            var preContent =
+                                '<code class="' +
+                                lanClass +
+                                ' line-numbers">' +
+                                item.innerHTML +
+                                "</code>";
+                            item.classList.add("my_pre");
+                            item.innerHTML = preContent;
+                        }
                     }
-                })
-            })
+                });
+            }
         },
 
         initSNSShare() {
@@ -217,12 +292,8 @@ export default {
         <!-- 面包屑导航 -->
         <nav class="breadcrumbs">
             <div class="breadcrumb">
-                <RouterLink
-                    v-for="(item, index) in breadcrumbs"
-                    :key="index"
-                    :to="item.to"
-                    :class="{ disabled: item.disabled }"
-                >
+                <RouterLink v-for="(item, index) in breadcrumbs" :key="index" :to="item.to"
+                    :class="{ disabled: item.disabled }">
                     {{ item.text }}
                 </RouterLink>
             </div>
@@ -266,11 +337,7 @@ export default {
         <section class="related-articles">
             <h3>相关文章</h3>
             <div class="related-articles-list">
-                <div
-                    class="related-article-item"
-                    v-for="(rltArticle, index) in relatedArticles"
-                    :key="index"
-                >
+                <div class="related-article-item" v-for="(rltArticle, index) in relatedArticles" :key="index">
                     <RouterLink :to="rltArticle.url">{{ rltArticle.title }}</RouterLink>
                     <span class="article-date">({{ rltArticle.createdAt }})</span>
                 </div>
@@ -305,16 +372,10 @@ export default {
                             <div class="comment-header">
                                 <strong class="comment-author">{{ child.nickname }}</strong>
                                 <div class="comment-actions">
-                                    <button
-                                        class="btn btn-sm btn-secondary"
-                                        @click="replyComment(child)"
-                                    >
+                                    <button class="btn btn-sm btn-secondary" @click="replyComment(child)">
                                         回复
                                     </button>
-                                    <button
-                                        class="btn btn-sm btn-danger"
-                                        @click="deleteComment(child.id)"
-                                    >
+                                    <button class="btn btn-sm btn-danger" @click="deleteComment(child.id)">
                                         删除
                                     </button>
                                 </div>
@@ -336,11 +397,7 @@ export default {
                     <div class="comment-reply" v-if="replyTo">
                         <p>
                             回复 <strong>@{{ replyTo.nickname }}</strong>
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-danger"
-                                @click="cancelReply"
-                            >
+                            <button type="button" class="btn btn-sm btn-danger" @click="cancelReply">
                                 取消回复
                             </button>
                         </p>
@@ -350,36 +407,20 @@ export default {
                 <div class="row">
                     <div class="col-12 col-md-6">
                         <div class="form-group">
-                            <input
-                                type="text"
-                                class="form-control"
-                                v-model="nickname"
-                                placeholder="昵称"
-                                required
-                            />
+                            <input type="text" class="form-control" v-model="nickname" placeholder="昵称" required />
                         </div>
                     </div>
 
                     <div class="col-12 col-md-6">
                         <div class="form-group">
-                            <input
-                                type="url"
-                                class="form-control"
-                                v-model="website"
-                                placeholder="个人网站（可选）"
-                            />
+                            <input type="url" class="form-control" v-model="website" placeholder="个人网站（可选）" />
                         </div>
                     </div>
 
                     <div class="col-12">
                         <div class="form-group">
-                            <textarea
-                                class="form-control"
-                                rows="4"
-                                v-model="comment"
-                                placeholder="请输入评论内容..."
-                                required
-                            ></textarea>
+                            <textarea class="form-control" rows="4" v-model="comment" placeholder="请输入评论内容..."
+                                required></textarea>
                         </div>
                     </div>
 
@@ -392,10 +433,9 @@ export default {
     </div>
 </template>
 
-<style scoped>
+<style lang="scss">
 .article-detail {
-    max-width: 800px;
-    margin: 0 auto;
+    margin: 20px auto;
 }
 
 .breadcrumbs {
@@ -425,15 +465,15 @@ export default {
 }
 
 .article {
-    background: #fff;
+    background-color: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px var(--shadow-color);
     padding: 2rem;
     margin-bottom: 2rem;
 }
 
 .article-header {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 1rem;
     margin-bottom: 2rem;
 }
@@ -498,7 +538,7 @@ export default {
 .article-pager {
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-color);
 }
 
 .btn-outline {
@@ -513,16 +553,16 @@ export default {
 }
 
 .related-articles {
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--shadow-color);
     padding: 2rem;
     margin-bottom: 2rem;
 }
 
 .related-articles h3 {
     margin-bottom: 1rem;
-    color: #333;
+    color: var(--text-color);
 }
 
 .related-articles-list {
@@ -536,7 +576,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .related-article-item:last-child {
@@ -558,16 +598,16 @@ export default {
 }
 
 .comments {
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--shadow-color);
     padding: 2rem;
     margin-bottom: 2rem;
 }
 
 .comment-list-title {
     margin-bottom: 1.5rem;
-    color: #333;
+    color: var(--text-color);
 }
 
 .comments-list {
@@ -575,7 +615,7 @@ export default {
 }
 
 .comment {
-    border: 1px solid #eee;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
@@ -590,7 +630,7 @@ export default {
 
 .comment-author {
     font-weight: bold;
-    color: #333;
+    color: var(--text-color);
 }
 
 .comment-actions {
@@ -611,12 +651,12 @@ export default {
 .comment-children {
     margin-left: 2rem;
     margin-top: 1rem;
-    border-left: 2px solid #eee;
+    border-left: 2px solid var(--border-color);
     padding-left: 1rem;
 }
 
 .comment-form {
-    background: #f8f9fa;
+    background: var(--bg-color);
     border-radius: 8px;
     padding: 2rem;
 }
@@ -628,7 +668,7 @@ export default {
 .comment-reply {
     margin-top: 0.5rem;
     padding: 0.5rem;
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 4px;
     display: flex;
     justify-content: space-between;
@@ -653,6 +693,275 @@ export default {
 
     .comment-children {
         margin-left: 1rem;
+    }
+}
+
+/* PrismJS 代码高亮样式 */
+/* Light theme */
+.article-content {
+
+    code[class*="language-"],
+    pre[class*="language-"] {
+        color: black;
+        background: none;
+        text-shadow: 0 1px white;
+        font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        font-size: 1em;
+        text-align: left;
+        white-space: pre;
+        word-spacing: normal;
+        word-break: normal;
+        word-wrap: normal;
+        line-height: 1.5;
+
+        -moz-tab-size: 4;
+        -o-tab-size: 4;
+        tab-size: 4;
+
+        -webkit-hyphens: none;
+        -moz-hyphens: none;
+        -ms-hyphens: none;
+        hyphens: none;
+    }
+
+    pre[class*="language-"]::-moz-selection,
+    pre[class*="language-"] ::-moz-selection,
+    code[class*="language-"]::-moz-selection,
+    code[class*="language-"] ::-moz-selection {
+        text-shadow: none;
+        background: #b3d4fc;
+    }
+
+    pre[class*="language-"]::selection,
+    pre[class*="language-"] ::selection,
+    code[class*="language-"]::selection,
+    code[class*="language-"] ::selection {
+        text-shadow: none;
+        background: #b3d4fc;
+    }
+
+    @media print {
+
+        code[class*="language-"],
+        pre[class*="language-"] {
+            text-shadow: none;
+        }
+    }
+
+    /* Code blocks */
+    pre[class*="language-"] {
+        // padding: 1em;
+        margin: .5em 0;
+        overflow: auto;
+    }
+
+    :not(pre)>code[class*="language-"],
+    pre[class*="language-"] {
+        background: #f5f2f0;
+    }
+
+    /* Inline code */
+    :not(pre)>code[class*="language-"] {
+        padding: .1em;
+        border-radius: .3em;
+        white-space: normal;
+    }
+
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+        color: slategray;
+    }
+
+    .token.punctuation {
+        color: #999;
+    }
+
+    .token.namespace {
+        opacity: .7;
+    }
+
+    .token.property,
+    .token.tag,
+    .token.boolean,
+    .token.number,
+    .token.constant,
+    .token.symbol,
+    .token.deleted {
+        color: #905;
+    }
+
+    .token.selector,
+    .token.attr-name,
+    .token.string,
+    .token.char,
+    .token.builtin,
+    .token.inserted {
+        color: #690;
+    }
+
+    .token.operator,
+    .token.entity,
+    .token.url,
+    .language-css .token.string,
+    .style .token.string {
+        color: #9a6e3a;
+        /* This background color was intended by the author of this theme. */
+        background: hsla(0, 0%, 100%, .5);
+    }
+
+    .token.atrule,
+    .token.attr-value,
+    .token.keyword {
+        color: #07a;
+    }
+
+    .token.function,
+    .token.class-name {
+        color: #DD4A68;
+    }
+
+    .token.regex,
+    .token.important,
+    .token.variable {
+        color: #e90;
+    }
+
+    .token.important,
+    .token.bold {
+        font-weight: bold;
+    }
+
+    .token.italic {
+        font-style: italic;
+    }
+
+    .token.entity {
+        cursor: help;
+    }
+}
+
+/* Dark theme */
+:root.dark-theme .article-content {
+
+    code[class*="language-"],
+    pre[class*="language-"] {
+        color: #ccc;
+        background: none;
+        text-shadow: none;
+        font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        font-size: 1em;
+        text-align: left;
+        white-space: pre;
+        word-spacing: normal;
+        word-break: normal;
+        word-wrap: normal;
+        line-height: 1.5;
+
+        -moz-tab-size: 4;
+        -o-tab-size: 4;
+        tab-size: 4;
+
+        -webkit-hyphens: none;
+        -moz-hyphens: none;
+        -ms-hyphens: none;
+        hyphens: none;
+
+    }
+
+    /* Code blocks */
+    pre[class*="language-"] {
+        // padding: 1em;
+        margin: .5em 0;
+        overflow: auto;
+    }
+
+    :not(pre)>code[class*="language-"],
+    pre[class*="language-"] {
+        background: #1a1a1a;
+    }
+
+    /* Inline code */
+    :not(pre)>code[class*="language-"] {
+        padding: .1em;
+        border-radius: .3em;
+        white-space: normal;
+    }
+
+    .token.comment,
+    .token.block-comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+        color: #999;
+    }
+
+    .token.punctuation {
+        color: #ccc;
+    }
+
+    .token.tag,
+    .token.attr-name,
+    .token.namespace,
+    .token.deleted {
+        color: #e2777a;
+    }
+
+    .token.function-name {
+        color: #6196cc;
+    }
+
+    .token.boolean,
+    .token.number,
+    .token.function {
+        color: #f08d49;
+    }
+
+    .token.property,
+    .token.class-name,
+    .token.constant,
+    .token.symbol {
+        color: #f8c555;
+    }
+
+    .token.selector,
+    .token.important,
+    .token.atrule,
+    .token.keyword,
+    .token.builtin {
+        color: #cc99cd;
+    }
+
+    .token.string,
+    .token.char,
+    .token.attr-value,
+    .token.regex,
+    .token.variable {
+        color: #7ec699;
+    }
+
+    .token.operator,
+    .token.entity,
+    .token.url {
+        color: #67cdcc;
+    }
+
+    .token.important,
+    .token.bold {
+        font-weight: bold;
+    }
+
+    .token.italic {
+        font-style: italic;
+    }
+
+    .token.entity {
+        cursor: help;
+    }
+
+    .token.inserted {
+        color: green;
     }
 }
 </style>

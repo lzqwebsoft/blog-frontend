@@ -436,7 +436,7 @@ export default {
     .container {
         flex-direction: row;
         flex-wrap: wrap;
-        margin-top: 0px;
+        margin-top: 50px;
     }
 
     .main-content {
