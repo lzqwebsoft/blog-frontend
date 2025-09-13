@@ -168,9 +168,8 @@ export default {
         </div>
 
         <!-- 小屏时顶部显示 -->
-        <div class="sidebar-navigation-button" @click="toggleSidebar">
-            <span>分类&排行&友链</span>
-            <font-awesome-icon icon="angle-right" class="nav-button-icon" :class="{ 'arrow-show': sidebarOpen }" />
+        <div class="sidebar-navigation-button" :class="{ 'sidebar-open': sidebarOpen }" @click="toggleSidebar">
+            <span>分类导航</span>
         </div>
 
         <!-- 移动端侧边栏遮罩 -->
@@ -335,23 +334,25 @@ export default {
 
 .sidebar-navigation-button {
     display: none;
+    flex-direction: column;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
     position: fixed;
-    top: var(--sidebar-nav-top, 68px);
-    left: 0;
+    top: 23%;
     right: 0;
-    z-index: 900;
+    transform: translateY(-50%);
+    width: 50px;
+    height: auto;
+    padding: 16px 12px;
+    border-radius: 8px 0 0 8px;
+    border: 1px solid var(--border-color);
+    border-right: none;
     background-color: var(--header-bg);
-    border-bottom: 1px solid var(--border-color);
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-weight: 500;
-    color: var(--text-color);
-    box-shadow: 0 2px 8px var(--shadow-color);
-    filter: blur(1px);
+    box-shadow: -2px 2px 8px var(--shadow-color);
+    z-index: 899;
+    gap: 6px;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
 }
 
 .sidebar-navigation-button:hover {
@@ -363,11 +364,8 @@ export default {
     transition: transform 0.3s ease;
 }
 
-.nav-button-icon.arrow-show {
-    transform: rotate(90deg);
-}
-
 .sidebar-backdrop {
+    display: none;
     position: fixed;
     top: var(--sidebar-nav-top, 68px);
     left: 0;
@@ -436,7 +434,7 @@ export default {
     .container {
         flex-direction: row;
         flex-wrap: wrap;
-        margin-top: 50px;
+        margin-top: 0px;
     }
 
     .main-content {
@@ -450,6 +448,17 @@ export default {
 
     .sidebar-navigation-button {
         display: flex;
+        transition: all 0.3s ease;
+        background-color: var(--header-bg);
+        border: 1px solid var(--border-color);
+        border-right: none;
+    }
+
+    .sidebar-navigation-button.sidebar-open {
+        transform: translateY(-50%) translateX(-275px);
+        background-color: var(--bg-color);
+        border-color: transparent;
+        box-shadow: none;
     }
 
     .sidebar-wrapper {
@@ -481,13 +490,6 @@ export default {
 
     .sidebar-backdrop {
         display: block;
-    }
-}
-
-/* 桌面端隐藏遮罩 */
-@media (min-width: 769px) {
-    .sidebar-backdrop {
-        display: none;
     }
 }
 </style>

@@ -440,9 +440,6 @@ export default {
 
 .breadcrumbs {
     margin-bottom: 2rem;
-}
-
-.breadcrumb {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
@@ -519,6 +516,7 @@ export default {
     border-radius: 4px;
     overflow-x: auto;
     margin: 1rem 0;
+    width: 100%;
 }
 
 .article-content code {
@@ -676,6 +674,18 @@ export default {
 }
 
 @media (max-width: 768px) {
+    .breadcrumbs {
+        margin-bottom: 1rem;
+    }
+
+    .article-detail {
+        margin: 10px;
+    }
+
+    .breadcrumb {
+        padding: 0 10px;
+    }
+
     .article {
         padding: 1rem;
     }

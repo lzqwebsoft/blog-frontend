@@ -117,4 +117,10 @@ export default {
         max-width: 1450px;
     }
 }
+
+@media (max-width: 768px) {
+    .main {
+        max-width: 100%;
+    }
+}
 </style>
