@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Index from '../views/Index.vue'
 import Show from '../views/Show.vue'
+import EditArticle from '../views/EditArticle.vue'
 import NotFound from '../views/NotFound.vue'
 
 const router = createRouter({
@@ -20,6 +21,16 @@ const router = createRouter({
             path: '/select/:categoryId',
             name: 'category',
             component: Index,
+        },
+        {
+            path: '/article/new',
+            name: 'article-new',
+            component: EditArticle,
+        },
+        {
+            path: '/article/edit/:id',
+            name: 'article-edit',
+            component: EditArticle,
         },
         {
             path: '/:pathMatch(.*)*',

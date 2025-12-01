@@ -1,3 +1,149 @@
+<template>
+    <div class="container article-detail">
+        <!-- 面包屑导航 -->
+        <nav class="breadcrumbs">
+            <div class="breadcrumb">
+                <RouterLink v-for="(item, index) in breadcrumbs" :key="index" :to="item.to"
+                    :class="{ disabled: item.disabled }">
+                    {{ item.text }}
+                </RouterLink>
+            </div>
+        </nav>
+
+        <!-- 文章主体 -->
+        <article class="article">
+            <header class="article-header">
+                <h1 class="article-title">
+                    <ArticleBadge type="original" />
+                    <span>{{ article.title }}</span>
+                    <ArticleBadge type="top" />
+                </h1>
+
+                <div class="article-meta">
+                    <span>发表于：2013-01-20 08:42:45，已有61394次阅读</span>
+
+                    <div class="article-actions">
+                        <button class="btn btn-secondary" @click="scrollToComments">评论</button>
+                        <button class="btn btn-primary">编辑</button>
+                        <button class="btn btn-danger">删除</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="article-content" v-html="article.content"></div>
+
+            <!-- 社交分享 -->
+            <SNSShares :sns-info="snsInfo" />
+
+            <!-- 文章分页 -->
+            <nav class="article-pager">
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                    <button class="btn btn-outline">← 上篇文章</button>
+                    <button class="btn btn-outline">下篇文章 →</button>
+                </div>
+            </nav>
+        </article>
+
+        <!-- 相关文章 -->
+        <section class="related-articles">
+            <h3>相关文章</h3>
+            <div class="related-articles-list">
+                <div class="related-article-item" v-for="(rltArticle, index) in relatedArticles" :key="index">
+                    <RouterLink :to="rltArticle.url">{{ rltArticle.title }}</RouterLink>
+                    <span class="article-date">({{ rltArticle.createdAt }})</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 评论区域 -->
+        <section class="comments">
+            <h3 class="comment-list-title">网友评论</h3>
+
+            <div class="comments-list">
+                <div class="comment" v-for="(item) in comments" :key="item.id">
+                    <div class="comment-header">
+                        <strong class="comment-author">{{ item.nickname }}</strong>
+                        <div class="comment-actions">
+                            <button class="btn btn-sm btn-secondary" @click="replyComment(item)">
+                                回复
+                            </button>
+                            <button class="btn btn-sm btn-danger" @click="deleteComment(item.id)">
+                                删除
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="comment-content" v-html="item.content"></div>
+
+                    <div class="comment-meta">{{ item.info }}</div>
+
+                    <!-- 子评论 -->
+                    <div class="comment-children" v-if="item.children?.length">
+                        <div class="comment" v-for="child in item.children" :key="child.id">
+                            <div class="comment-header">
+                                <strong class="comment-author">{{ child.nickname }}</strong>
+                                <div class="comment-actions">
+                                    <button class="btn btn-sm btn-secondary" @click="replyComment(child)">
+                                        回复
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" @click="deleteComment(child.id)">
+                                        删除
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="comment-content" v-html="child.content"></div>
+
+                            <div class="comment-meta">{{ child.info }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 评论表单 -->
+            <form class="comment-form" @submit.prevent="submitComment">
+                <div class="comment-head">
+                    <h4>发表评论</h4>
+
+                    <div class="comment-reply" v-if="replyTo">
+                        <p>
+                            回复 <strong>@{{ replyTo.nickname }}</strong>
+                            <button type="button" class="btn btn-sm btn-danger" @click="cancelReply">
+                                取消回复
+                            </button>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="form-group">
+                            <input type="text" class="form-control" v-model="nickname" placeholder="昵称" required />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="form-group">
+                            <input type="url" class="form-control" v-model="website" placeholder="个人网站（可选）" />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-group">
+                            <textarea class="form-control" rows="4" v-model="comment" placeholder="请输入评论内容..."
+                                required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">确认发送</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</template>
+
 <script>
 // PrismJS 代码高亮
 import Prism from 'prismjs';
@@ -286,152 +432,6 @@ export default {
     },
 }
 </script>
-
-<template>
-    <div class="container article-detail">
-        <!-- 面包屑导航 -->
-        <nav class="breadcrumbs">
-            <div class="breadcrumb">
-                <RouterLink v-for="(item, index) in breadcrumbs" :key="index" :to="item.to"
-                    :class="{ disabled: item.disabled }">
-                    {{ item.text }}
-                </RouterLink>
-            </div>
-        </nav>
-
-        <!-- 文章主体 -->
-        <article class="article">
-            <header class="article-header">
-                <h1 class="article-title">
-                    <ArticleBadge type="original" />
-                    <span>{{ article.title }}</span>
-                    <ArticleBadge type="top" />
-                </h1>
-
-                <div class="article-meta">
-                    <span>发表于：2013-01-20 08:42:45，已有61394次阅读</span>
-
-                    <div class="article-actions">
-                        <button class="btn btn-secondary" @click="scrollToComments">评论</button>
-                        <button class="btn btn-primary">编辑</button>
-                        <button class="btn btn-danger">删除</button>
-                    </div>
-                </div>
-            </header>
-
-            <div class="article-content" v-html="article.content"></div>
-
-            <!-- 社交分享 -->
-            <SNSShares :sns-info="snsInfo" />
-
-            <!-- 文章分页 -->
-            <nav class="article-pager">
-                <div style="display: flex; justify-content: space-between; align-items: center">
-                    <button class="btn btn-outline">← 上篇文章</button>
-                    <button class="btn btn-outline">下篇文章 →</button>
-                </div>
-            </nav>
-        </article>
-
-        <!-- 相关文章 -->
-        <section class="related-articles">
-            <h3>相关文章</h3>
-            <div class="related-articles-list">
-                <div class="related-article-item" v-for="(rltArticle, index) in relatedArticles" :key="index">
-                    <RouterLink :to="rltArticle.url">{{ rltArticle.title }}</RouterLink>
-                    <span class="article-date">({{ rltArticle.createdAt }})</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- 评论区域 -->
-        <section class="comments">
-            <h3 class="comment-list-title">网友评论</h3>
-
-            <div class="comments-list">
-                <div class="comment" v-for="(item, index) in comments" :key="item.id">
-                    <div class="comment-header">
-                        <strong class="comment-author">{{ item.nickname }}</strong>
-                        <div class="comment-actions">
-                            <button class="btn btn-sm btn-secondary" @click="replyComment(item)">
-                                回复
-                            </button>
-                            <button class="btn btn-sm btn-danger" @click="deleteComment(item.id)">
-                                删除
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="comment-content" v-html="item.content"></div>
-
-                    <div class="comment-meta">{{ item.info }}</div>
-
-                    <!-- 子评论 -->
-                    <div class="comment-children" v-if="item.children?.length">
-                        <div class="comment" v-for="child in item.children" :key="child.id">
-                            <div class="comment-header">
-                                <strong class="comment-author">{{ child.nickname }}</strong>
-                                <div class="comment-actions">
-                                    <button class="btn btn-sm btn-secondary" @click="replyComment(child)">
-                                        回复
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" @click="deleteComment(child.id)">
-                                        删除
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="comment-content" v-html="child.content"></div>
-
-                            <div class="comment-meta">{{ child.info }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 评论表单 -->
-            <form class="comment-form" @submit.prevent="submitComment">
-                <div class="comment-head">
-                    <h4>发表评论</h4>
-
-                    <div class="comment-reply" v-if="replyTo">
-                        <p>
-                            回复 <strong>@{{ replyTo.nickname }}</strong>
-                            <button type="button" class="btn btn-sm btn-danger" @click="cancelReply">
-                                取消回复
-                            </button>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
-                            <input type="text" class="form-control" v-model="nickname" placeholder="昵称" required />
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="form-group">
-                            <input type="url" class="form-control" v-model="website" placeholder="个人网站（可选）" />
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <textarea class="form-control" rows="4" v-model="comment" placeholder="请输入评论内容..."
-                                required></textarea>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">确认发送</button>
-                    </div>
-                </div>
-            </form>
-        </section>
-    </div>
-</template>
 
 <style lang="scss">
 .article-detail {

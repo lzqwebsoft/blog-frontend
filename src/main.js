@@ -6,8 +6,11 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import {
     faEdit, faLock, faCog, faSignOutAlt, faMoon, faSun, faBars,
     faMagnifyingGlass, faGear, faArrowUp, faPenToSquare, faTrash,
-    faCalendarDay, faEye, faCommentDots, faFolder, faLink, faFire, 
-    faAddressCard, faTimes, faAngleRight
+    faCalendarDay, faEye, faCommentDots, faFolder, faLink, faFire,
+    faAddressCard, faTimes, faAngleRight, faBold, faItalic, faUnderline,
+    faListUl, faListOl, faUnlink, faCode, faImage, faStrikethrough,
+    faQuoteLeft, faColumns, faCompress, faExpand, faCircleExclamation,
+    faCircleCheck, faFloppyDisk, faXmark
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -18,7 +21,11 @@ library.add(
     faEdit, faLock, faCog, faSignOutAlt, faMoon,
     faSun, faBars, faMagnifyingGlass, faGear, faArrowUp,
     faPenToSquare, faTrash, faCalendarDay, faEye, faCommentDots,
-    faFolder, faLink, faFire, faAddressCard, faTimes, faAngleRight
+    faFolder, faLink, faFire, faAddressCard, faTimes, faAngleRight,
+    faBold, faItalic, faUnderline, faListUl, faListOl, faUnlink,
+    faCode, faImage, faStrikethrough, faQuoteLeft, faColumns,
+    faCompress, faExpand, faCircleExclamation, faCircleCheck,
+    faFloppyDisk, faXmark
 )
 
 const app = createApp(App)

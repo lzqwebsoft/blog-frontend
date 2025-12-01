@@ -69,7 +69,7 @@ export default {
             showSearchDialog: false,
             searchText: '',
             menuItems: [
-                { title: '发表博客', url: '/article/new.html', icon: 'edit' },
+                { title: '发表博客', url: '/article/new', icon: 'edit' },
                 { title: '修改密码', url: '/changepwd.html', icon: 'lock' },
                 { title: '设&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;置', url: '/set.html', icon: 'cog' },
                 { title: '注&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;销', url: '/singleout.html', icon: 'sign-out-alt' },
