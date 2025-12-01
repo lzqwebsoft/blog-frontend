@@ -25,18 +25,24 @@
                     <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
                 </button>
 
-                <div class="dropdown" ref="dropdownRef">
+                <!-- 已登录：显示下拉菜单 -->
+                <div v-if="isAuthenticated" class="dropdown" ref="dropdownRef">
                     <button class="nav-item" @click="showMenu = !showMenu">
                         <font-awesome-icon icon="gear" class="menu" />
                     </button>
                     <div class="dropdown-content" v-show="showMenu">
-                        <RouterLink v-for="(item, index) in menuItems" :key="index" :to="item.url"
-                            class="dropdown-item">
+                        <RouterLink v-for="(item, index) in menuItems" :key="index" :to="item.url" class="dropdown-item"
+                            @click="handleMenuClick(item)">
                             <font-awesome-icon :icon="item.icon" class="menu-icon" />
                             <span v-html="item.title"></span>
                         </RouterLink>
                     </div>
                 </div>
+
+                <!-- 未登录：显示登录按钮 -->
+                <RouterLink v-else to="/login" class="login-link">
+                    <span class="login-text">登录</span>
+                </RouterLink>
             </div>
         </nav>
     </header>
@@ -57,6 +63,8 @@
 </template>
 
 <script>
+import { isAuthenticated, clearAuthData } from '@/utils/auth'
+
 export default {
     name: 'AppHeader',
     data() {
@@ -68,17 +76,19 @@ export default {
             isDark: false,
             showSearchDialog: false,
             searchText: '',
+            isAuthenticated: false,
             menuItems: [
                 { title: '发表博客', url: '/article/new', icon: 'edit' },
                 { title: '修改密码', url: '/change_pwd', icon: 'lock' },
                 { title: '设&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;置', url: '/set', icon: 'cog' },
-                { title: '注&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;销', url: '/login', icon: 'sign-out-alt' },
+                { title: '注&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;销', url: '/login', icon: 'sign-out-alt', action: 'logout' },
             ],
         }
     },
     mounted() {
         window.addEventListener('scroll', this.handleScroll)
         this.initializeTheme()
+        this.checkAuthStatus()
         document.addEventListener('click', this.handleClickOutside)
     },
     unmounted() {
@@ -92,6 +102,10 @@ export default {
                     this.$refs.searchInput?.focus();
                 });
             }
+        },
+        $route() {
+            // 路由变化时重新检查登录状态
+            this.checkAuthStatus()
         }
     },
     methods: {
@@ -150,6 +164,20 @@ export default {
                 this.showSearchDialog = false;
                 this.searchText = '';
             }
+        },
+        checkAuthStatus() {
+            this.isAuthenticated = isAuthenticated()
+        },
+        handleMenuClick(item) {
+            if (item.action === 'logout') {
+                this.handleLogout()
+            }
+        },
+        handleLogout() {
+            clearAuthData()
+            this.isAuthenticated = false
+            this.showMenu = false
+            this.$router.push('/login')
         },
     },
 }
@@ -402,6 +430,22 @@ export default {
     background: var(--header-bg);
 }
 
+/* 登录链接样式 */
+.login-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.login-text {
+    font-size: 1rem;
+}
+
 @media (max-width: 768px) {
     .nav {
         padding: 0.5rem;
@@ -437,6 +481,10 @@ export default {
 
     .search-button {
         display: block;
+    }
+
+    .login-link {
+        font-size: 0.9rem;
     }
 }
 </style>

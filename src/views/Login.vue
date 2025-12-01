@@ -48,8 +48,8 @@
                         <span class="input-icon">
                             <font-awesome-icon icon="shield-halved" />
                         </span>
-                        <input v-model="formData.validateCode" type="text" class="form-control" placeholder="请输入验证码"
-                            required @focus="clearError('validateCode')" />
+                        <input v-model="formData.captchaCode" type="text" class="form-control" placeholder="请输入验证码"
+                            required @focus="clearError('captchaCode')" />
                     </div>
                     <div class="captcha-display">
                         <div class="captcha-image" @click="refreshCaptcha">
@@ -62,8 +62,7 @@
                             看不清，换一张
                         </button>
                     </div>
-                    <div v-if="fieldErrors.validateCode" class="field-error">{{ fieldErrors.validateCode }}
-                    </div>
+                    <div v-if="fieldErrors.captchaCode" class="field-error">{{ fieldErrors.captchaCode }}</div>
                 </div>
 
                 <!-- 忘记密码链接 -->
@@ -91,61 +90,52 @@
 </template>
 
 <script>
+import { signIn, getCaptcha } from '@/api/user'
+import { saveAuthData } from '@/utils/auth'
+
 export default {
     name: 'LoginView',
     data() {
         return {
-            siteTitle: '博客管理系统',
             formData: {
                 userName: '',
                 password: '',
-                validateCode: ''
+                captchaCode: ''
             },
+            captchaID: '',
+            captchaImageSrc: '',
+            captchaLoading: false,
+            showPassword: false,
+            isSubmitting: false,
+            errorLoginCount: 0,
             fieldErrors: {
                 userName: '',
                 password: '',
-                validateCode: ''
+                captchaCode: ''
             },
-            loginErrors: [],
-            errorLoginCount: 0,
-            showPassword: false,
-            captchaImageSrc: '/api/captcha',
-            captchaLoading: false,
-            isSubmitting: false
+            loginErrors: []
         }
     },
-    created() {
-        // 模拟从后端获取错误登录次数
-        // 实际应用中这里应该从API获取
-        this.fetchErrorLoginCount()
-        this.refreshCaptcha()
+    mounted() {
+        const savedCount = localStorage.getItem('login_error_count')
+        if (savedCount) {
+            this.errorLoginCount = parseInt(savedCount, 10)
+            if (this.errorLoginCount >= 3) {
+                this.refreshCaptcha()
+            }
+        }
     },
     methods: {
-        async fetchErrorLoginCount() {
-            try {
-                // 模拟API调用
-                // const response = await this.$http.get('/api/login/error-count')
-                // this.errorLoginCount = response.data.count || 0
-
-                // 暂时使用模拟数据
-                this.errorLoginCount = 0
-            } catch (error) {
-                console.error('获取登录错误次数失败:', error)
-            }
-        },
-
         async refreshCaptcha() {
             if (this.captchaLoading) return
 
             this.captchaLoading = true
-
             try {
-                // 实际应用中，这里应该调用API获取验证码
-                // 我们使用随机数来模拟不同的验证码图片
-                this.captchaImageSrc = `/api/captcha?t=${Date.now()}`
-
-                // 模拟网络延迟
-                await new Promise(resolve => setTimeout(resolve, 300))
+                const res = await getCaptcha()
+                this.captchaImageSrc = res.data.captcha
+                this.captchaID = res.data.captcha_id
+            } catch (error) {
+                console.error('获取验证码失败:', error)
             } finally {
                 this.captchaLoading = false
             }
@@ -153,7 +143,7 @@ export default {
 
         clearError(fieldName) {
             this.fieldErrors[fieldName] = ''
-            const index = this.loginErrors.findIndex(err => err.includes(fieldName))
+            const index = this.loginErrors.findIndex((err) => err.includes(fieldName))
             if (index !== -1) {
                 this.loginErrors.splice(index, 1)
             }
@@ -162,11 +152,9 @@ export default {
         validateForm() {
             let isValid = true
 
-            // 清空之前的错误
-            this.fieldErrors = { userName: '', password: '', validateCode: '' }
+            this.fieldErrors = { userName: '', password: '', captchaCode: '' }
             this.loginErrors = []
 
-            // 用户名验证
             if (!this.formData.userName.trim()) {
                 this.fieldErrors.userName = '用户名不能为空'
                 this.loginErrors.push('用户名不能为空')
@@ -177,7 +165,6 @@ export default {
                 isValid = false
             }
 
-            // 密码验证
             if (!this.formData.password) {
                 this.fieldErrors.password = '密码不能为空'
                 this.loginErrors.push('密码不能为空')
@@ -188,9 +175,8 @@ export default {
                 isValid = false
             }
 
-            // 如果需要验证码，验证验证码
-            if (this.errorLoginCount >= 3 && !this.formData.validateCode) {
-                this.fieldErrors.validateCode = '验证码不能为空'
+            if (this.errorLoginCount >= 3 && !this.formData.captchaCode) {
+                this.fieldErrors.captchaCode = '验证码不能为空'
                 this.loginErrors.push('验证码不能为空')
                 isValid = false
             }
@@ -199,65 +185,37 @@ export default {
         },
 
         async handleSubmit() {
-            // 表单验证
-            if (!this.validateForm()) {
-                return
-            }
+            if (!this.validateForm()) return
 
             this.isSubmitting = true
+            this.loginErrors = []
 
             try {
-                // 准备提交的数据
                 const loginData = {
                     userName: this.formData.userName,
                     password: this.formData.password
                 }
 
-                // 如果需要验证码，添加验证码到提交数据
                 if (this.errorLoginCount >= 3) {
-                    loginData.validateCode = this.formData.validateCode
+                    loginData.captchaCode = this.formData.captchaCode
+                    loginData.captchaID = this.captchaID
                 }
 
-                // 模拟API调用
-                // const response = await this.$http.post('/api/login', loginData)
+                const res = await signIn(loginData)
 
-                // 模拟网络延迟
-                await new Promise(resolve => setTimeout(resolve, 1500))
+                saveAuthData(res.data)
 
-                // 模拟登录成功
-                // 实际应用中，这里应该处理登录成功逻辑
-                console.log('登录数据:', loginData)
-
-                // 显示成功消息
-                this.$notify({
-                    title: '登录成功',
-                    message: '正在跳转到控制面板...',
-                    type: 'success'
-                })
-
-                // 实际应用中，这里应该跳转到管理页面
-                // this.$router.push('/admin/dashboard')
-
-                // 重置表单
-                this.formData = { userName: '', password: '', validateCode: '' }
                 this.errorLoginCount = 0
+                localStorage.removeItem('login_error_count')
 
-            } catch (err) {
-                // 模拟登录失败
-                console.error('Login error:', err)
+                const redirect = this.$route.query.redirect || '/'
+                this.$router.push(redirect)
+            } catch (error) {
                 this.errorLoginCount++
+                localStorage.setItem('login_error_count', this.errorLoginCount.toString())
 
-                // 显示错误消息
-                this.$notify({
-                    title: '登录失败',
-                    message: '用户名或密码错误，请重试',
-                    type: 'error'
-                })
+                this.loginErrors.push(error.message || '用户名或密码错误，请检查您的登录信息')
 
-                // 添加错误到错误列表
-                this.loginErrors.push('用户名或密码错误，请检查您的登录信息')
-
-                // 刷新验证码（如果错误次数达到3次）
                 if (this.errorLoginCount >= 3) {
                     this.refreshCaptcha()
                 }

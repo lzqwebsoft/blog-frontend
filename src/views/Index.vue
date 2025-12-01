@@ -1,146 +1,52 @@
-<script>
-import ArticleBadge from '../components/ArticleBadge.vue'
-
-export default {
-    components: {
-        ArticleBadge,
-    },
-    data() {
-        return {
-            articles: [
-                {
-                    title: '欢迎造访本博客',
-                    isTop: true,
-                    url: '/show/20130119074245.html',
-                    content:
-                        '2016-03-02更新：本站已转为VPS，Heroku云免费的太慢，收费的太贵~ 本站点是基于Heroku云平台建立的轻巧型个人博客，纯属自娱自乐。 其实在早些时候，就一直有编写一个自己的个人博客的想法，但由于种种原因而搁浅，一方面是由于早些时候个人的技术还不过关,另一方面就是没有找到免费且服务器稳定的空间提供商。直到去年实习学习RUBY的时候在网页上知道了HEROKU这个平台，渐而燃起了希望。 一直有人问我为什么对做博客这样的感兴趣，CSDN，博客园，开源中国等不是提供了现成的了吗？我想说的是，作为一个程序员如果连一个完全属于自己的博客都没有是一件很遗憾的事，那些现成的博客不能正真让你感觉那个博客就是你的，因为出于一些安全考虑会有很多的限制。 最初本来打算使用RUBY来做的，而且也己经做成了一个初步的版本，但由于HEORKU上提供的RAILS框架是3.0以上的，而我学习使用的是2.3...',
-                },
-                {
-                    title: '《被讨厌的勇气》讲了什么',
-                    isTop: false,
-                    url: '/show/20190421031312.html',
-                    content: `最近读了一本书《被讨厌的勇气》，觉得很有必要写一篇读后总结，个人认为其中的一些观点值得被分享。当然了制造这篇文章并不是为了强调它有多么的好或者说它绝对的正确，而只是觉得可以为我们提供另外的一个视角去看待或处理一些小情绪，从而更加全面的思考小情绪的本质。由于每个人的身处环境，积累的经验与知识都不一样，势必形成的认知不同，很难做到让每一个人都认同。但如果有哪本书能够引发部分读者的共鸣，那么它就应该值得被称为一本好书，这本书对于我而言就是这样。特别是根据他的"目地论"来推导我自己的某些想法时，感觉后脊梁会有一身冷汗。废话不多说，言归正传。 打下基调 世界是我们的主观感受 在全书的开头就提出了一个"井水"推论：人并不是住在客观的世界里，而是住在自我营造的主观世界里，即我们看到世界的样子都是我们的主观感受。 提出这个推论的依据是说，井水的温度是恒定的，长年在18度左右，无论谁测都是一样，但是夏天喝到...`,
-                },
-            ],
-            page: 1,
-            totalPages: 4,
-            totalArticles: 51,
-            categories: [
-                { name: '杂谈', num: 10, url: '/select/1' },
-                { name: 'PHP', num: 9, url: '/select/2' },
-                { name: 'Linux', num: 8, url: '/select/3' },
-                { name: 'Java', num: 7, url: '/select/4' },
-                { name: 'JavaScript', num: 6, url: '/select/5' },
-                { name: 'Python', num: 5, url: '/select/6' },
-            ],
-            top10: [
-                {
-                    title: '欢迎访问本博客',
-                    read: '60k+',
-                    url: '/show/20130119074245.html',
-                },
-                {
-                    title: '解决近期heroku push timeout错误',
-                    read: '33k+',
-                    url: '/show/20130119074245.html',
-                },
-                {
-                    title: 'Spring Boot 2.x 新特性',
-                    read: '25k+',
-                    url: '/show/20130119074245.html',
-                },
-                {
-                    title: 'Vue3 迁移指南',
-                    read: '18k+',
-                    url: '/show/20130119074245.html',
-                },
-                {
-                    title: 'Docker 入门实践',
-                    read: '15k+',
-                    url: '/show/20130119074245.html',
-                },
-            ],
-            links: [
-                { path: 'http://blog.csdn.net/lzqwebsoft', name: 'CSDN' },
-                { path: 'https://twitter.com/lzqwebsoft', name: 'Twitter' },
-                { path: 'https://github.com/lzqwebsoft', name: 'GitHub' },
-                { path: 'https://stackoverflow.com/users/lzqwebsoft', name: 'StackOverflow' },
-            ],
-            currentPage: 1,
-            visiblePages: 6,
-            sidebarOpen: false,
-        }
-    },
-    methods: {
-        paginationPages() {
-            const pages = []
-            const start = Math.max(1, this.currentPage - Math.floor(this.visiblePages / 2))
-            const end = Math.min(this.totalPages, start + this.visiblePages - 1)
-
-            for (let i = start; i <= end; i++) {
-                pages.push(i)
-            }
-            return pages
-        },
-        changePage(pageNum) {
-            if (pageNum >= 1 && pageNum <= this.totalPages) {
-                this.currentPage = pageNum
-            }
-        },
-        toggleSidebar() {
-            this.sidebarOpen = !this.sidebarOpen
-        },
-        formatDate(dateString) {
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-    },
-}
-</script>
-
 <template>
     <div class="container">
         <div class="main-content">
             <div class="article-list">
-                <div class="article-card" v-for="(article, index) in articles" :key="index">
+                <div v-if="loading" class="loading-container">
+                    <div class="spinner-large"></div>
+                    <p>加载中...</p>
+                </div>
+
+                <div v-else-if="articles.length === 0" class="empty-container">
+                    <p>暂无文章</p>
+                </div>
+
+                <div v-else class="article-card" v-for="article in articles" :key="article.id">
                     <div class="article-card-header">
                         <h3 class="article-title">
                             <ArticleBadge type="original" />
-                            <RouterLink :to="article.url">{{ article.title }}</RouterLink>
-                            <ArticleBadge v-if="article.isTop" type="top" />
+                            <RouterLink :to="getArticleUrl(article)">{{ article.title }}</RouterLink>
+                            <ArticleBadge v-if="article.is_top" type="top" />
                         </h3>
                         <div class="article-info">
                             <div class="article-info-item">
                                 <font-awesome-icon icon="calendar-day" />
-                                {{ formatDate('2013-01-20 08:42:45') }}
+                                {{ formatDate(article.create_at) }}
                             </div>
                             <div class="article-info-item">
                                 <font-awesome-icon icon="eye" />
-                                11K 阅读
+                                {{ formatReadCount(article.readed_num) }} 阅读
                             </div>
                             <div class="article-info-item">
                                 <font-awesome-icon icon="comment-dots" />
-                                0 评论
+                                {{ article.comment_count || 0 }} 评论
                             </div>
                         </div>
                     </div>
 
                     <div class="article-card-body">
                         <p class="article-excerpt">
-                            {{ article.content }}...
+                            {{ truncateContent(article.content) }}
                         </p>
                     </div>
 
-                    <div class="article-card-footer">
+                    <div v-if="isAuthenticated" class="article-card-footer">
                         <div>
-                            <button class="btn btn-primary">
+                            <button class="btn btn-primary" @click="handleEdit(article)">
                                 <font-awesome-icon icon="pen-to-square" />
                                 编辑
                             </button>
-                            <button class="btn btn-danger" style="margin-left: 0.5rem">
+                            <button class="btn btn-danger" style="margin-left: 0.5rem" @click="handleDelete(article)">
                                 <font-awesome-icon icon="trash" />
                                 删除
                             </button>
@@ -176,22 +82,22 @@ export default {
         <div class="sidebar-backdrop" :class="{ 'backdrop-visible': sidebarOpen }" @click="toggleSidebar"></div>
 
         <div class="sidebar-wrapper" :class="{ 'sidebar-open': sidebarOpen }">
-            <div class="sidebar">
+            <div class="sidebar" v-if="categories.length > 0">
                 <h3><font-awesome-icon icon="folder" class="sidebar-icon" />文章分类</h3>
                 <div class="list-group">
-                    <div class="sidebar-item" v-for="(category, index) in categories" :key="index">
+                    <div class="sidebar-item" v-for="category in categories" :key="category.id">
                         <RouterLink :to="category.url">{{ category.name }}</RouterLink>
                         <span>{{ category.num }}篇</span>
                     </div>
                 </div>
             </div>
 
-            <div class="sidebar">
+            <div class="sidebar" v-if="top10.length > 0">
                 <h3><font-awesome-icon icon="fire" class="sidebar-icon" />阅读排行</h3>
                 <div class="list-group">
-                    <div class="sidebar-item" v-for="(top, index) in top10" :key="index">
-                        <RouterLink :to="top.url">{{ top.title }}</RouterLink>
-                        <span>{{ top.read }}</span>
+                    <div class="sidebar-item" v-for="article in top10" :key="article.id">
+                        <RouterLink :to="article.url">{{ article.title }}</RouterLink>
+                        <span>{{ article.read }}</span>
                     </div>
                 </div>
             </div>
@@ -233,6 +139,147 @@ export default {
         </div>
     </div>
 </template>
+
+<script>
+import ArticleBadge from '../components/ArticleBadge.vue'
+import { getHomeData, deleteArticle } from '@/api/article'
+import { isAuthenticated } from '@/utils/auth'
+
+export default {
+    components: {
+        ArticleBadge,
+    },
+    data() {
+        return {
+            articles: [],
+            categories: [],
+            top10: [],
+            links: [
+                { path: 'http://blog.csdn.net/lzqwebsoft', name: 'CSDN' },
+                { path: 'https://twitter.com/lzqwebsoft', name: 'Twitter' },
+                { path: 'https://github.com/lzqwebsoft', name: 'GitHub' },
+                { path: 'https://stackoverflow.com/users/lzqwebsoft', name: 'StackOverflow' },
+            ],
+            currentPage: 1,
+            totalPages: 1,
+            totalArticles: 0,
+            pageSize: 15,
+            visiblePages: 6,
+            sidebarOpen: false,
+            loading: false,
+            isAuthenticated: false,
+        }
+    },
+    mounted() {
+        this.checkAuthStatus()
+        this.fetchHomeData()
+    },
+    methods: {
+        checkAuthStatus() {
+            this.isAuthenticated = isAuthenticated()
+        },
+        async fetchHomeData() {
+            this.loading = true
+            try {
+                const res = await getHomeData(this.currentPage, this.pageSize)
+                const { articleTypes, page, top10Articles, links } = res.data
+
+                // 处理文章列表
+                this.articles = page.data || []
+                this.currentPage = page.pageNo || 1
+                this.totalArticles = page.totalCount || 0
+                this.totalPages = Math.ceil(this.totalArticles / this.pageSize)
+
+                // 处理分类
+                this.categories = (articleTypes || []).map((type) => ({
+                    name: type.name,
+                    num: 0,
+                    url: `/select/${type.id}`,
+                    id: type.id
+                }))
+
+                // 处理阅读排行
+                this.top10 = (top10Articles || []).map((article) => ({
+                    title: article.title,
+                    read: this.formatReadCount(article.readed_num),
+                    url: `/show/${article.id}.html`,
+                    id: article.id
+                }))
+
+                // 处理相关链接
+                this.links = (links || [
+                    { path: 'http://blog.csdn.net/lzqwebsoft', name: 'CSDN' },
+                    { path: 'https://twitter.com/lzqwebsoft', name: 'Twitter' },
+                    { path: 'https://github.com/lzqwebsoft', name: 'GitHub' },
+                    { path: 'https://stackoverflow.com/users/lzqwebsoft', name: 'StackOverflow' }
+                ]);
+            } catch (error) {
+                console.error('获取首页数据失败:', error)
+            } finally {
+                this.loading = false
+            }
+        },
+        paginationPages() {
+            const pages = []
+            const start = Math.max(1, this.currentPage - Math.floor(this.visiblePages / 2))
+            const end = Math.min(this.totalPages, start + this.visiblePages - 1)
+
+            for (let i = start; i <= end; i++) {
+                pages.push(i)
+            }
+            return pages
+        },
+        changePage(pageNum) {
+            if (pageNum >= 1 && pageNum <= this.totalPages && pageNum !== this.currentPage) {
+                this.currentPage = pageNum
+                this.fetchHomeData()
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+        },
+        toggleSidebar() {
+            this.sidebarOpen = !this.sidebarOpen
+        },
+        formatDate(dateString) {
+            if (!dateString) return ''
+            const date = new Date(dateString)
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            return `${year}-${month}-${day}`
+        },
+        formatReadCount(count) {
+            if (count >= 1000) {
+                return Math.floor(count / 1000) + 'k+'
+            }
+            return count
+        },
+        getArticleUrl(article) {
+            return `/show/${article.id}`
+        },
+        handleEdit(article) {
+            this.$router.push(`/article/edit/${article.id}`)
+        },
+        async handleDelete(article) {
+            if (!confirm(`确定要删除文章《${article.title}》吗？`)) {
+                return
+            }
+
+            try {
+                await deleteArticle(article.id)
+                this.fetchHomeData()
+            } catch (error) {
+                console.error('删除文章失败:', error)
+                alert('删除失败，请重试')
+            }
+        },
+        truncateContent(content, maxLength = 300) {
+            if (!content) return ''
+            if (content.length <= maxLength) return content
+            return content.substring(0, maxLength) + '...'
+        }
+    },
+}
+</script>
 
 <style scoped>
 .article-list {
@@ -428,6 +475,33 @@ export default {
 
 .sidebar-item:last-child {
     border-bottom: none;
+}
+
+/* 加载状态 */
+.loading-container,
+.empty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.spinner-large {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(59, 130, 246, 0.2);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (max-width: 768px) {

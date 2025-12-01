@@ -12,43 +12,56 @@
 
         <!-- 文章主体 -->
         <article class="article">
-            <header class="article-header">
-                <h1 class="article-title">
-                    <ArticleBadge type="original" />
-                    <span>{{ article.title }}</span>
-                    <ArticleBadge type="top" />
-                </h1>
+            <div v-if="loading" class="loading-container">
+                <div class="spinner-large"></div>
+                <p>加载中...</p>
+            </div>
 
-                <div class="article-meta">
-                    <span>发表于：2013-01-20 08:42:45，已有61394次阅读</span>
+            <template v-else>
+                <header class="article-header">
+                    <h1 class="article-title">
+                        <ArticleBadge type="original" />
+                        <span>{{ article.title }}</span>
+                        <ArticleBadge v-if="article.is_top" type="top" />
+                    </h1>
 
-                    <div class="article-actions">
-                        <button class="btn btn-secondary" @click="scrollToComments">评论</button>
-                        <button class="btn btn-primary">编辑</button>
-                        <button class="btn btn-danger">删除</button>
+                    <div class="article-meta">
+                        <span>发表于：{{ formatDateTime(article.create_at) }}，已有{{
+                            formatReadCount(article.readed_num)}}次阅读</span>
+
+                        <div class="article-actions">
+                            <button class="btn btn-secondary" @click="scrollToComments">评论</button>
+                            <button v-if="isAuthenticated" class="btn btn-primary" @click="handleEdit">编辑</button>
+                            <button v-if="isAuthenticated" class="btn btn-danger" @click="handleDelete">删除</button>
+                        </div>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            <div class="article-content" v-html="article.content"></div>
+                <div class="article-content" v-html="article.content"></div>
+            </template>
 
             <!-- 社交分享 -->
             <SNSShares :sns-info="snsInfo" />
 
             <!-- 文章分页 -->
-            <nav class="article-pager">
+            <nav class="article-pager" v-if="!loading">
                 <div style="display: flex; justify-content: space-between; align-items: center">
-                    <button class="btn btn-outline">← 上篇文章</button>
-                    <button class="btn btn-outline">下篇文章 →</button>
+                    <button class="btn btn-outline" @click="navigateToArticle(previousArticle)"
+                        :disabled="!previousArticle">
+                        ← {{ previousArticle ? previousArticle.title : '上篇文章' }}
+                    </button>
+                    <button class="btn btn-outline" @click="navigateToArticle(nextArticle)" :disabled="!nextArticle">
+                        {{ nextArticle ? nextArticle.title : '下篇文章' }} →
+                    </button>
                 </div>
             </nav>
         </article>
 
         <!-- 相关文章 -->
-        <section class="related-articles">
+        <section class="related-articles" v-if="!loading && relatedArticles.length > 0">
             <h3>相关文章</h3>
             <div class="related-articles-list">
-                <div class="related-article-item" v-for="(rltArticle, index) in relatedArticles" :key="index">
+                <div class="related-article-item" v-for="rltArticle in relatedArticles" :key="rltArticle.id">
                     <RouterLink :to="rltArticle.url">{{ rltArticle.title }}</RouterLink>
                     <span class="article-date">({{ rltArticle.createdAt }})</span>
                 </div>
@@ -56,18 +69,22 @@
         </section>
 
         <!-- 评论区域 -->
-        <section class="comments">
-            <h3 class="comment-list-title">网友评论</h3>
+        <section class="comments" v-if="!loading">
+            <h3 class="comment-list-title">网友评论 ({{ article.comment_count || 0 }})</h3>
 
-            <div class="comments-list">
-                <div class="comment" v-for="(item) in comments" :key="item.id">
+            <div class="comments-list" v-if="comments.length > 0">
+                <div class="comment" v-for="item in comments" :key="item.id">
                     <div class="comment-header">
-                        <strong class="comment-author">{{ item.nickname }}</strong>
+                        <strong class="comment-author" :class="{ 'blogger-badge': item.isBlogger }">
+                            {{ item.nickname }}
+                            <span v-if="item.isBlogger" class="badge-text">博主</span>
+                        </strong>
                         <div class="comment-actions">
                             <button class="btn btn-sm btn-secondary" @click="replyComment(item)">
                                 回复
                             </button>
-                            <button class="btn btn-sm btn-danger" @click="deleteComment(item.id)">
+                            <button v-if="isAuthenticated" class="btn btn-sm btn-danger"
+                                @click="deleteComment(item.id)">
                                 删除
                             </button>
                         </div>
@@ -81,12 +98,16 @@
                     <div class="comment-children" v-if="item.children?.length">
                         <div class="comment" v-for="child in item.children" :key="child.id">
                             <div class="comment-header">
-                                <strong class="comment-author">{{ child.nickname }}</strong>
+                                <strong class="comment-author" :class="{ 'blogger-badge': child.isBlogger }">
+                                    {{ child.nickname }}
+                                    <span v-if="child.isBlogger" class="badge-text">博主</span>
+                                </strong>
                                 <div class="comment-actions">
                                     <button class="btn btn-sm btn-secondary" @click="replyComment(child)">
                                         回复
                                     </button>
-                                    <button class="btn btn-sm btn-danger" @click="deleteComment(child.id)">
+                                    <button v-if="isAuthenticated" class="btn btn-sm btn-danger"
+                                        @click="deleteComment(child.id)">
                                         删除
                                     </button>
                                 </div>
@@ -98,6 +119,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div v-else class="empty-comments">
+                <p>暂无评论，快来抢沙发吧~</p>
             </div>
 
             <!-- 评论表单 -->
@@ -196,6 +221,8 @@ import "prismjs/components/prism-yaml.min.js";
 
 import ArticleBadge from '../components/ArticleBadge.vue';
 import SNSShares from '../components/SNSShares.vue';
+import { getArticleDetail, submitComment as submitCommentApi, deleteComment as deleteCommentApi, deleteArticle as deleteArticleApi } from '@/api/article';
+import { isAuthenticated } from '@/utils/auth';
 
 export default {
     components: {
@@ -204,6 +231,8 @@ export default {
     },
     data() {
         return {
+            articleId: '',
+            loading: true,
             breadcrumbs: [
                 {
                     text: '首页',
@@ -211,117 +240,168 @@ export default {
                     to: '/',
                 },
                 {
-                    text: '杂谈',
+                    text: '分类',
                     disabled: false,
-                    to: '/select/1',
+                    to: '/',
                 },
                 {
                     text: '博客正文',
                     disabled: true,
                 },
             ],
-            article: {
-                title: '欢迎造访本博客',
-                content: `
-          <p>
-            <span style="font-size:18px;color:#E53333;"><strong>2016-03-02更新：本站已转为VPS，Heroku云免费的太慢，收费的太贵~</strong></span>
-          </p>
-          <p>本站点是基于<a href="http://www.heroku.com">Heroku</a>云平台建立的轻巧型个人博客，纯属自娱自乐。</p>
-          <p>其实在早些时候，就一直有编写一个自己的个人博客的想法，但由于种种原因而搁浅，一方面是由于早些时候个人的技术还不过关,另一方面就是没有找到免费且服务器稳定的空间提供商。直到去年实习学习RUBY的时候在网页上知道了HEROKU这个平台，渐而燃起了希望。</p>
-          <p>一直有人问我为什么对做博客这样的感兴趣，CSDN，博客园，开源中国等不是提供了现成的了吗？我想说的是，作为一个程序员如果连一个完全属于自己的博客都没有是一件很遗憾的事，那些现成的博客不能正真让你感觉那个博客就是你的，因为出于一些安全考虑会有很多的限制。</p>
-          <p>最初本来打算使用RUBY来做的，而且也己经做成了一个初步的版本，但由于HEORKU上提供的RAILS框架是3.0以上的，而我学习使用的是2.3的(代码在：<a href="https://github.com/lzqwebsoft/websoft-blog">https://github.com/lzqwebsoft/websoft-blog</a>)，这样改动会很大，从而被迫改用版本较稳定的JAVA重做。</p>
-          <p>本博客使用Spring MVC 与 Hibernate编写(<span style="color: rgb(249, 150, 59);">2018-08-20 更新Spring与Hibernate的版本从3至5</span>)，前台使用Bootstrap3.3。并且还整合了优秀的开源网页编辑器wangEditor 3 (html)/<span>SimpleMDE(markdown)</span><span>与代码高亮插件PrismJS 1.14.0，从而实现了代码高亮：</span></p>
-          <pre><code class="language-java">public class Test {
-               public static void main(String[] args) {
-                       System.out.println("Hello Blog!");
-               }
-          }</code></pre>
-          <p>博文的高级编辑功能，如插入图片，字体大小，颜色等：</p>
-          <p><img src="http://lzqwebsoft.net/images/show/20130119083249101b4a824b421f977db6da08581c7d.jpg" title="风景" alt="风景"></p>
-          <p><span style="background-color:#009900;color:#e53333;font-size:24px;">颜色</span></p>
-          <p><input value="点击我" id="aaaa" onclick="click_me()" type="button"></p>
-          <p>当前是本系统的第三个版本，如果你对本应用感兴趣可以到<a href="https://github.com/lzqwebsoft/heroku-blog">https://github.com/lzqwebsoft/heroku-blog</a>下载源码，或直接联系我，让我们一起开发！</p>
-          <p>同时如果你想获取以前的版本请到<a href="https://github.com/lzqwebsoft/heroku-blog/releases">https://github.com/lzqwebsoft/heroku-blog/releases</a>处下载。</p>
-        `,
-            },
+            article: {},
             snsInfo: {},
-            relatedArticles: [
-                {
-                    title: '《被讨厌的勇气》讲了什么',
-                    url: '/show/20130119074245.html',
-                    createdAt: '2019-04-21 15:13:12',
-                },
-                {
-                    title: '2018回顾与感想',
-                    url: '/show/20130119074245.html',
-                    createdAt: '2019-04-21 15:13:12',
-                },
-                {
-                    title: '一株绿萝',
-                    url: '/show/20130119074245.html',
-                    createdAt: '2019-04-21 15:13:12',
-                },
-            ],
+            relatedArticles: [],
+            previousArticle: null,
+            nextArticle: null,
             nickname: '',
             website: '',
             comment: '',
             replyTo: null,
-            comments: [
-                {
-                    id: 1,
-                    nickname: 'Brunch',
-                    content: '添加语音短信触发回调报告日志记录',
-                    info: '来自于：中国上海 发表于：2019-01-04 14:55:21',
-                    children: [
-                        {
-                            id: 2,
-                            nickname: 'Brunch',
-                            content: '添加语音短信触发回调报告日志记录',
-                            info: '来自于：中国上海 发表于：2019-01-04 14:55:21',
-                        },
-                        {
-                            id: 3,
-                            nickname: 'Brunch',
-                            content: '添加语音短信触发回调报告日志记录',
-                            info: '来自于：中国上海 发表于：2019-01-04 14:55:21',
-                        },
-                    ],
-                },
-                {
-                    id: 4,
-                    nickname: 'Summer BBQ',
-                    content: "Wish I could come, but I'm out of town this weekend.",
-                    info: '来自于：中国上海 发表于：2019-01-04 14:55:21',
-                },
-                {
-                    id: 5,
-                    nickname: 'Oui oui',
-                    content: 'Do you have Paris recommendations? Have you ever been?',
-                    info: '来自于：中国上海 发表于：2019-01-04 14:13:21',
-                    children: [
-                        {
-                            id: 6,
-                            nickname: 'Brunch',
-                            content: '添加语音短信触发回调报告日志记录',
-                            info: '来自于：中国上海 发表于：2019-01-04 14:55:21',
-                        },
-                    ],
-                },
-            ],
+            comments: [],
+            isAuthenticated: false,
         }
     },
     mounted() {
-        this.initCodeHighlight();
-        this.initSNSShare();
+        this.checkAuthStatus();
+        this.articleId = this.getArticleIdFromRoute();
+        this.fetchArticleDetail();
     },
     updated() {
-        Prism.highlightAll();
+        this.$nextTick(() => {
+            Prism.highlightAll();
+        });
+    },
+    watch: {
+        $route(to, from) {
+            if (to.params.id !== from.params.id) {
+                this.articleId = this.getArticleIdFromRoute();
+                this.fetchArticleDetail();
+            }
+        }
     },
     methods: {
+        checkAuthStatus() {
+            this.isAuthenticated = isAuthenticated();
+        },
+
+        getArticleIdFromRoute() {
+            const path = this.$route.path;
+            const match = path.match(/\/show\/(\d+)/);
+            return match ? match[1] : '';
+        },
+
+        async fetchArticleDetail() {
+            if (!this.articleId) return;
+
+            this.loading = true;
+            try {
+                const res = await getArticleDetail(this.articleId);
+                const data = res.data;
+
+                this.article = data.article;
+                this.relatedArticles = (data.associates || []).map(item => ({
+                    title: item.title,
+                    url: `/show/${item.id}`,
+                    createdAt: this.formatDate(item.create_at),
+                    id: item.id
+                }));
+
+                this.previousArticle = data.previous;
+                this.nextArticle = data.next;
+
+                // 处理评论
+                this.comments = this.processComments(data.comments || []);
+
+                // 更新面包屑
+                if (data.article.type) {
+                    this.breadcrumbs[1] = {
+                        text: data.article.type.name,
+                        disabled: false,
+                        to: `/select/${data.article.type.id}`,
+                    };
+                }
+
+                this.$nextTick(() => {
+                    this.initCodeHighlight();
+                    this.initSNSShare();
+                });
+            } catch (error) {
+                console.error('获取文章详情失败:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        processComments(comments) {
+            return comments.map(comment => ({
+                id: comment.id,
+                nickname: comment.reviewer,
+                website: comment.website,
+                content: comment.content,
+                info: `来自于：${comment.from_local || '未知'} 发表于：${this.formatDateTime(comment.created_at)}`,
+                isBlogger: comment.is_blogger,
+                children: comment.child_comments ? this.processComments(comment.child_comments) : []
+            }));
+        },
+
+        formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        },
+
+        formatDateTime(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        },
+
+        formatReadCount(count) {
+            if (count >= 1000) {
+                return Math.floor(count / 1000) + 'k+';
+            }
+            return count;
+        },
+
         scrollToComments() {
             document.querySelector('.comment-form')?.scrollIntoView({
                 behavior: 'smooth',
             })
+        },
+
+        handleEdit() {
+            this.$router.push(`/article/edit/${this.articleId}`);
+        },
+
+        async handleDelete() {
+            if (!confirm(`确定要删除文章《${this.article.title}》吗？`)) {
+                return;
+            }
+
+            try {
+                await deleteArticleApi(this.articleId);
+                alert('删除成功');
+                this.$router.push('/');
+            } catch (error) {
+                console.error('删除文章失败:', error);
+                alert('删除失败，请重试');
+            }
+        },
+
+        navigateToArticle(article) {
+            if (article && article.id) {
+                this.$router.push(`/show/${article.id}.html`);
+            }
         },
 
         initCodeHighlight() {
@@ -391,42 +471,66 @@ export default {
             }
         },
 
-        submitComment() {
+        async submitComment() {
             if (!this.nickname.trim()) {
-                alert('请输入昵称')
-                return
+                alert('请输入昵称');
+                return;
             }
             if (!this.comment.trim()) {
-                alert('请输入评论内容')
-                return
+                alert('请输入评论内容');
+                return;
             }
 
-            // 添加新评论逻辑
-            console.log('提交评论:', {
-                nickname: this.nickname,
-                website: this.website,
-                comment: this.comment,
-            })
+            try {
+                const commentData = {
+                    article_id: this.articleId,
+                    reviewer: this.nickname,
+                    website: this.website,
+                    content: this.comment,
+                };
 
-            // 清空表单
-            this.nickname = ''
-            this.website = ''
-            this.comment = ''
-            this.replyTo = null
+                if (this.replyTo) {
+                    commentData.parent_id = this.replyTo.id;
+                }
+
+                await submitCommentApi(commentData);
+                alert('评论提交成功');
+
+                // 重新加载评论
+                this.fetchArticleDetail();
+
+                // 清空表单
+                this.nickname = '';
+                this.website = '';
+                this.comment = '';
+                this.replyTo = null;
+            } catch (error) {
+                console.error('提交评论失败:', error);
+                alert('评论提交失败，请重试');
+            }
         },
 
         replyComment(comment) {
-            this.replyTo = comment
-            this.scrollToComments()
+            this.replyTo = comment;
+            this.scrollToComments();
         },
 
         cancelReply() {
-            this.replyTo = null
+            this.replyTo = null;
         },
 
-        deleteComment(commentId) {
-            if (confirm('确定要删除这条评论吗？')) {
-                console.log('删除评论:', commentId)
+        async deleteComment(commentId) {
+            if (!confirm('确定要删除这条评论吗？')) {
+                return;
+            }
+
+            try {
+                await deleteCommentApi(commentId);
+                alert('删除成功');
+                this.fetchArticleDetail();
+            } catch (error) {
+                console.error('删除评论失败:', error);
+                alert('删除失败，请重试');
             }
         },
     },
@@ -651,6 +755,51 @@ export default {
     margin-top: 1rem;
     border-left: 2px solid var(--border-color);
     padding-left: 1rem;
+}
+
+.blogger-badge {
+    color: var(--primary-color);
+}
+
+.badge-text {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    margin-left: 0.5rem;
+}
+
+.empty-comments {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.spinner-large {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(59, 130, 246, 0.2);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .comment-form {
