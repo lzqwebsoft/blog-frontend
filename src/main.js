@@ -10,7 +10,9 @@ import {
     faAddressCard, faTimes, faAngleRight, faBold, faItalic, faUnderline,
     faListUl, faListOl, faUnlink, faCode, faImage, faStrikethrough,
     faQuoteLeft, faColumns, faCompress, faExpand, faCircleExclamation,
-    faCircleCheck, faFloppyDisk, faXmark
+    faCircleCheck, faFloppyDisk, faXmark, faKey, faShieldHalved, faEyeSlash,
+    faLightbulb, faTriangleExclamation, faSpinner, faUser, faArrowRightToBracket,
+    faPaperPlane, faEnvelope, faArrowLeft
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -25,7 +27,9 @@ library.add(
     faBold, faItalic, faUnderline, faListUl, faListOl, faUnlink,
     faCode, faImage, faStrikethrough, faQuoteLeft, faColumns,
     faCompress, faExpand, faCircleExclamation, faCircleCheck,
-    faFloppyDisk, faXmark
+    faFloppyDisk, faXmark, faKey, faShieldHalved, faEyeSlash,
+    faLightbulb, faTriangleExclamation, faSpinner, faUser,
+    faArrowRightToBracket, faPaperPlane, faEnvelope, faArrowLeft
 )
 
 const app = createApp(App)

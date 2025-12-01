@@ -70,9 +70,9 @@ export default {
             searchText: '',
             menuItems: [
                 { title: '发表博客', url: '/article/new', icon: 'edit' },
-                { title: '修改密码', url: '/changepwd.html', icon: 'lock' },
-                { title: '设&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;置', url: '/set.html', icon: 'cog' },
-                { title: '注&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;销', url: '/singleout.html', icon: 'sign-out-alt' },
+                { title: '修改密码', url: '/change_pwd', icon: 'lock' },
+                { title: '设&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;置', url: '/set', icon: 'cog' },
+                { title: '注&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;销', url: '/login', icon: 'sign-out-alt' },
             ],
         }
     },
