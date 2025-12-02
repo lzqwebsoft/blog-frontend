@@ -46,15 +46,22 @@ export function getArticleDetail(id) {
 
 /**
  * 提交评论
- * @param {Object} data - 评论数据
+ * @param {URLSearchParams} data - 评论数据（x-www-form-urlencoded格式）
  * @param {string} data.article_id - 文章ID
  * @param {string} data.reviewer - 评论者昵称
  * @param {string} data.website - 个人网站
  * @param {string} data.content - 评论内容
- * @param {number} [data.parent_id] - 父评论ID（回复时需要）
+ * @param {string} [data.parent_comment_id] - 父评论ID（回复时需要）
+ * @param {string} [data.root_comment_id] - 根评论ID（回复时需要）
+ * @param {string} [data.captchaCode] - 验证码（非登录用户必填）
+ * @param {string} [data.captchaID] - 验证码ID（非登录用户必填）
  */
 export function submitComment(data) {
-    return request.post('/comment', data)
+    return request.post('/comment/add', data, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
 }
 
 /**

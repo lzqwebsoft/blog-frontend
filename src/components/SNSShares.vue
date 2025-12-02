@@ -223,25 +223,24 @@ export default {
 }
 
 /* 暗黑模式适配 */
-@media (prefers-color-scheme: dark) {
-    .sns-share {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-        border-color: rgba(99, 102, 241, 0.2);
-    }
 
-    .share-btn {
-        background: rgba(30, 30, 30, 0.9);
-    }
+:root.dark-theme .sns-share {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+    border-color: rgba(99, 102, 241, 0.2);
+}
 
-    .share-btn.twitter {
-        border-color: #1da1f2;
-        color: #1da1f2;
-    }
+:root.dark-theme .share-btn {
+    background: rgba(30, 30, 30, 0.9);
+}
 
-    .share-btn.twitter:hover {
-        background: #1da1f2;
-        border-color: #1da1f2;
-    }
+:root.dark-theme .share-btn.twitter {
+    border-color: #1da1f2;
+    color: #1da1f2;
+}
+
+:root.dark-theme .share-btn.twitter:hover {
+    background: #1da1f2;
+    border-color: #1da1f2;
 }
 
 /* 平板适配 */

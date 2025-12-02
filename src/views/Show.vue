@@ -142,13 +142,13 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6" v-if="!isAuthenticated">
                         <div class="form-group">
                             <input type="text" class="form-control" v-model="nickname" placeholder="昵称" required />
                         </div>
                     </div>
 
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-6" v-if="!isAuthenticated">
                         <div class="form-group">
                             <input type="url" class="form-control" v-model="website" placeholder="个人网站（可选）" />
                         </div>
@@ -157,7 +157,16 @@
                     <div class="col-12">
                         <div class="form-group">
                             <textarea class="form-control" rows="4" v-model="comment" placeholder="请输入评论内容..."
-                                required></textarea>
+                                @focus="handleCommentFocus" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-12" v-if="showCaptcha && !isAuthenticated">
+                        <div class="form-group captcha-group">
+                            <input type="text" class="form-control captcha-input" v-model="captchaCode"
+                                placeholder="请输入验证码" required />
+                            <img v-if="captchaImage" :src="captchaImage" alt="验证码" class="captcha-image"
+                                @click="refreshCaptcha" title="点击刷新验证码" />
                         </div>
                     </div>
 
@@ -223,6 +232,7 @@ import "prismjs/components/prism-yaml.min.js";
 import ArticleBadge from '../components/ArticleBadge.vue';
 import SNSShares from '../components/SNSShares.vue';
 import { getArticleDetail, submitComment as submitCommentApi, deleteComment as deleteCommentApi, deleteArticle as deleteArticleApi } from '@/api/article';
+import { getCaptcha } from '@/api/user';
 import { isAuthenticated } from '@/utils/auth';
 import { formatDate, formatDateTime, formatReadCount } from '@/utils/tools';
 
@@ -262,6 +272,10 @@ export default {
             replyTo: null,
             comments: [],
             isAuthenticated: false,
+            captchaImage: '',
+            captchaId: '',
+            captchaCode: '',
+            showCaptcha: false,
         }
     },
     mounted() {
@@ -345,15 +359,59 @@ export default {
         },
 
         processComments(comments) {
-            return comments.map(comment => ({
-                id: comment.id,
-                nickname: comment.reviewer,
-                website: comment.website,
-                content: comment.content,
-                info: `来自于：${comment.from_local || '未知'} 发表于：${formatDateTime(comment.created_at)}`,
-                isBlogger: comment.is_blogger,
-                children: comment.child_comments ? this.processComments(comment.child_comments) : []
-            }));
+            return comments.map(comment => {
+                const processedComment = {
+                    id: comment.id,
+                    nickname: comment.reviewer,
+                    website: comment.website,
+                    content: comment.content,
+                    info: `来自于：${comment.from_local || '未知'} 发表于：${formatDateTime(comment.created_at)}`,
+                    isBlogger: comment.is_blogger,
+                    children: []
+                };
+
+                // 递归处理子评论，将所有层级的子评论扁平化到一层
+                if (comment.child_comments && comment.child_comments.length > 0) {
+                    comment.child_comments.forEach(child => {
+                        const processedChild = {
+                            id: child.id,
+                            nickname: child.reviewer,
+                            website: child.website,
+                            content: child.content,
+                            info: `来自于：${child.from_local || '未知'} 发表于：${formatDateTime(child.created_at)}`,
+                            isBlogger: child.is_blogger
+                        };
+
+                        // 将当前子评论添加到children数组
+                        processedComment.children.push(processedChild);
+
+                        // 如果子评论还有子评论，递归提取并添加到同一层级
+                        if (child.child_comments && child.child_comments.length > 0) {
+                            const flattenChildren = (childComments) => {
+                                childComments.forEach(grandChild => {
+                                    const processedGrandChild = {
+                                        id: grandChild.id,
+                                        nickname: grandChild.reviewer,
+                                        website: grandChild.website,
+                                        content: grandChild.content,
+                                        info: `来自于：${grandChild.from_local || '未知'} 发表于：${formatDateTime(grandChild.created_at)}`,
+                                        isBlogger: grandChild.is_blogger
+                                    };
+                                    processedComment.children.push(processedGrandChild);
+
+                                    // 继续递归处理更深层的子评论
+                                    if (grandChild.child_comments && grandChild.child_comments.length > 0) {
+                                        flattenChildren(grandChild.child_comments);
+                                    }
+                                });
+                            };
+                            flattenChildren(child.child_comments);
+                        }
+                    });
+                }
+
+                return processedComment;
+            });
         },
 
         scrollToComments() {
@@ -454,8 +512,31 @@ export default {
             }
         },
 
+        async handleCommentFocus() {
+            if (!this.isAuthenticated && !this.captchaImage) {
+                await this.loadCaptcha();
+            }
+        },
+
+        async loadCaptcha() {
+            try {
+                const res = await getCaptcha();
+                this.captchaImage = res.data.captcha;
+                this.captchaId = res.data.captcha_id;
+                this.showCaptcha = true;
+            } catch (error) {
+                console.error('获取验证码失败:', error);
+            }
+        },
+
+        async refreshCaptcha() {
+            this.captchaCode = '';
+            await this.loadCaptcha();
+        },
+
         async submitComment() {
-            if (!this.nickname.trim()) {
+            // 验证表单
+            if (!this.isAuthenticated && !this.nickname.trim()) {
                 alert('请输入昵称');
                 return;
             }
@@ -463,33 +544,75 @@ export default {
                 alert('请输入评论内容');
                 return;
             }
+            if (!this.isAuthenticated && this.showCaptcha && !this.captchaCode.trim()) {
+                alert('请输入验证码');
+                return;
+            }
 
             try {
-                const commentData = {
-                    article_id: this.articleId,
-                    reviewer: this.nickname,
-                    website: this.website,
-                    content: this.comment,
-                };
+                // 构建表单数据
+                const formData = new URLSearchParams();
+                formData.append('article_id', this.articleId);
+                formData.append('content', this.comment);
 
-                if (this.replyTo) {
-                    commentData.parent_id = this.replyTo.id;
+                // 非登录用户需要提供昵称和验证码
+                if (!this.isAuthenticated) {
+                    formData.append('reviewer', this.nickname);
+                    if (this.website) {
+                        formData.append('website', this.website);
+                    }
+                    formData.append('captchaCode', this.captchaCode);
+                    formData.append('captchaID', this.captchaId);
                 }
 
-                await submitCommentApi(commentData);
-                alert('评论提交成功');
+                // 处理回复逻辑
+                if (this.replyTo) {
+                    formData.append('parent_comment_id', this.replyTo.id);
+                    // 如果是回复子评论，需要找到根评论ID
+                    // 这里假设顶级评论的parent_comment_id为空或0
+                    // 如果replyTo有parent，说明它是子评论，需要找到根评论
+                    formData.append('root_comment_id', this.replyTo.id);
+                }
 
-                // 重新加载评论
-                this.fetchArticleDetail();
+                const res = await submitCommentApi(formData);
 
-                // 清空表单
-                this.nickname = '';
-                this.website = '';
-                this.comment = '';
-                this.replyTo = null;
+                if (res.code === 0) {
+                    alert('评论提交成功');
+
+                    // 更新评论列表
+                    if (res.data && res.data.comments) {
+                        this.comments = this.processComments(res.data.comments);
+                    } else {
+                        // 如果返回数据中没有评论列表，重新加载文章详情
+                        await this.fetchArticleDetail();
+                    }
+
+                    // 清空表单
+                    this.comment = '';
+                    this.captchaCode = '';
+                    this.replyTo = null;
+
+                    if (!this.isAuthenticated) {
+                        this.nickname = '';
+                        this.website = '';
+                        this.showCaptcha = false;
+                        this.captchaImage = '';
+                        this.captchaId = '';
+                    }
+                } else {
+                    alert(res.message || '评论提交失败，请重试');
+                    // 刷新验证码
+                    if (!this.isAuthenticated) {
+                        await this.refreshCaptcha();
+                    }
+                }
             } catch (error) {
                 console.error('提交评论失败:', error);
-                alert('评论提交失败，请重试');
+                alert(error.response?.data?.message || '评论提交失败，请重试');
+                // 刷新验证码
+                if (!this.isAuthenticated) {
+                    await this.refreshCaptcha();
+                }
             }
         },
 
@@ -500,6 +623,7 @@ export default {
 
         cancelReply() {
             this.replyTo = null;
+            this.comment = '';
         },
 
         async deleteComment(commentId) {
@@ -808,6 +932,29 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.captcha-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.captcha-input {
+    flex: 1;
+    max-width: 200px;
+}
+
+.captcha-image {
+    height: 40px;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    transition: opacity 0.2s;
+}
+
+.captcha-image:hover {
+    opacity: 0.8;
 }
 
 @media (max-width: 768px) {
