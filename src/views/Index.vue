@@ -144,6 +144,7 @@
 import ArticleBadge from '../components/ArticleBadge.vue'
 import { getHomeData, deleteArticle } from '@/api/article'
 import { isAuthenticated } from '@/utils/auth'
+import { formatDate, formatReadCount, truncateContent } from '@/utils/tools'
 
 export default {
     components: {
@@ -175,6 +176,10 @@ export default {
         this.fetchHomeData()
     },
     methods: {
+        formatDate,
+        formatReadCount,
+        truncateContent,
+
         checkAuthStatus() {
             this.isAuthenticated = isAuthenticated()
         },
@@ -201,7 +206,7 @@ export default {
                 // 处理阅读排行
                 this.top10 = (top10Articles || []).map((article) => ({
                     title: article.title,
-                    read: this.formatReadCount(article.readed_num),
+                    read: formatReadCount(article.readed_num),
                     url: `/show/${article.id}.html`,
                     id: article.id
                 }))
@@ -239,20 +244,6 @@ export default {
         toggleSidebar() {
             this.sidebarOpen = !this.sidebarOpen
         },
-        formatDate(dateString) {
-            if (!dateString) return ''
-            const date = new Date(dateString)
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, '0')
-            const day = String(date.getDate()).padStart(2, '0')
-            return `${year}-${month}-${day}`
-        },
-        formatReadCount(count) {
-            if (count >= 1000) {
-                return Math.floor(count / 1000) + 'k+'
-            }
-            return count
-        },
         getArticleUrl(article) {
             return `/show/${article.id}`
         },
@@ -271,11 +262,6 @@ export default {
                 console.error('删除文章失败:', error)
                 alert('删除失败，请重试')
             }
-        },
-        truncateContent(content, maxLength = 300) {
-            if (!content) return ''
-            if (content.length <= maxLength) return content
-            return content.substring(0, maxLength) + '...'
         }
     },
 }

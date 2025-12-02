@@ -27,7 +27,7 @@
 
                     <div class="article-meta">
                         <span>发表于：{{ formatDateTime(article.create_at) }}，已有{{
-                            formatReadCount(article.readed_num)}}次阅读</span>
+                            formatReadCount(article.readed_num) }}次阅读</span>
 
                         <div class="article-actions">
                             <button class="btn btn-secondary" @click="scrollToComments">评论</button>
@@ -38,20 +38,21 @@
                 </header>
 
                 <div class="article-content" v-html="article.content"></div>
-            </template>
 
-            <!-- 社交分享 -->
-            <SNSShares :sns-info="snsInfo" />
+                <!-- 社交分享 -->
+                <SNSShares :sns-info="snsInfo" />
+            </template>
 
             <!-- 文章分页 -->
             <nav class="article-pager" v-if="!loading">
                 <div style="display: flex; justify-content: space-between; align-items: center">
-                    <button class="btn btn-outline" @click="navigateToArticle(previousArticle)"
-                        :disabled="!previousArticle">
-                        ← {{ previousArticle ? previousArticle.title : '上篇文章' }}
+                    <button class="btn btn-outline" v-if="previousArticle" @click="navigateToArticle(previousArticle)">
+                        <font-awesome-icon icon="angle-left" />
+                        {{ previousArticle.title }}
                     </button>
-                    <button class="btn btn-outline" @click="navigateToArticle(nextArticle)" :disabled="!nextArticle">
-                        {{ nextArticle ? nextArticle.title : '下篇文章' }} →
+                    <button class="btn btn-outline" v-if="nextArticle" @click="navigateToArticle(nextArticle)">
+                        {{ nextArticle.title }}
+                        <font-awesome-icon icon="angle-right" />
                     </button>
                 </div>
             </nav>
@@ -223,6 +224,7 @@ import ArticleBadge from '../components/ArticleBadge.vue';
 import SNSShares from '../components/SNSShares.vue';
 import { getArticleDetail, submitComment as submitCommentApi, deleteComment as deleteCommentApi, deleteArticle as deleteArticleApi } from '@/api/article';
 import { isAuthenticated } from '@/utils/auth';
+import { formatDate, formatDateTime, formatReadCount } from '@/utils/tools';
 
 export default {
     components: {
@@ -281,6 +283,10 @@ export default {
         }
     },
     methods: {
+        formatDate,
+        formatDateTime,
+        formatReadCount,
+
         checkAuthStatus() {
             this.isAuthenticated = isAuthenticated();
         },
@@ -299,11 +305,16 @@ export default {
                 const res = await getArticleDetail(this.articleId);
                 const data = res.data;
 
+                // 保存 viewer_uuid 到本地存储
+                if (data.viewer_uuid) {
+                    localStorage.setItem('viewer_uuid', data.viewer_uuid);
+                }
+
                 this.article = data.article;
                 this.relatedArticles = (data.associates || []).map(item => ({
                     title: item.title,
                     url: `/show/${item.id}`,
-                    createdAt: this.formatDate(item.create_at),
+                    createdAt: formatDate(item.create_at),
                     id: item.id
                 }));
 
@@ -339,38 +350,10 @@ export default {
                 nickname: comment.reviewer,
                 website: comment.website,
                 content: comment.content,
-                info: `来自于：${comment.from_local || '未知'} 发表于：${this.formatDateTime(comment.created_at)}`,
+                info: `来自于：${comment.from_local || '未知'} 发表于：${formatDateTime(comment.created_at)}`,
                 isBlogger: comment.is_blogger,
                 children: comment.child_comments ? this.processComments(comment.child_comments) : []
             }));
-        },
-
-        formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        },
-
-        formatDateTime(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            const seconds = String(date.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-        },
-
-        formatReadCount(count) {
-            if (count >= 1000) {
-                return Math.floor(count / 1000) + 'k+';
-            }
-            return count;
         },
 
         scrollToComments() {
@@ -628,6 +611,11 @@ export default {
     padding: 0.2rem 0.4rem;
     border-radius: 3px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+:root.dark-theme .article-content code {
+    background: #1a1a1a;
+    color: #e6e6e6;
 }
 
 .article-content img {
@@ -931,6 +919,13 @@ export default {
     .token.doctype,
     .token.cdata {
         color: slategray;
+    }
+
+    .token.comment {
+        border-width: 0;
+        border-radius: 0;
+        padding: auto;
+        margin-bottom: auto;
     }
 
     .token.punctuation {

@@ -12,14 +12,18 @@ import {
     faQuoteLeft, faColumns, faCompress, faExpand, faCircleExclamation,
     faCircleCheck, faFloppyDisk, faXmark, faKey, faShieldHalved, faEyeSlash,
     faLightbulb, faTriangleExclamation, faSpinner, faUser, faArrowRightToBracket,
-    faPaperPlane, faEnvelope, faArrowLeft
+    faPaperPlane, faEnvelope, faArrowLeft, faCopy, faAngleLeft, faAnglesRight
 } from '@fortawesome/free-solid-svg-icons'
+import {
+    faQq, faXTwitter, faWeibo, faFacebook
+} from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import App from './App.vue'
 import router from './router'
 
 library.add(
+    faQq, faXTwitter, faWeibo, faFacebook,
     faEdit, faLock, faCog, faSignOutAlt, faMoon,
     faSun, faBars, faMagnifyingGlass, faGear, faArrowUp,
     faPenToSquare, faTrash, faCalendarDay, faEye, faCommentDots,
@@ -29,7 +33,8 @@ library.add(
     faCompress, faExpand, faCircleExclamation, faCircleCheck,
     faFloppyDisk, faXmark, faKey, faShieldHalved, faEyeSlash,
     faLightbulb, faTriangleExclamation, faSpinner, faUser,
-    faArrowRightToBracket, faPaperPlane, faEnvelope, faArrowLeft
+    faArrowRightToBracket, faPaperPlane, faEnvelope, faArrowLeft,
+    faCopy, faAngleLeft, faAnglesRight
 )
 
 const app = createApp(App)

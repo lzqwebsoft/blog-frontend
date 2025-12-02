@@ -31,7 +31,17 @@ export function deleteArticle(id) {
  * @param {string} id - 文章ID
  */
 export function getArticleDetail(id) {
-    return request.get(`/article/${id}`)
+    // 从本地存储获取 viewer_uuid
+    const viewerUUID = localStorage.getItem('viewer_uuid')
+
+    const config = {}
+    if (viewerUUID) {
+        config.headers = {
+            'viewer_uuid': viewerUUID
+        }
+    }
+
+    return request.get(`/article/${id}`, config)
 }
 
 /**
