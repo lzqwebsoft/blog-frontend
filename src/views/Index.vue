@@ -14,7 +14,7 @@
                 <div v-else class="article-card" v-for="article in articles" :key="article.id">
                     <div class="article-card-header">
                         <h3 class="article-title">
-                            <ArticleBadge type="original" />
+                            <ArticleBadge :type="getPatternType(article.pattern_type_id)" />
                             <RouterLink :to="getArticleUrl(article)">{{ article.title }}</RouterLink>
                             <ArticleBadge v-if="article.is_top" type="top" />
                         </h3>
@@ -144,7 +144,7 @@
 import ArticleBadge from '../components/ArticleBadge.vue'
 import { getHomeData, deleteArticle } from '@/api/article'
 import { isAuthenticated } from '@/utils/auth'
-import { formatDate, formatReadCount, truncateContent } from '@/utils/tools'
+import { formatDate, formatReadCount, truncateContent, getPatternType } from '@/utils/tools'
 
 export default {
     components: {
@@ -187,6 +187,7 @@ export default {
         formatDate,
         formatReadCount,
         truncateContent,
+        getPatternType,
 
         checkAuthStatus() {
             this.isAuthenticated = isAuthenticated()

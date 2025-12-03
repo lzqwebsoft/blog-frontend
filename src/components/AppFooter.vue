@@ -3,7 +3,7 @@
         <div class="container">
             <p>
                 Powered by <a href="https://vuejs.org" target="_blank">Vue3</a>, Design by
-                <a href="https://twitter.com/lzqwebsoft" target="_blank">-ZQLUO-</a>.
+                <a href="https://github.com/lzqwebsoft" target="_blank">-ZQLUO-</a>.
             </p>
             <p>Copyright &copy; 2012 - 2025</p>
         </div>

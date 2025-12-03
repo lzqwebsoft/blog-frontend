@@ -56,3 +56,16 @@ export function truncateContent(content, maxLength = 300) {
     if (content.length <= maxLength) return content
     return content.substring(0, maxLength) + '...'
 }
+/**
+ * 获取文章类型标识
+ * @param {number} patternTypeId - 文章类型ID (1:原创, 2:转载, 3:翻译)
+ * @returns {string} 类型标识字符串
+ */
+export function getPatternType(patternTypeId) {
+    const typeMap = {
+        1: 'original',
+        2: 'reprint',
+        3: 'translation'
+    }
+    return typeMap[patternTypeId] || 'original'
+}

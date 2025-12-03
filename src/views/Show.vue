@@ -20,7 +20,7 @@
             <template v-else>
                 <header class="article-header">
                     <h1 class="article-title">
-                        <ArticleBadge type="original" />
+                        <ArticleBadge :type="getPatternType(article.pattern_type_id)" />
                         <span>{{ article.title }}</span>
                         <ArticleBadge v-if="article.is_top" type="top" />
                     </h1>
@@ -236,7 +236,7 @@ import SNSShares from '../components/SNSShares.vue';
 import { getArticleDetail, submitComment as submitCommentApi, deleteComment as deleteCommentApi, deleteArticle as deleteArticleApi } from '@/api/article';
 import { getCaptcha } from '@/api/user';
 import { isAuthenticated } from '@/utils/auth';
-import { formatDate, formatDateTime, formatReadCount } from '@/utils/tools';
+import { formatDate, formatDateTime, formatReadCount,getPatternType } from '@/utils/tools';
 
 export default {
     components: {
@@ -302,6 +302,7 @@ export default {
         formatDate,
         formatDateTime,
         formatReadCount,
+        getPatternType,
 
         checkAuthStatus() {
             this.isAuthenticated = isAuthenticated();

@@ -65,7 +65,7 @@ export default {
 
 .badge-info {
     color: #fff;
-    background-color: #17a2b8;
+    background-color: #ffc107;
 }
 
 .badge-danger {
