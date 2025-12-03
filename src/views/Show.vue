@@ -132,12 +132,14 @@
                     <h4>发表评论</h4>
 
                     <div class="comment-reply" v-if="replyTo">
-                        <p>
-                            回复 <strong>@{{ replyTo.nickname }}</strong>
-                            <button type="button" class="btn btn-sm btn-danger" @click="cancelReply">
-                                取消回复
-                            </button>
-                        </p>
+                        <div class="reply-info">
+                            <font-awesome-icon icon="reply" class="reply-icon" />
+                            <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname }}</strong></span>
+                        </div>
+                        <button type="button" class="btn-cancel-reply" @click="cancelReply">
+                            <font-awesome-icon icon="xmark" class="cancel-icon" />
+                            取消回复
+                        </button>
                     </div>
                 </div>
 
@@ -925,13 +927,182 @@ export default {
 }
 
 .comment-reply {
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    background: var(--card-bg);
-    border-radius: 4px;
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 51, 234, 0.08) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-left: 4px solid #3b82f6;
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    animation: slideDown 0.3s ease-out;
+}
+
+.comment-reply:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 51, 234, 0.12) 100%);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reply-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.reply-icon {
+    width: 20px;
+    height: 20px;
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.reply-text {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.reply-nickname {
+    color: #3b82f6;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.btn-cancel-reply {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-cancel-reply:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.btn-cancel-reply:active {
+    transform: translateY(0);
+}
+
+.cancel-icon {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2.5;
+}
+
+/* 暗黑模式适配 */
+:root.dark-theme .comment-reply {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 51, 234, 0.12) 100%);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+:root.dark-theme .comment-reply:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(147, 51, 234, 0.18) 100%);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+:root.dark-theme .reply-text {
+    color: #e5e7eb;
+}
+
+:root.dark-theme .reply-nickname {
+    color: #60a5fa;
+}
+
+:root.dark-theme .btn-cancel-reply {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+:root.dark-theme .btn-cancel-reply:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.6);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* 响应式设计 - 平板 */
+@media (max-width: 768px) {
+    .comment-reply {
+        padding: 0.875rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .reply-text {
+        font-size: 0.9rem;
+    }
+
+    .btn-cancel-reply {
+        padding: 0.45rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+}
+
+/* 响应式设计 - 手机 */
+@media (max-width: 480px) {
+    .comment-reply {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .reply-info {
+        width: 100%;
+    }
+
+    .reply-text {
+        font-size: 0.875rem;
+    }
+
+    .btn-cancel-reply {
+        width: 100%;
+        justify-content: center;
+        padding: 0.5rem;
+    }
+
+    .reply-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .cancel-icon {
+        width: 14px;
+        height: 14px;
+    }
 }
 
 .captcha-group {

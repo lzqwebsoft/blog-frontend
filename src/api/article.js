@@ -8,13 +8,20 @@ import request from '@/utils/request'
  * 获取首页数据
  * @param {number} pageNo - 页码
  * @param {number} pageSize - 每页数量
+ * @param {string} categoryId - 分类ID（可选）
  */
-export function getHomeData(pageNo = 1, pageSize = 15) {
+export function getHomeData(pageNo = 1, pageSize = 15, categoryId = null) {
+    const params = {
+        pageNo,
+        pageSize
+    }
+
+    if (categoryId) {
+        params.typeId = categoryId
+    }
+
     return request.get('/home', {
-        params: {
-            pageNo,
-            pageSize
-        }
+        params
     })
 }
 
@@ -69,5 +76,5 @@ export function submitComment(data) {
  * @param {number} id - 评论ID
  */
 export function deleteComment(id) {
-    return request.delete(`/comment/${id}`)
+    return request.delete(`/comment/delete/${id}`)
 }

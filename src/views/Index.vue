@@ -175,6 +175,14 @@ export default {
         this.checkAuthStatus()
         this.fetchHomeData()
     },
+    watch: {
+        '$route.params.categoryId': {
+            handler() {
+                this.currentPage = 1
+                this.fetchHomeData()
+            }
+        }
+    },
     methods: {
         formatDate,
         formatReadCount,
@@ -186,7 +194,8 @@ export default {
         async fetchHomeData() {
             this.loading = true
             try {
-                const res = await getHomeData(this.currentPage, this.pageSize)
+                const categoryId = this.$route.params.categoryId || null
+                const res = await getHomeData(this.currentPage, this.pageSize, categoryId)
                 const { articleTypes, page, top10Articles, links } = res.data
 
                 // 处理文章列表
@@ -198,7 +207,7 @@ export default {
                 // 处理分类
                 this.categories = (articleTypes || []).map((type) => ({
                     name: type.name,
-                    num: 0,
+                    num: type.article_count,
                     url: `/select/${type.id}`,
                     id: type.id
                 }))
