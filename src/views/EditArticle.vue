@@ -52,7 +52,7 @@
                 <label for="article_title">标题</label>
                 <div class="input-group">
                     <select v-model="form.patternTypeId" class="form-control pattern-select">
-                        <option value="0">类型</option>
+                        <option value="-1">类型</option>
                         <option v-for="pattern in patterns" :key="pattern.id" :value="pattern.id">
                             {{ pattern.name }}
                         </option>
@@ -67,11 +67,11 @@
                 <label for="article_content">博客内容</label>
                 <!-- 富文本编辑器 -->
                 <div v-if="!useMarkdown" class="rich-text-editor-wrapper">
-                    <RichTextEditor v-model="form.content" :height="400" />
+                    <RichTextEditor v-model="form.content" :height="500" />
                 </div>
                 <!-- Markdown编辑器 -->
                 <div v-else class="markdown-editor-wrapper">
-                    <MarkdownEditor v-model="form.content" :height="500" />
+                    <MarkdownEditor v-model="form.contentMD" :height="500" />
                 </div>
             </div>
 
@@ -139,6 +139,7 @@
 <script>
 import RichTextEditor from '@/components/RichTextEditor.vue'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
+import { getArticleTypes, saveArticle, getArticleDetail } from '@/api/article'
 
 export default {
     name: 'EditArticle',
@@ -149,7 +150,7 @@ export default {
     data() {
         return {
             isEdit: false,
-            useMarkdown: false,
+            useMarkdown: true,
             showNewType: false,
             submitting: false,
             errorMessage: '',
@@ -162,26 +163,21 @@ export default {
                 id: '',
                 title: '',
                 content: '',
-                patternTypeId: '0',
+                contentMD: '',
+                patternTypeId: 1,
                 typeId: '0',
                 codeTheme: 'default',
                 allowComment: true,
                 isTop: false,
                 readedNum: 0,
-                contentType: 'html'
+                contentType: 1
             },
-            // 模拟数据 - 实际项目中应该从API获取
             patterns: [
-                { id: '1', name: '原创' },
-                { id: '2', name: '转载' },
-                { id: '3', name: '翻译' }
+                { id: 1, name: '原创' },
+                { id: 2, name: '转载' },
+                { id: 3, name: '翻译' }
             ],
-            articleTypes: [
-                { id: '1', name: '前端开发' },
-                { id: '2', name: '后端开发' },
-                { id: '3', name: '数据库' },
-                { id: '4', name: '运维部署' }
-            ],
+            articleTypes: [],
             codeThemes: [
                 { id: 'default', name: '默认主题' },
                 { id: 'dark', name: '暗黑主题' },
@@ -190,6 +186,7 @@ export default {
         }
     },
     mounted() {
+        this.loadArticleTypes()
         this.initializePage()
     },
 
@@ -200,6 +197,15 @@ export default {
         }
     },
     methods: {
+        async loadArticleTypes() {
+            try {
+                const res = await getArticleTypes()
+                this.articleTypes = (res.data || []).map((item) => ({ id: String(item.id), name: item.name }))
+            } catch (error) {
+                console.error('加载文章分类失败:', error)
+                this.errorMessage = '加载文章分类失败'
+            }
+        },
         initializePage() {
             // 判断是编辑还是新建
             const articleId = this.$route.params.id
@@ -217,16 +223,24 @@ export default {
             this.startAutoSave()
         },
 
-        loadArticleData(articleId) {
-            // 模拟加载文章数据
-            // 实际项目中应该调用API
-            console.log('加载文章数据:', articleId)
-            // 这里可以设置表单的初始值
-            this.form.id = articleId
-            this.form.title = '示例文章标题'
-            this.form.content = '这是示例文章内容...'
-            this.form.patternTypeId = '1'
-            this.form.typeId = '1'
+        async loadArticleData(articleId) {
+            try {
+                const res = await getArticleDetail(articleId)
+                const art = res.data && res.data.article ? res.data.article : null
+                if (!art) return
+                this.form.id = String(art.id || articleId)
+                this.form.title = art.title || ''
+                const ct = (art.content_type ?? art.contentType ?? (art.contentMD ? 1 : 0))
+                this.form.contentType = Number(ct)
+                this.useMarkdown = this.form.contentType === 1
+                this.form.contentMD = art.content_md ?? art.contentMD ?? ''
+                this.form.content = art.content ?? ''
+                this.form.patternTypeId = Number(art.pattern_type_id ?? art.patternTypeId ?? 1)
+                this.form.typeId = String((art.type && art.type.id) ? art.type.id : '0')
+            } catch (error) {
+                console.error('加载文章失败:', error)
+                this.errorMessage = '加载文章失败'
+            }
         },
 
         loadDraft() {
@@ -237,7 +251,8 @@ export default {
                     const draftData = JSON.parse(draft)
                     this.form.title = draftData.title || ''
                     this.form.content = draftData.content || ''
-                    this.form.patternTypeId = draftData.patternTypeId || '0'
+                    this.form.contentMD = draftData.contentMD || ''
+                    this.form.patternTypeId = draftData.patternTypeId || 1
                     this.form.typeId = draftData.typeId || '0'
                     this.lastSavedTime = draftData.savedAt || null
                     console.log('已加载草稿')
@@ -260,6 +275,7 @@ export default {
                 const draftData = {
                     title: this.form.title,
                     content: this.form.content,
+                    contentMD: this.form.contentMD,
                     patternTypeId: this.form.patternTypeId,
                     typeId: this.form.typeId,
                     savedAt: new Date().toISOString()
@@ -277,8 +293,7 @@ export default {
 
         toggleEditorMode() {
             this.useMarkdown = !this.useMarkdown
-            // 切换时更新contentType
-            this.form.contentType = this.useMarkdown ? 'markdown' : 'html'
+            this.form.contentType = this.useMarkdown ? 1 : 0
         },
 
         toggleNewType() {
@@ -309,14 +324,26 @@ export default {
             }
 
             // 验证内容
-            if (!this.form.content.trim()) {
-                this.errorMessage = '请输入文章内容'
-                return false
-            }
+            if (this.form.contentType === 1) {
+                if (!this.form.contentMD.trim()) {
+                    this.errorMessage = '请输入文章内容'
+                    return false
+                }
 
-            if (this.form.content.trim().length < 10) {
-                this.errorMessage = '文章内容至少需要10个字符'
-                return false
+                if (this.form.contentMD.trim().length < 10) {
+                    this.errorMessage = '文章内容至少需要10个字符'
+                    return false
+                }
+            } else {
+                if (!this.form.content.trim()) {
+                    this.errorMessage = '请输入文章内容'
+                    return false
+                }
+
+                if (this.form.content.trim().length < 10) {
+                    this.errorMessage = '文章内容至少需要10个字符'
+                    return false
+                }
             }
 
             // 验证文章模式
@@ -353,86 +380,86 @@ export default {
             if (!this.validateForm()) {
                 return
             }
-
             this.submitting = true
             this.errorMessage = ''
-
             try {
-                // 准备提交数据
-                const submitData = {
-                    ...this.form,
-                    isTop: this.form.isTop || false,
-                    readedNum: this.form.readedNum || 0,
-                    contentType: this.form.contentType || 'html'
+                const params = new URLSearchParams()
+                if (this.form.id) params.append('id', String(this.form.id))
+                params.append('title', this.form.title)
+                const ct = Number(this.form.contentType)
+                params.append('contentType', String(ct))
+                if (ct === 1) {
+                    params.append('contentMD', this.form.contentMD)
+                } else {
+                    params.append('content', this.form.content)
                 }
-
-                // 如果是新建分类
-                if (this.showNewType && this.newTypeName.trim()) {
-                    submitData.newTypeName = this.newTypeName.trim()
+                params.append('allowComment', this.form.allowComment ? 'true' : 'false')
+                params.append('patternTypeId', String(this.form.patternTypeId))
+                if (this.form.codeTheme) params.append('codeTheme', this.form.codeTheme)
+                const typeModel = this.showNewType ? 1 : 0
+                params.append('type_model', String(typeModel))
+                if (typeModel === 0) {
+                    params.append('typeID', String(this.form.typeId))
+                } else {
+                    params.append('new_type', this.newTypeName.trim())
                 }
-
-                // 模拟API调用
-                console.log('提交文章数据:', submitData)
-
-                // 这里应该调用实际的API
-                // await this.$api.article.publish(submitData)
-
+                params.append('publish', '1')
+                const res = await saveArticle(params)
+                const newId = res.data ? res.data : this.form.id
                 this.successMessage = this.isEdit ? '文章更新成功！' : '文章发表成功！'
-
-                // 成功后跳转到文章详情页
                 setTimeout(() => {
-                    this.$router.push('/')
-                }, 2000)
-
+                    if (newId) {
+                        this.$router.push(`/show/${newId}`)
+                    } else {
+                        this.$router.push('/')
+                    }
+                }, 1000)
             } catch (error) {
-                this.errorMessage = '提交失败，请稍后重试'
                 console.error('提交文章失败:', error)
+                this.errorMessage = '提交失败，请稍后重试'
             } finally {
                 this.submitting = false
             }
         },
 
         async saveAsDraft() {
-            if (!this.form.title.trim() && !this.form.content.trim()) {
+            if (!this.form.title.trim() && !this.form.content.trim() && !this.form.contentMD.trim()) {
                 this.errorMessage = '请输入标题或内容以保存草稿'
                 return
             }
-
             this.submitting = true
             this.errorMessage = ''
-
             try {
-                const draftData = {
-                    ...this.form,
-                    status: 'draft'
+                const params = new URLSearchParams()
+                if (this.form.id) params.append('id', String(this.form.id))
+                params.append('title', this.form.title)
+                const ct = Number(this.form.contentType)
+                params.append('contentType', String(ct))
+                if (ct === 1) {
+                    params.append('contentMD', this.form.contentMD)
+                } else {
+                    params.append('content', this.form.content)
                 }
-
-                // 模拟保存草稿API调用
-                console.log('保存草稿:', draftData)
-
-                // await this.$api.article.saveDraft(draftData)
-
+                params.append('allowComment', this.form.allowComment ? 'true' : 'false')
+                params.append('patternTypeId', String(this.form.patternTypeId))
+                if (this.form.codeTheme) params.append('codeTheme', this.form.codeTheme)
+                const typeModel = this.showNewType ? 1 : 0
+                params.append('type_model', String(typeModel))
+                if (typeModel === 0) {
+                    params.append('typeID', String(this.form.typeId))
+                } else {
+                    params.append('new_type', this.newTypeName.trim())
+                }
+                const res = await saveArticle(params)
+                const id = res.data && res.data.id ? String(res.data.id) : ''
+                if (id) this.form.id = id
                 this.successMessage = '草稿保存成功！'
-
             } catch (error) {
-                this.errorMessage = '保存草稿失败，请稍后重试'
                 console.error('保存草稿失败:', error)
+                this.errorMessage = '保存草稿失败，请稍后重试'
             } finally {
                 this.submitting = false
             }
-        },
-
-        formatTime(timestamp) {
-            if (!timestamp) return ''
-            const date = new Date(timestamp)
-            return date.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            })
         }
     }
 }

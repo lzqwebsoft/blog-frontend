@@ -29,12 +29,12 @@ const router = createRouter({
             component: Index,
         },
         {
-            path: '/article/new',
+            path: '/new',
             name: 'article-new',
             component: EditArticle,
         },
         {
-            path: '/article/edit/:id',
+            path: '/edit/:id',
             name: 'article-edit',
             component: EditArticle,
         },

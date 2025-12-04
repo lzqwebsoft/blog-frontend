@@ -139,7 +139,7 @@
                         <div class="reply-info">
                             <font-awesome-icon icon="reply" class="reply-icon" />
                             <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname
-                                    }}</strong></span>
+                            }}</strong></span>
                         </div>
                         <button type="button" class="btn-cancel-reply" @click="cancelReply">
                             <font-awesome-icon icon="xmark" class="cancel-icon" />
@@ -429,7 +429,7 @@ export default {
         },
 
         handleEdit() {
-            this.$router.push(`/article/edit/${this.articleId}`);
+            this.$router.push(`/edit/${this.articleId}`);
         },
 
         async handleDelete() {

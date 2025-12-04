@@ -78,3 +78,31 @@ export function submitComment(data) {
 export function deleteComment(id) {
     return request.delete(`/comment/delete/${id}`)
 }
+
+/**
+ * 获取文章分类列表
+ * @returns {Promise} - 文章分类列表
+ */
+export function getArticleTypes() {
+    return request.get('/article_type/list')
+}
+
+/**
+ * 保存文章
+ * @param {URLSearchParams} data - 文章数据（x-www-form-urlencoded格式）
+ * @param {string} data.title - 文章标题
+ * @param {string} data.content - 文章内容
+ * @param {string} data.typeId - 文章分类ID
+ * @param {string} data.codeTheme - 代码主题
+ * @param {boolean} data.allowComment - 是否允许评论
+ * @param {boolean} data.isTop - 是否置顶
+ * @param {number} data.readedNum - 阅读量
+ * @param {number} data.contentType - 内容类型（1:Markdown, 2:HTML）
+ */
+export function saveArticle(data) {
+    return request.post('/article/save', data, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+}

@@ -258,7 +258,7 @@ export default {
             return `/show/${article.id}`
         },
         handleEdit(article) {
-            this.$router.push(`/article/edit/${article.id}`)
+            this.$router.push(`/edit/${article.id}`)
         },
         async handleDelete(article) {
             if (!confirm(`确定要删除文章《${article.title}》吗？`)) {

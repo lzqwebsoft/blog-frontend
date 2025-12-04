@@ -52,8 +52,12 @@ async function refreshToken() {
         throw new Error('Refresh token expired')
     }
 
-    const response = await axios.post('/api/user/refreshToken', {
+    const response = await axios.post('/token/refresh', {
         refresh_token
+    }, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
     })
 
     if (response.data.code === 0) {
@@ -67,7 +71,7 @@ async function refreshToken() {
 request.interceptors.request.use(
     async (config) => {
         // 不需要 token 的接口
-        const noAuthUrls = ['/user/signIn', '/captcha', '/user/refreshToken']
+        const noAuthUrls = ['/user/signIn', '/captcha', '/token/refresh']
         if (noAuthUrls.some((url) => config.url.includes(url))) {
             return config
         }
