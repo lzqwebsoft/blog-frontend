@@ -319,6 +319,11 @@ export default {
     opacity: 0.7;
 }
 
+input.form-control:focus {
+    outline: none;
+    box-shadow: none;
+}
+
 .password-toggle {
     display: flex;
     align-items: center;

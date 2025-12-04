@@ -252,6 +252,11 @@ export default {
     opacity: 0.7;
 }
 
+input.form-control:focus {
+    outline: none;
+    box-shadow: none;
+}
+
 .field-error {
     color: #f44336;
     font-size: 13px;

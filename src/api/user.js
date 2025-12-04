@@ -27,6 +27,13 @@ export function signIn(data) {
 }
 
 /**
+ * 用户注销
+ */
+export function signOut() {
+    return request.get('/user/signOut')
+}
+
+/**
  * 获取图片验证码
  * @returns {Promise<{captcha: string, captcha_id: string}>}
  */

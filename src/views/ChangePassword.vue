@@ -37,21 +37,10 @@
                 <div class="form-group">
                     <label for="password">当前密码</label>
                     <div class="input-wrapper">
-                        <input
-                            :type="showPassword ? 'text' : 'password'"
-                            v-model="form.password"
-                            id="password"
-                            class="form-control"
-                            placeholder="请输入当前密码"
-                            required
-                            autofocus
-                        />
-                        <button
-                            type="button"
-                            class="toggle-password"
-                            @click="showPassword = !showPassword"
-                            tabindex="-1"
-                        >
+                        <input :type="showPassword ? 'text' : 'password'" v-model="form.password" id="password"
+                            class="form-control" placeholder="请输入当前密码" required autofocus />
+                        <button type="button" class="toggle-password" @click="showPassword = !showPassword"
+                            tabindex="-1">
                             <font-awesome-icon :icon="showPassword ? 'eye-slash' : 'eye'" />
                         </button>
                     </div>
@@ -60,30 +49,17 @@
                 <div class="form-group">
                     <label for="newPassword">新密码</label>
                     <div class="input-wrapper">
-                        <input
-                            :type="showNewPassword ? 'text' : 'password'"
-                            v-model="form.newPassword"
-                            id="newPassword"
-                            class="form-control"
-                            placeholder="请输入新密码（至少6位）"
-                            required
-                        />
-                        <button
-                            type="button"
-                            class="toggle-password"
-                            @click="showNewPassword = !showNewPassword"
-                            tabindex="-1"
-                        >
+                        <input :type="showNewPassword ? 'text' : 'password'" v-model="form.newPassword" id="newPassword"
+                            class="form-control" placeholder="请输入新密码（至少6位）" required />
+                        <button type="button" class="toggle-password" @click="showNewPassword = !showNewPassword"
+                            tabindex="-1">
                             <font-awesome-icon :icon="showNewPassword ? 'eye-slash' : 'eye'" />
                         </button>
                     </div>
                     <div class="password-strength" v-if="form.newPassword">
                         <div class="strength-bar">
-                            <div
-                                class="strength-fill"
-                                :class="passwordStrength.level"
-                                :style="{ width: passwordStrength.width }"
-                            ></div>
+                            <div class="strength-fill" :class="passwordStrength.level"
+                                :style="{ width: passwordStrength.width }"></div>
                         </div>
                         <span class="strength-text" :class="passwordStrength.level">
                             {{ passwordStrength.text }}
@@ -94,28 +70,20 @@
                 <div class="form-group">
                     <label for="confirmPassword">确认新密码</label>
                     <div class="input-wrapper">
-                        <input
-                            :type="showConfirmPassword ? 'text' : 'password'"
-                            v-model="form.confirmPassword"
-                            id="confirmPassword"
-                            class="form-control"
-                            placeholder="请再次输入新密码"
-                            required
-                        />
-                        <button
-                            type="button"
-                            class="toggle-password"
-                            @click="showConfirmPassword = !showConfirmPassword"
-                            tabindex="-1"
-                        >
+                        <input :type="showConfirmPassword ? 'text' : 'password'" v-model="form.confirmPassword"
+                            id="confirmPassword" class="form-control" placeholder="请再次输入新密码" required />
+                        <button type="button" class="toggle-password"
+                            @click="showConfirmPassword = !showConfirmPassword" tabindex="-1">
                             <font-awesome-icon :icon="showConfirmPassword ? 'eye-slash' : 'eye'" />
                         </button>
                     </div>
-                    <div v-if="form.confirmPassword && form.newPassword !== form.confirmPassword" class="field-hint error">
+                    <div v-if="form.confirmPassword && form.newPassword !== form.confirmPassword"
+                        class="field-hint error">
                         <font-awesome-icon icon="triangle-exclamation" />
                         两次输入的密码不一致
                     </div>
-                    <div v-else-if="form.confirmPassword && form.newPassword === form.confirmPassword" class="field-hint success">
+                    <div v-else-if="form.confirmPassword && form.newPassword === form.confirmPassword"
+                        class="field-hint success">
                         <font-awesome-icon icon="circle-check" />
                         密码匹配
                     </div>
@@ -633,6 +601,7 @@ export default {
         transform: translateY(-10px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -664,6 +633,7 @@ export default {
 }
 
 @media (max-width: 480px) {
+
     .password-card,
     .security-tips {
         padding: 1.25rem;

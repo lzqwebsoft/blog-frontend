@@ -11,7 +11,7 @@ import {
     faListUl, faListOl, faUnlink, faCode, faImage, faStrikethrough,
     faQuoteLeft, faColumns, faCompress, faExpand, faCircleExclamation,
     faCircleCheck, faFloppyDisk, faXmark, faKey, faShieldHalved, faEyeSlash,
-    faLightbulb, faTriangleExclamation, faSpinner, faUser, faArrowRightToBracket,
+    faLightbulb, faTriangleExclamation, faSpinner, faUser, faRightToBracket,
     faPaperPlane, faEnvelope, faArrowLeft, faCopy, faAngleLeft, faAnglesRight,
     faReply
 } from '@fortawesome/free-solid-svg-icons'
@@ -34,7 +34,7 @@ library.add(
     faCompress, faExpand, faCircleExclamation, faCircleCheck,
     faFloppyDisk, faXmark, faKey, faShieldHalved, faEyeSlash,
     faLightbulb, faTriangleExclamation, faSpinner, faUser,
-    faArrowRightToBracket, faPaperPlane, faEnvelope, faArrowLeft,
+    faRightToBracket, faPaperPlane, faEnvelope, faArrowLeft,
     faCopy, faAngleLeft, faAnglesRight, faReply
 )
 

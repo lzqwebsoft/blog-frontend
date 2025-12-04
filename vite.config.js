@@ -31,6 +31,7 @@ export default defineConfig({
     },
     // 设置100ms轮询间隔
     server: {
+        host: "0.0.0.0",
         port: 8000,
         hmr: {
             overlay: false,

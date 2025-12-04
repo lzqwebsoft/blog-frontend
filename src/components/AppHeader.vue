@@ -40,9 +40,9 @@
                 </div>
 
                 <!-- 未登录：显示登录按钮 -->
-                <RouterLink v-else to="/login" class="login-link">
-                    <span class="login-text">登录</span>
-                </RouterLink>
+                <button v-else @click="$router.push('/login')" class="nav-item" title="博主登录">
+                    <font-awesome-icon icon="right-to-bracket" />
+                </button>
             </div>
         </nav>
     </header>
@@ -63,6 +63,7 @@
 </template>
 
 <script>
+import { signOut } from '@/api/user'
 import { isAuthenticated, clearAuthData } from '@/utils/auth'
 
 export default {
@@ -173,11 +174,17 @@ export default {
                 this.handleLogout()
             }
         },
-        handleLogout() {
-            clearAuthData()
-            this.isAuthenticated = false
-            this.showMenu = false
-            this.$router.push('/login')
+        async handleLogout() {
+            try {
+                await signOut()
+            } catch (error) {
+                console.error('用户注销失败:', error)
+            } finally {
+                clearAuthData()
+                this.isAuthenticated = false
+                this.showMenu = false
+                this.$router.push('/login')
+            }
         },
     },
 }
@@ -430,22 +437,6 @@ export default {
     background: var(--header-bg);
 }
 
-/* 登录链接样式 */
-.login-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text-color);
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.login-text {
-    font-size: 1rem;
-}
-
 @media (max-width: 768px) {
     .nav {
         padding: 0.5rem;
@@ -481,10 +472,6 @@ export default {
 
     .search-button {
         display: block;
-    }
-
-    .login-link {
-        font-size: 0.9rem;
     }
 }
 </style>

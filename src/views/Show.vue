@@ -3,10 +3,14 @@
         <!-- 面包屑导航 -->
         <nav class="breadcrumbs">
             <div class="breadcrumb">
-                <RouterLink v-for="(item, index) in breadcrumbs" :key="index" :to="item.to"
-                    :class="{ disabled: item.disabled }">
-                    {{ item.text }}
-                </RouterLink>
+                <template v-for="(item, index) in breadcrumbs" :key="index">
+                    <RouterLink v-if="item.to" :to="item.to" :class="{ disabled: item.disabled }">
+                        {{ item.text }}
+                    </RouterLink>
+                    <span v-else :class="{ disabled: item.disabled }">
+                        {{ item.text }}
+                    </span>
+                </template>
             </div>
         </nav>
 
@@ -134,7 +138,8 @@
                     <div class="comment-reply" v-if="replyTo">
                         <div class="reply-info">
                             <font-awesome-icon icon="reply" class="reply-icon" />
-                            <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname }}</strong></span>
+                            <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname
+                                    }}</strong></span>
                         </div>
                         <button type="button" class="btn-cancel-reply" @click="cancelReply">
                             <font-awesome-icon icon="xmark" class="cancel-icon" />
@@ -236,7 +241,7 @@ import SNSShares from '../components/SNSShares.vue';
 import { getArticleDetail, submitComment as submitCommentApi, deleteComment as deleteCommentApi, deleteArticle as deleteArticleApi } from '@/api/article';
 import { getCaptcha } from '@/api/user';
 import { isAuthenticated } from '@/utils/auth';
-import { formatDate, formatDateTime, formatReadCount,getPatternType } from '@/utils/tools';
+import { formatDate, formatDateTime, formatReadCount, getPatternType } from '@/utils/tools';
 
 export default {
     components: {
@@ -452,7 +457,6 @@ export default {
             // prism.js代码高亮显示
             let docPre = document.querySelectorAll('.article-content pre');
             if (docPre && docPre.length > 0) {
-                console.log('文章中有代码块', Prism);
                 docPre.forEach(function (item) {
                     let code = item.querySelector("code");
                     if (code) {
@@ -664,15 +668,16 @@ export default {
     text-decoration: none;
 }
 
-.breadcrumb a.disabled {
+.breadcrumb .disabled {
     color: #666;
     pointer-events: none;
 }
 
 .breadcrumb a:not(:last-child)::after {
-    content: ' / ';
+    content: '/';
     color: #666;
     margin-left: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 .article {
@@ -953,6 +958,7 @@ export default {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

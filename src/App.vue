@@ -73,6 +73,7 @@ export default {
     max-width: 1750px;
     margin: 80px auto 0;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .scroll-to-top {
@@ -107,21 +108,35 @@ export default {
     transform: scale(1.1) rotate(0deg);
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1800px) {
     .main {
-        max-width: 1024px;
+        max-width: 1550px;
     }
 }
 
 @media (max-width: 1550px) {
     .main {
-        max-width: 1450px;
+        max-width: 1300px;
     }
 }
 
+@media (max-width: 1300px) {
+    .main {
+        max-width: 1100px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .main {
+        max-width: 900px;
+    }
+}
+
+/* 手机 - 关键变化 */
 @media (max-width: 768px) {
     .main {
         max-width: 100%;
+        width: 100%;
     }
 }
 </style>
