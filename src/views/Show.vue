@@ -30,7 +30,7 @@
                     </h1>
 
                     <div class="article-meta">
-                        <span>发表于：{{ formatDateTime(article.create_at) }}，已有{{
+                        <span>发表于：{{ formatDateTime(article.release_at) }}，已有{{
                             formatReadCount(article.readed_num) }}次阅读</span>
 
                         <div class="article-actions">
@@ -68,7 +68,7 @@
             <div class="related-articles-list">
                 <div class="related-article-item" v-for="rltArticle in relatedArticles" :key="rltArticle.id">
                     <RouterLink :to="rltArticle.url">{{ rltArticle.title }}</RouterLink>
-                    <span class="article-date">({{ rltArticle.createdAt }})</span>
+                    <span class="article-date">({{ rltArticle.releaseAt }})</span>
                 </div>
             </div>
         </section>
@@ -336,7 +336,7 @@ export default {
                 this.relatedArticles = (data.associates || []).map(item => ({
                     title: item.title,
                     url: `/show/${item.id}`,
-                    createdAt: formatDate(item.create_at),
+                    releaseAt: formatDate(item.release_at),
                     id: item.id
                 }));
 

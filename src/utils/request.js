@@ -139,11 +139,15 @@ request.interceptors.response.use(
     (error) => {
         // HTTP 错误处理
         if (error.response) {
-            const { status } = error.response
+            const { status, data } = error.response
             if (status === 401) {
                 // 未授权，清除认证信息并跳转登录
                 clearAuthData()
                 router.push('/login')
+            }
+            // 这里如果服务器服返回的有message, 则直接使用服务器中的message
+            if (data && data.message) {
+                return Promise.reject(new Error(data.message || error.message))
             }
         }
         return Promise.reject(error)

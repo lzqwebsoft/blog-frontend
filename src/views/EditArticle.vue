@@ -18,7 +18,16 @@
                     <div class="message-icon">
                         <font-awesome-icon icon="circle-exclamation" />
                     </div>
-                    <div class="message-content">{{ errorMessage }}</div>
+                    <div class="message-content">
+                        <template v-if="errorMessageList.length">
+                            <ul class="message-list">
+                                <li v-for="(msg, idx) in errorMessageList" :key="idx">{{ msg }}</li>
+                            </ul>
+                        </template>
+                        <template v-else>
+                            {{ errorMessage }}
+                        </template>
+                    </div>
                     <button class="message-close" @click="errorMessage = ''">
                         <font-awesome-icon icon="xmark" />
                     </button>
@@ -34,15 +43,6 @@
                     <button class="message-close" @click="successMessage = ''">
                         <font-awesome-icon icon="xmark" />
                     </button>
-                </div>
-            </transition>
-
-            <transition name="slide-fade">
-                <div v-if="lastSavedTime" class="message-alert info">
-                    <div class="message-icon">
-                        <font-awesome-icon icon="floppy-disk" />
-                    </div>
-                    <div class="message-content">最后保存: {{ formatTime(lastSavedTime) }}</div>
                 </div>
             </transition>
         </div>
@@ -72,6 +72,12 @@
                 <!-- Markdown编辑器 -->
                 <div v-else class="markdown-editor-wrapper">
                     <MarkdownEditor v-model="form.contentMD" :height="500" />
+                </div>
+                <div class="auto-save-status" :class="autoSaveStatus" v-if="autoSaveStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-label">{{ statusLabel }}</span>
+                    <span class="status-time" v-if="autoSaveStatus === 'success' && autoSaveTime">{{
+                        formatDateTime(autoSaveTime) }}</span>
                 </div>
             </div>
 
@@ -140,6 +146,7 @@
 import RichTextEditor from '@/components/RichTextEditor.vue'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import { getArticleTypes, saveArticle, getArticleDetail } from '@/api/article'
+import { formatDateTime } from '@/utils/tools'
 
 export default {
     name: 'EditArticle',
@@ -159,6 +166,9 @@ export default {
             typeModel: '0',
             autoSaveTimer: null,
             lastSavedTime: null,
+            autoSaveStatus: null,
+            autoSaveTime: null,
+            autoSaveError: '',
             form: {
                 id: '',
                 title: '',
@@ -185,8 +195,35 @@ export default {
             ]
         }
     },
+    computed: {
+        errorMessageList() {
+            if (!this.errorMessage) return []
+            const parts = String(this.errorMessage)
+                .split(':')
+                .map(s => s.trim())
+                .filter(s => s)
+            return parts.length > 1 ? parts : []
+        },
+        statusLabel() {
+            switch (this.autoSaveStatus) {
+                case 'saving': return '保存中...'
+                case 'success': return '已自动保存'
+                case 'error': return '保存失败'
+                default: return ''
+            }
+        }
+    },
+    watch: {
+        form: {
+            handler() {
+                if (this.autoSaveStatus === 'success' || this.autoSaveStatus === 'error') {
+                    this.autoSaveStatus = null
+                }
+            },
+            deep: true
+        }
+    },
     mounted() {
-        this.loadArticleTypes()
         this.initializePage()
     },
 
@@ -197,6 +234,59 @@ export default {
         }
     },
     methods: {
+        formatDateTime,
+        buildSaveParams(publish = false, silent = false) {
+            const params = new URLSearchParams()
+            if (this.form.id) params.append('id', String(this.form.id))
+            params.append('title', this.form.title)
+            const ct = Number(this.form.contentType)
+            params.append('contentType', String(ct))
+            if (ct === 1) {
+                params.append('contentMD', this.form.contentMD)
+            } else {
+                params.append('content', this.form.content)
+            }
+            params.append('allowComment', this.form.allowComment ? 'true' : 'false')
+            params.append('patternTypeId', String(this.form.patternTypeId))
+            if (this.form.codeTheme) params.append('codeTheme', this.form.codeTheme)
+            const typeModel = this.showNewType ? 1 : 0
+            params.append('type_model', String(typeModel))
+            if (typeModel === 0) {
+                params.append('typeID', String(this.form.typeId))
+            } else {
+                params.append('new_type', this.newTypeName.trim())
+            }
+            if (publish) params.append('publish', '1')
+            if (silent) params.append('autoSave', 'true')
+            return params
+        },
+
+        async performSave({ publish = false, silent = false } = {}) {
+            const params = this.buildSaveParams(publish, silent)
+            const res = await saveArticle(params)
+            const returnedId = res && res.data !== undefined ? res.data : this.form.id
+            if (returnedId) this.form.id = returnedId
+
+            if (publish) {
+                this.successMessage = this.isEdit ? '文章更新成功！' : '文章发表成功！'
+                const targetId = returnedId || this.form.id
+                setTimeout(() => {
+                    if (targetId) {
+                        this.$router.push(`/show/${targetId}`)
+                    } else {
+                        this.$router.push('/')
+                    }
+                }, 1000)
+            } else {
+                if (silent) {
+                    this.autoSaveStatus = 'success'
+                    this.autoSaveTime = new Date()
+                    this.autoSaveError = ''
+                } else {
+                    this.successMessage = '草稿保存成功！'
+                }
+            }
+        },
         async loadArticleTypes() {
             try {
                 const res = await getArticleTypes()
@@ -207,6 +297,9 @@ export default {
             }
         },
         initializePage() {
+            // 加载文章分类
+            this.loadArticleTypes()
+
             // 判断是编辑还是新建
             const articleId = this.$route.params.id
             this.isEdit = !!articleId
@@ -214,9 +307,6 @@ export default {
             if (this.isEdit) {
                 // 如果是编辑模式，加载文章数据
                 this.loadArticleData(articleId)
-            } else {
-                // 如果是新建模式，尝试加载草稿
-                this.loadDraft()
             }
 
             // 启动自动保存
@@ -243,25 +333,6 @@ export default {
             }
         },
 
-        loadDraft() {
-            // 从localStorage加载草稿
-            try {
-                const draft = localStorage.getItem('article_draft')
-                if (draft) {
-                    const draftData = JSON.parse(draft)
-                    this.form.title = draftData.title || ''
-                    this.form.content = draftData.content || ''
-                    this.form.contentMD = draftData.contentMD || ''
-                    this.form.patternTypeId = draftData.patternTypeId || 1
-                    this.form.typeId = draftData.typeId || '0'
-                    this.lastSavedTime = draftData.savedAt || null
-                    console.log('已加载草稿')
-                }
-            } catch (error) {
-                console.error('加载草稿失败:', error)
-            }
-        },
-
         startAutoSave() {
             // 每30秒自动保存一次
             this.autoSaveTimer = setInterval(() => {
@@ -269,25 +340,21 @@ export default {
             }, 30000)
         },
 
-        autoSaveDraft() {
-            // 只有有内容时才保存
-            if (this.form.title.trim() || this.form.content.trim()) {
-                const draftData = {
-                    title: this.form.title,
-                    content: this.form.content,
-                    contentMD: this.form.contentMD,
-                    patternTypeId: this.form.patternTypeId,
-                    typeId: this.form.typeId,
-                    savedAt: new Date().toISOString()
-                }
+        async autoSaveDraft() {
+            const hasTitle = this.form.title.trim()
+            const hasContent = this.form.contentType === 1
+                ? this.form.contentMD.trim()
+                : this.form.content.trim()
+            if (!hasTitle && !hasContent) return
 
-                try {
-                    localStorage.setItem('article_draft', JSON.stringify(draftData))
-                    this.lastSavedTime = draftData.savedAt
-                    console.log('自动保存草稿成功')
-                } catch (error) {
-                    console.error('自动保存草稿失败:', error)
-                }
+            this.autoSaveStatus = 'saving'
+            try {
+                await this.performSave({ publish: false, silent: true })
+            } catch (error) {
+                console.error('自动保存失败:', error)
+                this.autoSaveTime = new Date()
+                this.autoSaveStatus = 'error'
+                this.autoSaveError = error && error.message ? error.message : '请检查网络连接'
             }
         },
 
@@ -347,7 +414,7 @@ export default {
             }
 
             // 验证文章模式
-            if (this.form.patternTypeId === '0') {
+            if (this.form.patternTypeId <= 0 || this.form.patternTypeId > 3) {
                 this.errorMessage = '请选择文章模式'
                 return false
             }
@@ -383,80 +450,25 @@ export default {
             this.submitting = true
             this.errorMessage = ''
             try {
-                const params = new URLSearchParams()
-                if (this.form.id) params.append('id', String(this.form.id))
-                params.append('title', this.form.title)
-                const ct = Number(this.form.contentType)
-                params.append('contentType', String(ct))
-                if (ct === 1) {
-                    params.append('contentMD', this.form.contentMD)
-                } else {
-                    params.append('content', this.form.content)
-                }
-                params.append('allowComment', this.form.allowComment ? 'true' : 'false')
-                params.append('patternTypeId', String(this.form.patternTypeId))
-                if (this.form.codeTheme) params.append('codeTheme', this.form.codeTheme)
-                const typeModel = this.showNewType ? 1 : 0
-                params.append('type_model', String(typeModel))
-                if (typeModel === 0) {
-                    params.append('typeID', String(this.form.typeId))
-                } else {
-                    params.append('new_type', this.newTypeName.trim())
-                }
-                params.append('publish', '1')
-                const res = await saveArticle(params)
-                const newId = res.data ? res.data : this.form.id
-                this.successMessage = this.isEdit ? '文章更新成功！' : '文章发表成功！'
-                setTimeout(() => {
-                    if (newId) {
-                        this.$router.push(`/show/${newId}`)
-                    } else {
-                        this.$router.push('/')
-                    }
-                }, 1000)
+                await this.performSave({ publish: true, silent: false })
             } catch (error) {
-                console.error('提交文章失败:', error)
-                this.errorMessage = '提交失败，请稍后重试'
+                this.errorMessage = error.message ?? '提交失败，请稍后重试'
             } finally {
                 this.submitting = false
             }
         },
 
         async saveAsDraft() {
-            if (!this.form.title.trim() && !this.form.content.trim() && !this.form.contentMD.trim()) {
-                this.errorMessage = '请输入标题或内容以保存草稿'
+            if (!this.validateForm()) {
                 return
             }
             this.submitting = true
             this.errorMessage = ''
             try {
-                const params = new URLSearchParams()
-                if (this.form.id) params.append('id', String(this.form.id))
-                params.append('title', this.form.title)
-                const ct = Number(this.form.contentType)
-                params.append('contentType', String(ct))
-                if (ct === 1) {
-                    params.append('contentMD', this.form.contentMD)
-                } else {
-                    params.append('content', this.form.content)
-                }
-                params.append('allowComment', this.form.allowComment ? 'true' : 'false')
-                params.append('patternTypeId', String(this.form.patternTypeId))
-                if (this.form.codeTheme) params.append('codeTheme', this.form.codeTheme)
-                const typeModel = this.showNewType ? 1 : 0
-                params.append('type_model', String(typeModel))
-                if (typeModel === 0) {
-                    params.append('typeID', String(this.form.typeId))
-                } else {
-                    params.append('new_type', this.newTypeName.trim())
-                }
-                const res = await saveArticle(params)
-                const id = res.data && res.data.id ? String(res.data.id) : ''
-                if (id) this.form.id = id
-                this.successMessage = '草稿保存成功！'
+                await this.performSave({ publish: false, silent: false })
             } catch (error) {
                 console.error('保存草稿失败:', error)
-                this.errorMessage = '保存草稿失败，请稍后重试'
+                this.errorMessage = error.message ?? '保存草稿失败，请稍后重试'
             } finally {
                 this.submitting = false
             }
@@ -506,6 +518,16 @@ export default {
     font-weight: 500;
     line-height: 1.5;
     word-break: break-word;
+}
+
+.message-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    list-style: disc;
+}
+
+.message-list li {
+    margin: 0.25rem 0;
 }
 
 .message-close {
@@ -560,17 +582,6 @@ export default {
     color: #16a34a;
 }
 
-/* 信息消息 - 蓝色 */
-.message-alert.info {
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-left: 4px solid #3b82f6;
-    color: #1d4ed8;
-}
-
-.message-alert.info .message-icon {
-    color: #3b82f6;
-}
-
 /* 暗黑模式适配 */
 :root.dark-theme .message-alert.error {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
@@ -604,17 +615,6 @@ export default {
 
 :root.dark-theme .message-alert.success .message-close {
     color: #86efac;
-}
-
-:root.dark-theme .message-alert.info {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(29, 78, 216, 0.1) 100%);
-    border-left: 4px solid #60a5fa;
-    color: #93c5fd;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-:root.dark-theme .message-alert.info .message-icon {
-    color: #60a5fa;
 }
 
 /* 移动端适配 */
@@ -927,6 +927,65 @@ export default {
 .btn-default:hover:not(:disabled) {
     background: var(--bg-color);
     border-color: var(--text-secondary);
+}
+
+/* Auto Save Status */
+.auto-save-status {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.auto-save-status.saving .status-dot {
+    background-color: var(--primary-color);
+    animation: pulse 1.5s infinite;
+}
+
+.auto-save-status.success .status-dot {
+    background-color: #22c55e;
+}
+
+.auto-save-status.error .status-dot {
+    background-color: #ef4444;
+}
+
+.status-label {
+    font-weight: 500;
+}
+
+.status-time {
+    opacity: 0.8;
+    font-size: 0.8rem;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* Responsive */

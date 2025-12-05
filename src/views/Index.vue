@@ -21,7 +21,7 @@
                         <div class="article-info">
                             <div class="article-info-item">
                                 <font-awesome-icon icon="calendar-day" />
-                                {{ formatDate(article.create_at) }}
+                                {{ formatDate(article.release_at) }}
                             </div>
                             <div class="article-info-item">
                                 <font-awesome-icon icon="eye" />
@@ -384,9 +384,9 @@ export default {
     top: 23%;
     right: 0;
     transform: translateY(-50%);
-    width: 50px;
+    width: 45px;
     height: auto;
-    padding: 16px 12px;
+    padding: 16px 8px;
     border-radius: 8px 0 0 8px;
     border: 1px solid var(--border-color);
     border-right: none;
