@@ -30,7 +30,7 @@ export function getHomeData(pageNo = 1, pageSize = 15, categoryId = null) {
  * @param {string} id - 文章ID
  */
 export function deleteArticle(id) {
-    return request.delete(`/article/${id}`)
+    return request.delete(`/article/delete/${id}`)
 }
 
 /**
