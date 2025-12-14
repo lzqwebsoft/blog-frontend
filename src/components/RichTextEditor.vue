@@ -92,12 +92,20 @@
                     :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"></div>
             </div>
         </div>
+
+        <!-- 图片插入对话框 -->
+        <ImageInsertDialog :show="showImageDialog" @close="showImageDialog = false" @confirm="handleImageInserted" />
     </div>
 </template>
 
 <script>
+import ImageInsertDialog from './ImageInsertDialog.vue'
+
 export default {
     name: 'RichTextEditor',
+    components: {
+        ImageInsertDialog
+    },
     props: {
         modelValue: {
             type: String,
@@ -113,7 +121,8 @@ export default {
         return {
             internalValue: '',
             showPreview: false,
-            isFullscreen: false
+            isFullscreen: false,
+            showImageDialog: false
         }
     },
     watch: {
@@ -425,11 +434,12 @@ export default {
         },
 
         insertImage() {
-            const imageUrl = prompt('请输入图片URL:')
-            if (imageUrl) {
-                const img = `<img src="${imageUrl}" alt="图片" style="max-width: 100%; height: auto; border-radius: 6px; margin: 1rem 0;">`
-                this.insertHTML(img)
-            }
+            this.showImageDialog = true
+        },
+
+        handleImageInserted({ url, alt }) {
+            const img = `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 6px; margin: 1rem 0;">`
+            this.insertHTML(img)
         },
 
         handlePaste(event) {

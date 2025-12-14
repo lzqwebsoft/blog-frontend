@@ -77,8 +77,7 @@
             <!-- 编辑区 -->
             <div v-show="viewMode === 'edit' || viewMode === 'split'" class="editor-pane">
                 <textarea ref="textarea" v-model="content" @input="handleInput" @keydown="handleKeyDown"
-                    class="markdown-textarea"
-                    :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"
+                    class="markdown-textarea" :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"
                     placeholder="请输入 Markdown 内容..."></textarea>
             </div>
 
@@ -88,6 +87,9 @@
                     :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"></div>
             </div>
         </div>
+
+        <!-- 图片插入对话框 -->
+        <ImageInsertDialog :show="showImageDialog" @close="showImageDialog = false" @confirm="handleImageInserted" />
     </div>
 </template>
 
@@ -110,8 +112,13 @@ import 'prismjs/components/prism-bash'
 import 'prismjs/components/prism-sql'
 import 'prismjs/components/prism-markdown'
 
+import ImageInsertDialog from './ImageInsertDialog.vue'
+
 export default {
     name: 'MarkdownEditor',
+    components: {
+        ImageInsertDialog
+    },
     props: {
         modelValue: {
             type: String,
@@ -127,7 +134,9 @@ export default {
         return {
             content: '',
             viewMode: 'edit', // 'edit', 'preview', 'split'
-            isFullscreen: false
+            isFullscreen: false,
+            // 图片对话框相关
+            showImageDialog: false
         }
     },
     computed: {
@@ -152,7 +161,7 @@ export default {
                 console.error('Markdown 解析错误:', e)
                 return '<p class="error">Markdown 解析失败</p>'
             }
-        }
+        },
     },
     watch: {
         modelValue: {
@@ -243,14 +252,9 @@ export default {
                     cursorOffset = selectedText ? insertion.length : -4
                     break
                 case 'image': {
-                    const imgUrl = prompt('请输入图片URL:')
-                    if (imgUrl) {
-                        insertion = `![图片描述](${imgUrl})`
-                        cursorOffset = insertion.length
-                    } else {
-                        return
-                    }
-                    break
+                    // 打开图片插入对话框
+                    this.openImageDialog()
+                    return // 不执行后续的插入逻辑
                 }
             }
 
@@ -310,6 +314,32 @@ export default {
         clear() {
             this.content = ''
             this.$emit('update:modelValue', '')
+        },
+
+        // ========== 图片对话框相关方法 ==========
+
+        // 打开图片对话框
+        openImageDialog() {
+            this.showImageDialog = true
+        },
+
+        // 处理图片插入
+        handleImageInserted({ url, alt }) {
+            // 插入图片 Markdown
+            const textarea = this.$refs.textarea
+            const start = textarea.selectionStart
+            const end = textarea.selectionEnd
+            const insertion = `![${alt}](${url})`
+
+            this.content = this.content.substring(0, start) + insertion + this.content.substring(end)
+            this.$emit('update:modelValue', this.content)
+
+            // 恢复光标位置
+            this.$nextTick(() => {
+                const newPosition = start + insertion.length
+                textarea.focus()
+                textarea.setSelectionRange(newPosition, newPosition)
+            })
         }
     }
 }
