@@ -183,12 +183,16 @@
                 </div>
             </form>
         </section>
+
+        <!-- 图片预览组件 -->
+        <ImagePreview :visible="previewVisible" :image-url="previewImage" @close="previewVisible = false" />
     </div>
 </template>
 
 <script>
 // PrismJS 代码高亮
 import Prism from 'prismjs';
+import ImagePreview from '@/components/ImagePreview.vue';
 import "prismjs/plugins/line-numbers/prism-line-numbers.css";
 import "prismjs/plugins/line-numbers/prism-line-numbers.js";
 import "prismjs/plugins/autolinker/prism-autolinker.css";
@@ -247,6 +251,7 @@ export default {
     components: {
         ArticleBadge,
         SNSShares,
+        ImagePreview,
     },
     data() {
         return {
@@ -283,6 +288,8 @@ export default {
             captchaId: '',
             captchaCode: '',
             showCaptcha: false,
+            previewVisible: false,
+            previewImage: '',
         }
     },
     mounted() {
@@ -357,6 +364,7 @@ export default {
 
                 this.$nextTick(() => {
                     this.initCodeHighlight();
+                    this.initImageProcessing();
                     this.initSNSShare();
 
                     // 动态设置页面标题
@@ -498,6 +506,41 @@ export default {
                     }
                 });
             }
+        },
+
+        initImageProcessing() {
+            const images = document.querySelectorAll('.article-content img');
+            images.forEach(img => {
+                if (!img.src.includes('/images/show/')) return;
+                // 如果已经包裹了就不再处理
+                if (img.parentElement.classList.contains('photo-card')) return;
+
+                // 创建 figure 包装器
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'photo-card';
+
+                // 将 wrapper 插入到 img 前面
+                img.parentNode.insertBefore(wrapper, img);
+
+                // 将 img 移动到 wrapper 内部
+                wrapper.appendChild(img);
+
+                // 如果有 alt 或 title 属性，作为 figcaption 显示
+                const captionText = img.getAttribute('alt') || img.getAttribute('title');
+                if (captionText) {
+                    const figcaption = document.createElement('figcaption');
+                    figcaption.textContent = captionText;
+                    wrapper.appendChild(figcaption);
+                }
+
+                // 添加点击预览
+                img.style.cursor = 'zoom-in';
+                img.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.previewImage = img.src;
+                    this.previewVisible = true;
+                });
+            });
         },
 
         initSNSShare() {
@@ -767,6 +810,128 @@ export default {
     height: auto;
     margin: 1rem 0;
     border-radius: 4px;
+}
+
+.article-content .photo-card {
+    margin: 0;
+}
+
+.article-content .photo-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 0;
+}
+
+.article-content .photo-card figcaption {
+    display: none;
+}
+
+@media (min-width: 768px) {
+
+    /*
+     * ----------------------------------------
+     * PC端照片卡片样式 (Photo Card Style)
+     * ----------------------------------------
+     * 使用 JS 包裹的 .photo-card 容器来实现拍立得/照片效果
+     * 包含: 白边、阴影、顶部胶带效果
+     */
+    .article-content .photo-card {
+        display: block;
+        margin: 3rem auto;
+        width: fit-content;
+        max-width: 50%;
+        border-radius: 2px;
+        padding: 22px 22px 25px 22px;
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+        box-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.05),
+            0 10px 15px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        position: relative;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .article-content .photo-card::before {
+        content: '';
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%) rotate(-1.5deg);
+        width: 120px;
+        height: 32px;
+
+        background-color: rgba(232, 222, 198, 0.9);
+        backdrop-filter: none;
+
+        border-left: 2px solid rgba(255, 255, 255, 0.3);
+        border-right: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        opacity: 0.9;
+        z-index: 10;
+    }
+
+    .article-content .photo-card img {
+        display: block;
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        border-radius: 1px;
+        margin: 0;
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        background: none;
+    }
+
+    .article-content .photo-card figcaption {
+        display: block;
+        margin-top: 15px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: #555;
+        font-size: 1.5rem;
+        line-height: 1.5;
+        font-weight: 500;
+    }
+
+    /* 悬停效果 */
+    .article-content .photo-card:hover {
+        transform: scale(1.01) rotate(0.5deg);
+        box-shadow:
+            0 20px 25px -5px rgba(0, 0, 0, 0.1),
+            0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        z-index: 5;
+    }
+
+    /*
+     * 暗黑模式适配 (Dark Mode)
+     */
+    :root.dark-theme .article-content .photo-card {
+        background-color: #252525;
+        /* 更深的背景色，接近黑色但有区分 */
+        border-color: #333;
+        box-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.3),
+            0 10px 15px -3px rgba(0, 0, 0, 0.5),
+            0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    :root.dark-theme .article-content .photo-card::before {
+        /* 暗黑模式下胶带降低亮度和饱和度 */
+        background-color: rgba(180, 170, 150, 0.6);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    :root.dark-theme .article-content .photo-card img {
+        opacity: 0.85;
+        filter: contrast(1.1);
+    }
+
+    :root.dark-theme .article-content .photo-card figcaption {
+        color: #aaa;
+    }
 }
 
 .article-content ul,

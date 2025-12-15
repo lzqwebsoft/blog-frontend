@@ -27,8 +27,8 @@ const router = createRouter({
             name: 'show',
             component: Show,
             meta: {
-                title: 'Article Detail',
-                description: 'Read the full article.',
+                title: '文章详情',
+                description: '显示文章详情',
             },
         },
         {
@@ -126,9 +126,9 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     if (to.meta.title) {
-        document.title = to.meta.title + " - 飘痕の博客"
+        document.title = to.meta.title + ' - 飘痕の博客'
     } else {
-        document.title = "飘痕の博客"
+        document.title = '飘痕の博客'
     }
 
     if (to.meta.description) {
