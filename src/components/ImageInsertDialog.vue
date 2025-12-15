@@ -15,6 +15,11 @@
                     <font-awesome-icon icon="upload" />
                     上传图片
                 </button>
+                <button type="button" class="tab-btn" :class="{ active: activeTab === 'remote' }"
+                    @click="activeTab = 'remote'">
+                    <font-awesome-icon icon="link" />
+                    远程图片
+                </button>
                 <button type="button" class="tab-btn" :class="{ active: activeTab === 'select' }"
                     @click="switchToSelectTab">
                     <font-awesome-icon icon="images" />
@@ -26,18 +31,20 @@
                 <!-- 上传图片 Tab -->
                 <div v-if="activeTab === 'upload'" class="upload-tab">
                     <div class="upload-section">
-                        <div class="file-upload-area">
+                        <div v-if="!selectedFile" class="file-upload-area">
                             <input type="file" ref="fileInput" @change="handleFileSelect" accept="image/*"
                                 id="imageFileInput" class="file-input" />
                             <label for="imageFileInput" class="file-label">
                                 <font-awesome-icon icon="cloud-upload-alt" class="upload-icon" />
-                                <span v-if="!selectedFile">点击选择图片或拖拽到此处</span>
-                                <span v-else class="file-name">{{ selectedFile.name }}</span>
+                                <span>点击选择图片或拖拽到此处</span>
                             </label>
                         </div>
 
-                        <div v-if="selectedFile" class="file-preview">
+                        <div v-else class="file-preview">
                             <img :src="filePreviewUrl" alt="预览" class="preview-image" />
+                            <button type="button" class="remove-file-btn" @click="clearFile" title="移除图片">
+                                <font-awesome-icon icon="times" />
+                            </button>
                         </div>
 
                         <div class="form-group">
@@ -50,19 +57,23 @@
                             :disabled="!selectedFile || uploading">
                             <font-awesome-icon v-if="uploading" icon="spinner" spin />
                             <font-awesome-icon v-else icon="upload" />
-                            {{ uploading ? '上传中...' : '上传图片' }}
+                            {{ uploading ? '上传中...' : '上传并插入' }}
                         </button>
                     </div>
+                </div>
 
-                    <div class="divider">
-                        <span>或</span>
-                    </div>
-
+                <!-- 远程图片 Tab -->
+                <div v-if="activeTab === 'remote'" class="remote-tab">
                     <div class="remote-section">
                         <div class="form-group">
-                            <label for="remoteImageUrl">远程图片地址</label>
+                            <label for="remoteImageUrl">图片地址</label>
                             <input type="text" id="remoteImageUrl" v-model="remoteImageUrl"
-                                placeholder="请输入图片URL，如：/images/show/xxx.jpg" class="form-input" />
+                                placeholder="请输入图片URL，如：https://example.com/image.jpg" class="form-input" />
+                        </div>
+                        <div class="form-group">
+                            <label for="remoteImageDesc">图片描述</label>
+                            <input type="text" id="remoteImageDesc" v-model="imageDescription" placeholder="请输入图片描述（可选）"
+                                class="form-input" />
                         </div>
                     </div>
                 </div>
@@ -107,7 +118,7 @@
                 </div>
             </div>
 
-            <div class="dialog-footer">
+            <div v-if="activeTab !== 'upload'" class="dialog-footer">
                 <button type="button" class="cancel-btn" @click="closeDialog">取消</button>
                 <button type="button" class="confirm-btn" @click="confirmInsert" :disabled="!canConfirm">
                     确认
@@ -151,6 +162,8 @@ export default {
     computed: {
         canConfirm() {
             if (this.activeTab === 'upload') {
+                return false // 上传Tab通过按钮直接触发
+            } else if (this.activeTab === 'remote') {
                 return !!this.remoteImageUrl
             } else {
                 return !!this.selectedImageId
@@ -205,6 +218,17 @@ export default {
             }
         },
 
+        clearFile() {
+            this.selectedFile = null
+            if (this.filePreviewUrl) {
+                URL.revokeObjectURL(this.filePreviewUrl)
+                this.filePreviewUrl = ''
+            }
+            if (this.$refs.fileInput) {
+                this.$refs.fileInput.value = ''
+            }
+        },
+
         async uploadImage() {
             if (!this.selectedFile || this.uploading) return
 
@@ -222,11 +246,7 @@ export default {
 
                 if (result.code === 0 && result.data) {
                     this.remoteImageUrl = `/images/show/${result.data.id}.jpg`
-                    this.selectedFile = null
-                    this.filePreviewUrl = ''
-                    if (this.$refs.fileInput) {
-                        this.$refs.fileInput.value = ''
-                    }
+                    this.confirmInsert()
                 } else {
                     alert('上传失败：' + (result.message || '未知错误'))
                 }
@@ -273,7 +293,7 @@ export default {
             let imageUrl = ''
             let imageAlt = '图片描述'
 
-            if (this.activeTab === 'upload') {
+            if (this.activeTab === 'upload' || this.activeTab === 'remote') {
                 if (!this.remoteImageUrl) return
                 imageUrl = this.remoteImageUrl
                 imageAlt = this.imageDescription || '图片描述'
@@ -415,7 +435,8 @@ export default {
 }
 
 /* 上传 Tab */
-.upload-tab {
+.upload-tab,
+.remote-tab {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
@@ -471,11 +492,40 @@ export default {
 }
 
 .file-preview {
+    position: relative;
     display: flex;
     justify-content: center;
     padding: 0.5rem;
     background: var(--hover-bg);
     border-radius: 8px;
+    animation: fadeIn 0.3s ease;
+}
+
+.remove-file-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.remove-file-btn:hover {
+    background: var(--error-color, #ff4d4f);
+    border-color: var(--error-color, #ff4d4f);
+    color: white;
+    transform: scale(1.1);
 }
 
 .preview-image {
@@ -544,22 +594,7 @@ export default {
     cursor: not-allowed;
 }
 
-/* 分隔线 */
-.divider {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
 
-.divider::before,
-.divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border-color);
-}
 
 /* 选择图片 Tab */
 .select-tab {

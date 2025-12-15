@@ -757,6 +757,60 @@ export default {
     border-radius: 4px;
 }
 
+.article-content ul,
+.article-content ol {
+    margin-left: 2rem;
+}
+
+.article-content table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid var(--border-color);
+    font-size: 0.95rem;
+}
+
+.article-content table th,
+.article-content table td {
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border-color);
+    line-height: 1.6;
+}
+
+.article-content table th {
+    background-color: rgba(0, 0, 0, 0.03);
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: left;
+}
+
+.article-content table tr {
+    transition: background-color 0.2s ease;
+}
+
+.article-content table tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.015);
+}
+
+.article-content table tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Dark mode table adaptations */
+:root.dark-theme .article-content table th {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+:root.dark-theme .article-content table tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+:root.dark-theme .article-content table tr:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
 .article-pager {
     margin-top: 2rem;
     padding-top: 2rem;
