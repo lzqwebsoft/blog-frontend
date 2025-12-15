@@ -358,6 +358,18 @@ export default {
                 this.$nextTick(() => {
                     this.initCodeHighlight();
                     this.initSNSShare();
+
+                    // 动态设置页面标题
+                    if (this.article.title) {
+                        document.title = `${this.article.title} - 飘痕の博客`;
+                    }
+
+                    // 动态设置SEO描述
+                    const descriptionMeta = document.querySelector('meta[name="description"]');
+                    if (descriptionMeta) {
+                        const desc = this.article.summary || this.article.title || 'zqluo\'s technical blog sharing programming knowledge and experiences.';
+                        descriptionMeta.setAttribute('content', desc);
+                    }
                 });
             } catch (error) {
                 console.error('获取文章详情失败:', error);

@@ -327,6 +327,11 @@ export default {
                 this.form.content = art.content ?? ''
                 this.form.patternTypeId = Number(art.pattern_type_id ?? art.patternTypeId ?? 1)
                 this.form.typeId = String((art.type && art.type.id) ? art.type.id : '0')
+
+                // 动态设置页面标题
+                if (this.form.title) {
+                    document.title = `${this.form.title} - 飘痕の博客`;
+                }
             } catch (error) {
                 console.error('加载文章失败:', error)
                 this.errorMessage = '加载文章失败'

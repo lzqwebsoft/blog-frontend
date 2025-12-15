@@ -102,27 +102,29 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- 分页 -->
-                    <div v-if="imageList.length > 0" class="pagination">
-                        <button type="button" class="page-btn" :disabled="currentPage <= 1"
-                            @click="changePage(currentPage - 1)">
-                            <font-awesome-icon icon="chevron-left" />
-                        </button>
-                        <span class="page-info">第 {{ currentPage }} / {{ totalPageCount || 1 }} 页</span>
-                        <button type="button" class="page-btn" :disabled="currentPage >= totalPageCount"
-                            @click="changePage(currentPage + 1)">
-                            <font-awesome-icon icon="chevron-right" />
-                        </button>
-                    </div>
                 </div>
             </div>
 
             <div v-if="activeTab !== 'upload'" class="dialog-footer">
-                <button type="button" class="cancel-btn" @click="closeDialog">取消</button>
-                <button type="button" class="confirm-btn" @click="confirmInsert" :disabled="!canConfirm">
-                    确认
-                </button>
+                <!-- 分页 -->
+                <div v-if="activeTab == 'select' && imageList.length > 0" class="pagination">
+                    <button type="button" class="page-btn" :disabled="currentPage <= 1"
+                        @click="changePage(currentPage - 1)">
+                        <font-awesome-icon icon="chevron-left" />
+                    </button>
+                    <span class="page-info">第 {{ currentPage }} / {{ totalPageCount || 1 }} 页</span>
+                    <button type="button" class="page-btn" :disabled="currentPage >= totalPageCount"
+                        @click="changePage(currentPage + 1)">
+                        <font-awesome-icon icon="chevron-right" />
+                    </button>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="cancel-btn" @click="closeDialog">取消</button>
+                    <button type="button" class="confirm-btn" @click="confirmInsert" :disabled="!canConfirm">
+                        确认
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -691,9 +693,7 @@ export default {
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    padding-top: 1.25rem;
-    margin-top: 1rem;
-    border-top: 1px solid var(--border-color);
+    margin: 0;
 }
 
 .page-btn {
@@ -729,11 +729,17 @@ export default {
 /* 对话框底部 */
 .dialog-footer {
     display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
+    align-items: center;
     padding: 1rem 1.25rem;
     border-top: 1px solid var(--border-color);
     background: var(--hover-bg);
+}
+
+.button-group {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-left: auto;
 }
 
 .cancel-btn,
