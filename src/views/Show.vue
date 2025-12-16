@@ -757,9 +757,10 @@ export default {
     gap: 0.5rem;
 }
 
-.article-title h1 {
+.article-title span {
     font-size: 2rem;
     margin: 0;
+    word-break: break-all;
 }
 
 .article-meta {
@@ -784,6 +785,12 @@ export default {
     margin-bottom: 1rem;
 }
 
+.article-content p a,
+.article-content strong,
+.article-content a {
+    word-break: break-all;
+}
+
 .article-content pre {
     background: #f8f9fa;
     padding: 1rem;
@@ -798,6 +805,15 @@ export default {
     padding: 0.2rem 0.4rem;
     border-radius: 3px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    word-break: break-all;
+}
+
+.article-content pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    white-space: pre-wrap;
 }
 
 :root.dark-theme .article-content code {
@@ -846,9 +862,9 @@ export default {
         background-color: #fff;
         border: 1px solid #e5e7eb;
         box-shadow:
-            0 1px 2px rgba(0, 0, 0, 0.05),
-            0 10px 15px -3px rgba(0, 0, 0, 0.1),
-            0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+            rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+            rgba(0, 0, 0, 0.15) 0px 10px 30px -10px;
         position: relative;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
