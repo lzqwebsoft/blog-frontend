@@ -74,6 +74,7 @@ export default {
     margin: 80px auto 0;
     width: 100%;
     box-sizing: border-box;
+    padding: 0;
 }
 
 .scroll-to-top {
@@ -132,7 +133,6 @@ export default {
     }
 }
 
-/* 手机 - 关键变化 */
 @media (max-width: 768px) {
     .main {
         max-width: 100%;

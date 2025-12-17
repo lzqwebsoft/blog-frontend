@@ -16,7 +16,7 @@ import {
     faReply, faCloudUploadAlt, faImages, faUpload, faChevronLeft, faChevronRight
 } from '@fortawesome/free-solid-svg-icons'
 import {
-    faQq, faXTwitter, faWeibo, faFacebook
+    faQq, faXTwitter, faWeibo, faFacebook, faGithub, faStackOverflow
 } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -24,7 +24,7 @@ import App from './App.vue'
 import router from './router'
 
 library.add(
-    faQq, faXTwitter, faWeibo, faFacebook,
+    faQq, faXTwitter, faWeibo, faFacebook, faGithub, faStackOverflow,
     faEdit, faLock, faCog, faSignOutAlt, faMoon,
     faSun, faBars, faMagnifyingGlass, faGear, faArrowUp,
     faPenToSquare, faTrash, faCalendarDay, faEye, faCommentDots,

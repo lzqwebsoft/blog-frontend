@@ -43,6 +43,11 @@
                 <button v-else @click="$router.push('/login')" class="nav-item" title="博主登录">
                     <font-awesome-icon icon="right-to-bracket" />
                 </button>
+
+                <!-- 小屏时显示右侧菜单 -->
+                <button id="mobile-menu-btn" class="nav-item" @click="toggleSidebar">
+                    <font-awesome-icon icon="bars" />
+                </button>
             </div>
         </nav>
     </header>
@@ -65,6 +70,7 @@
 <script>
 import { signOut } from '@/api/user'
 import { isAuthenticated, clearAuthData } from '@/utils/auth'
+import eventBus from '@/utils/eventBus'
 
 export default {
     name: 'AppHeader',
@@ -186,6 +192,9 @@ export default {
                 this.$router.push('/login')
             }
         },
+        toggleSidebar() {
+            eventBus.emit('toggle-sidebar')
+        },
     },
 }
 </script>
@@ -232,6 +241,7 @@ export default {
 }
 
 .brand-slogan {
+    font-family: var(--font-serif);
     display: flex;
     flex-direction: column;
 }
@@ -429,6 +439,10 @@ export default {
     background: var(--primary-hover);
 }
 
+#mobile-menu-btn {
+    display: none;
+}
+
 :root.dark-theme .search-dialog-content {
     border: 1px solid var(--border-color);
 }
@@ -471,6 +485,10 @@ export default {
     }
 
     .search-button {
+        display: block;
+    }
+
+    #mobile-menu-btn {
         display: block;
     }
 }

@@ -48,17 +48,18 @@
             </template>
 
             <!-- 文章分页 -->
-            <nav class="article-pager" v-if="!loading">
-                <div style="display: flex; justify-content: space-between; align-items: center">
-                    <button class="btn btn-outline" v-if="previousArticle" @click="navigateToArticle(previousArticle)">
-                        <font-awesome-icon icon="angle-left" />
-                        {{ previousArticle.title }}
-                    </button>
-                    <button class="btn btn-outline" v-if="nextArticle" @click="navigateToArticle(nextArticle)">
-                        {{ nextArticle.title }}
-                        <font-awesome-icon icon="angle-right" />
-                    </button>
+            <nav class="article-pager" v-if="!loading && (previousArticle || nextArticle)">
+                <div v-if="previousArticle" class="pager-item prev" @click="navigateToArticle(previousArticle)">
+                    <span class="pager-label">上一篇</span>
+                    <span class="pager-title">{{ previousArticle.title }}</span>
                 </div>
+                <div v-else class="pager-item spacer"></div>
+
+                <div v-if="nextArticle" class="pager-item next" @click="navigateToArticle(nextArticle)">
+                    <span class="pager-label">下一篇</span>
+                    <span class="pager-title">{{ nextArticle.title }}</span>
+                </div>
+                <div v-else class="pager-item spacer"></div>
             </nav>
         </article>
 
@@ -139,7 +140,7 @@
                         <div class="reply-info">
                             <font-awesome-icon icon="reply" class="reply-icon" />
                             <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname
-                            }}</strong></span>
+                                    }}</strong></span>
                         </div>
                         <button type="button" class="btn-cancel-reply" @click="cancelReply">
                             <font-awesome-icon icon="xmark" class="cancel-icon" />
@@ -763,6 +764,10 @@ export default {
     word-break: break-all;
 }
 
+.article-title span:not(.badge) {
+    font-family: var(--font-serif);
+}
+
 .article-meta {
     display: flex;
     justify-content: space-between;
@@ -779,6 +784,7 @@ export default {
 .article-content {
     line-height: 1.8;
     margin-bottom: 2rem;
+    font-size: 1.125rem;
 }
 
 .article-content p {
@@ -1689,5 +1695,87 @@ export default {
     .token.inserted {
         color: green;
     }
+}
+
+/* Article Pager */
+.article-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+.pager-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: var(--card-bg);
+    transition: all 0.3s ease;
+    width: 48%;
+    min-height: 80px;
+    justify-content: center;
+
+    &:hover {
+        box-shadow: 0 4px 15px var(--shadow-color);
+        border-color: var(--link-color);
+    }
+
+    &.prev {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    &.next {
+        align-items: flex-end;
+        text-align: right;
+    }
+
+    &.spacer {
+        display: flex;
+        visibility: hidden;
+        pointer-events: none;
+        border: none;
+        background: transparent;
+        cursor: default;
+
+        @media (max-width: 768px) {
+            display: none;
+        }
+    }
+}
+
+.pager-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.pager-title {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 700;
+    font-family: var(--font-serif);
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.pager-title:hover {
+    color: var(--link-color);
 }
 </style>
