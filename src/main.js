@@ -13,7 +13,8 @@ import {
     faCircleCheck, faFloppyDisk, faXmark, faKey, faShieldHalved, faEyeSlash,
     faLightbulb, faTriangleExclamation, faSpinner, faUser, faRightToBracket,
     faPaperPlane, faEnvelope, faArrowLeft, faCopy, faAngleLeft, faAnglesRight,
-    faReply, faCloudUploadAlt, faImages, faUpload, faChevronLeft, faChevronRight
+    faReply, faCloudUploadAlt, faImages, faUpload, faChevronLeft, faChevronRight,
+    faAngleDown,
 } from '@fortawesome/free-solid-svg-icons'
 import {
     faQq, faXTwitter, faWeibo, faFacebook, faGithub, faStackOverflow
@@ -35,8 +36,8 @@ library.add(
     faFloppyDisk, faXmark, faKey, faShieldHalved, faEyeSlash,
     faLightbulb, faTriangleExclamation, faSpinner, faUser,
     faRightToBracket, faPaperPlane, faEnvelope, faArrowLeft,
-    faCopy, faAngleLeft, faAnglesRight, faReply,
-    faCloudUploadAlt, faImages, faUpload, faChevronLeft, faChevronRight
+    faCopy, faAngleLeft, faAnglesRight, faReply, faCloudUploadAlt,
+    faImages, faUpload, faChevronLeft, faChevronRight, faAngleDown,
 )
 
 const app = createApp(App)

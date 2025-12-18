@@ -71,7 +71,7 @@ export default {
     flex: 1;
     min-height: calc(100vh - 120px);
     max-width: 1750px;
-    margin: 80px auto 0;
+    margin: 70px auto 0;
     width: 100%;
     box-sizing: border-box;
     padding: 0;

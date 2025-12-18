@@ -744,6 +744,12 @@ export default {
     margin-bottom: 2rem;
 }
 
+@media (max-width: 768px) {
+    .article {
+        padding: 1rem;
+    }
+}
+
 .article-header {
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 1rem;
@@ -766,6 +772,13 @@ export default {
 
 .article-title span:not(.badge) {
     font-family: var(--font-serif);
+    font-size: 3rem;
+}
+
+@media (max-width: 768px) {
+    .article-title span:not(.badge) {
+        font-size: 2rem;
+    }
 }
 
 .article-meta {
@@ -785,6 +798,88 @@ export default {
     line-height: 1.8;
     margin-bottom: 2rem;
     font-size: 1.125rem;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5 {
+    font-family: var(--font-serif, "Noto Serif SC", serif);
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text-color);
+}
+
+.article-content h1 {
+    font-size: 2.25rem;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    padding-bottom: 0.5em;
+    border-bottom: 2px solid var(--border-color, #e5e7eb);
+}
+
+.article-content h2 {
+    font-size: 1.875rem;
+    margin-top: 2.5em;
+    margin-bottom: 1em;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.article-content h3 {
+    font-size: 1.5rem;
+    margin-top: 2em;
+    margin-bottom: 0.8em;
+    padding-left: 0.75rem;
+    border-left: 4px solid var(--primary-color, #007bff);
+}
+
+.article-content h4 {
+    font-size: 1.25rem;
+    margin-top: 1.5em;
+    margin-bottom: 0.6em;
+}
+
+.article-content h5 {
+    font-size: 1.1rem;
+    margin-top: 1.2em;
+    margin-bottom: 0.5em;
+    color: var(--text-secondary, #666);
+}
+
+@media (max-width: 768px) {
+    .article-content h1 {
+        font-size: 1.75rem;
+        margin-top: 1.5em;
+        margin-bottom: 0.8em;
+    }
+
+    .article-content h2 {
+        font-size: 1.5rem;
+        margin-top: 1.8em;
+        margin-bottom: 0.8em;
+    }
+
+    .article-content h3 {
+        font-size: 1.25rem;
+        margin-top: 1.5em;
+        margin-bottom: 0.6em;
+        padding-left: 0.5rem;
+        border-left-width: 3px;
+    }
+
+    .article-content h4 {
+        font-size: 1.1rem;
+        margin-top: 1.2em;
+        margin-bottom: 0.5em;
+    }
+
+    .article-content h5 {
+        font-size: 1rem;
+        margin-top: 1em;
+        margin-bottom: 0.4em;
+    }
 }
 
 .article-content p {

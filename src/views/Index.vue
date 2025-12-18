@@ -1,156 +1,174 @@
 <template>
     <div class="page-container">
-        <div class="grid-layout">
-            <div class="main-column space-y-8">
-                <div v-if="loading" class="loading-container">
-                    <div class="spinner-large"></div>
-                    <p>加载中...</p>
-                </div>
-
-                <div v-else-if="articles.length === 0" class="empty-container">
-                    <p>暂无文章</p>
-                </div>
-
-                <!-- Article List -->
-                <template v-else>
-                    <article class="article-card" v-for="article in articles" :key="article.id">
-                        <!-- Meta Header -->
-                        <div class="article-meta-header">
-                            <ArticleBadge :type="getPatternType(article.pattern_type_id)" />
-                            <span class="meta-text">
-                                <font-awesome-icon icon="calendar-day" class="mr-1" />{{ formatDate(article.release_at)
-                                }}
-                            </span>
-                            <span class="meta-tag" v-if="article.category_name">
-                                {{ article.category_name }}
-                            </span>
-                            <ArticleBadge v-if="article.is_top" type="top" />
-                        </div>
-
-                        <!-- Title -->
-                        <h2 class="article-title">
-                            <RouterLink :to="getArticleUrl(article)">
-                                {{ article.title }}
-                            </RouterLink>
-                        </h2>
-
-                        <!-- Summary -->
-                        <p class="article-summary">
-                            {{ truncateContent(article.content) }}
-                        </p>
-
-                        <!-- Footer -->
-                        <div class="article-footer">
-                            <div class="stats-group">
-                                <span>
-                                    <font-awesome-icon icon="eye" class="mr-1" />
-                                    {{ formatReadCount(article.readed_num) }}
-                                </span>
-                                <span>
-                                    <font-awesome-icon icon="comment-dots" class="mr-1" />
-                                    {{ article.comment_count || 0 }}
-                                </span>
-                            </div>
-                            <RouterLink :to="getArticleUrl(article)" class="read-more-link">
-                                阅读全文 &rarr;
-                            </RouterLink>
-                        </div>
-
-                        <!-- Admin Controls -->
-                        <div v-if="isAuthenticated" class="admin-controls">
-                            <button class="action-btn edit-btn" @click="handleEdit(article)">
-                                <font-awesome-icon icon="pen-to-square" /> 编辑
-                            </button>
-                            <button class="action-btn delete-btn" @click="handleDelete(article)">
-                                <font-awesome-icon icon="trash" /> 删除
-                            </button>
-                        </div>
-                    </article>
-
-                    <!-- Pagination -->
-                    <div class="page-label">{{ totalArticles }}篇文章, 共{{ totalPages }}页</div>
-
-                    <div class="pagination-wrapper">
-                        <button class="page-btn nav-btn" @click="changePage(currentPage - 1)"
-                            :disabled="currentPage === 1">
-                            &larr; 上一页
-                        </button>
-                        <div class="page-numbers">
-                            <button v-for="pageNum in paginationPages()" :key="pageNum" class="page-btn number-btn"
-                                :class="{ 'active': pageNum === currentPage }" @click="changePage(pageNum)">
-                                {{ pageNum }}
-                            </button>
-                        </div>
-                        <button class="page-btn nav-btn" @click="changePage(currentPage + 1)"
-                            :disabled="currentPage === totalPages">
-                            下一页 &rarr;
-                        </button>
+        <div class="main-column">
+            <!-- Skeleton Loading -->
+            <div v-if="loading" class="skeleton-list">
+                <div class="skeleton-card" v-for="i in 5" :key="i">
+                    <div class="skeleton-meta-row">
+                        <div class="skeleton-item skeleton-badge"></div>
+                        <div class="skeleton-item skeleton-date"></div>
                     </div>
-                </template>
+                    <div class="skeleton-item skeleton-title"></div>
+                    <div class="skeleton-item skeleton-text"></div>
+                    <div class="skeleton-item skeleton-text"></div>
+                    <div class="skeleton-item skeleton-text short"></div>
+                    <div class="skeleton-footer-row">
+                        <div class="skeleton-item skeleton-stats"></div>
+                        <div class="skeleton-item skeleton-more"></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Right: Sidebar (4/12) -->
-            <aside class="sidebar-column" :class="{ 'mobile-open': sidebarOpen }">
-
-                <div class="sidebar-content space-y-8">
-
-                    <!-- Categories -->
-                    <div class="sidebar-card" v-if="categories.length > 0">
-                        <h3 class="sidebar-title"><font-awesome-icon icon="folder" class="sidebar-icon" />分类目录</h3>
-                        <ul class="sidebar-list">
-                            <li v-for="category in categories" :key="category.id" class="sidebar-item group">
-                                <RouterLink :to="category.url" class="sidebar-link">
-                                    {{ category.name }}
-                                </RouterLink>
-                                <span class="count-badge">{{ category.num }}</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Top 10 -->
-                    <div class="sidebar-card" v-if="top10.length > 0">
-                        <h3 class="sidebar-title"><font-awesome-icon icon="fire" class="sidebar-icon" />点击排行</h3>
-                        <ul class="ranking-list">
-                            <li v-for="(article, index) in top10" :key="article.id" class="ranking-item">
-                                <span class="rank-number">{{ String(index + 1).padStart(2, '0') }}</span>
-                                <RouterLink :to="article.url" class="rank-link line-clamp-2">
-                                    <div>{{ article.title }}</div>
-                                    <small>{{ article.read }}次阅读</small>
-                                </RouterLink>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Links -->
-                    <div class="sidebar-card">
-                        <h3 class="sidebar-title"><font-awesome-icon icon="link" class="sidebar-icon" />友情链接</h3>
-                        <div class="tags-cloud">
-                            <a v-for="(link, index) in links" :key="index" :href="link.path" target="_blank"
-                                class="tag-link">
-                                {{ link.name }}
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Contact -->
-                    <div class="sidebar-card">
-                        <h3 class="sidebar-title"><font-awesome-icon icon="address-card" class="sidebar-icon" />联系我</h3>
-                        <div class="social-links">
-                            <a href="https://github.com/lzqwebsoft" target="_blank"
-                                class="social-icon"><font-awesome-icon :icon="['fab', 'github']" /></a>
-                            <a href="https://twitter.com/lzqwebsoft" target="_blank"
-                                class="social-icon"><font-awesome-icon :icon="['fab', 'x-twitter']" /></a>
-                            <a href="mailto:lzqwebsoft@gmail.com" class="social-icon"><font-awesome-icon
-                                    icon="envelope" /></a>
-                        </div>
-                    </div>
-
+            <!-- Empty State -->
+            <div v-else-if="articles.length === 0" class="empty-state">
+                <div class="empty-icon-wrapper">
+                    <font-awesome-icon icon="folder" class="empty-icon" />
                 </div>
-            </aside>
+                <h3 class="empty-title">暂无文章</h3>
+                <p class="empty-desc">这里空空如也，博主可能正在闭关修炼中...</p>
+                <button class="back-home-btn" @click="$router.push('/')" v-if="$route.params.categoryId">
+                    返回首页
+                </button>
+            </div>
 
-            <!-- Mobile Overlay -->
-            <div class="sidebar-overlay" :class="{ 'visible': sidebarOpen }" @click="toggleSidebar"></div>
+            <!-- Article List -->
+            <template v-else>
+                <article class="article-card" v-for="article in articles" :key="article.id">
+                    <!-- Meta Header -->
+                    <div class="article-meta-header">
+                        <ArticleBadge :type="getPatternType(article.pattern_type_id)" />
+                        <span class="meta-text">
+                            <font-awesome-icon icon="calendar-day" class="mr-1" />
+                            {{ formatDate(article.release_at) }}
+                        </span>
+                        <span class="meta-tag" v-if="article.category_name">
+                            {{ article.category_name }}
+                        </span>
+                        <ArticleBadge v-if="article.is_top" type="top" />
+                    </div>
+
+                    <!-- Title -->
+                    <h2 class="article-title">
+                        <RouterLink :to="getArticleUrl(article)">
+                            {{ article.title }}
+                        </RouterLink>
+                    </h2>
+
+                    <!-- Summary -->
+                    <p class="article-summary">
+                        {{ truncateContent(article.content) }}
+                    </p>
+
+                    <!-- Footer -->
+                    <div class="article-footer">
+                        <div class="stats-group">
+                            <span>
+                                <font-awesome-icon icon="eye" class="mr-1" />
+                                {{ formatReadCount(article.readed_num) }} 次阅读
+                            </span>
+                            <span>
+                                <font-awesome-icon icon="comment-dots" class="mr-1" />
+                                {{ article.comment_count || 0 }} 评论
+                            </span>
+                        </div>
+                        <RouterLink :to="getArticleUrl(article)" class="read-more-link">
+                            阅读全文 &rarr;
+                        </RouterLink>
+                    </div>
+
+                    <!-- Admin Controls -->
+                    <div v-if="isAuthenticated" class="admin-controls">
+                        <button class="action-btn edit-btn" @click="handleEdit(article)">
+                            <font-awesome-icon icon="pen-to-square" /> 编辑
+                        </button>
+                        <button class="action-btn delete-btn" @click="handleDelete(article)">
+                            <font-awesome-icon icon="trash" /> 删除
+                        </button>
+                    </div>
+                </article>
+
+                <!-- Pagination -->
+                <div class="page-label">{{ totalArticles }}篇文章, 共{{ totalPages }}页</div>
+
+                <div class="pagination-wrapper">
+                    <button class="page-btn nav-btn" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
+                        <font-awesome-icon icon="chevron-left" class="mr-1" />
+                    </button>
+                    <div class="page-numbers">
+                        <button v-for="pageNum in paginationPages()" :key="pageNum" class="page-btn number-btn"
+                            :class="{ 'active': pageNum === currentPage }" @click="changePage(pageNum)">
+                            {{ pageNum }}
+                        </button>
+                    </div>
+                    <button class="page-btn nav-btn" @click="changePage(currentPage + 1)"
+                        :disabled="currentPage === totalPages">
+                        <font-awesome-icon icon="chevron-right" class="ml-1" />
+                    </button>
+                </div>
+            </template>
         </div>
+
+        <!-- Right: Sidebar -->
+        <aside class="sidebar-column" :class="{ 'mobile-open': sidebarOpen }">
+
+            <div class="sidebar-content">
+
+                <!-- Categories -->
+                <div class="sidebar-card" v-if="categories.length > 0">
+                    <h3 class="sidebar-title"><font-awesome-icon icon="folder" class="sidebar-icon" />分类目录</h3>
+                    <ul class="sidebar-list">
+                        <li v-for="category in categories" :key="category.id" class="sidebar-item group">
+                            <RouterLink :to="category.url" class="sidebar-link">
+                                {{ category.name }}
+                            </RouterLink>
+                            <span class="count-badge">{{ category.num }}</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Top 10 -->
+                <div class="sidebar-card" v-if="top10.length > 0">
+                    <h3 class="sidebar-title"><font-awesome-icon icon="fire" class="sidebar-icon" />点击排行</h3>
+                    <ul class="ranking-list">
+                        <li v-for="(article, index) in top10" :key="article.id" class="ranking-item">
+                            <span class="rank-number">{{ String(index + 1).padStart(2, '0') }}</span>
+                            <RouterLink :to="article.url" class="rank-link line-clamp-2">
+                                <div>{{ article.title }}</div>
+                                <small>{{ article.read }}次阅读</small>
+                            </RouterLink>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Links -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title"><font-awesome-icon icon="link" class="sidebar-icon" />友情链接</h3>
+                    <div class="tags-cloud">
+                        <a v-for="(link, index) in links" :key="index" :href="link.path" target="_blank"
+                            class="tag-link">
+                            {{ link.name }}
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title"><font-awesome-icon icon="address-card" class="sidebar-icon" />联系我</h3>
+                    <div class="social-links">
+                        <a href="https://github.com/lzqwebsoft" target="_blank" class="social-icon"><font-awesome-icon
+                                :icon="['fab', 'github']" /></a>
+                        <a href="https://twitter.com/lzqwebsoft" target="_blank" class="social-icon"><font-awesome-icon
+                                :icon="['fab', 'x-twitter']" /></a>
+                        <a href="mailto:lzqwebsoft@gmail.com" class="social-icon"><font-awesome-icon
+                                icon="envelope" /></a>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" :class="{ 'visible': sidebarOpen }" @click="toggleSidebar"></div>
     </div>
 </template>
 
@@ -175,7 +193,7 @@ export default {
             totalPages: 1,
             totalArticles: 0,
             pageSize: 10,
-            visiblePages: 5,
+            visiblePages: 4,
             sidebarOpen: false,
             loading: false,
             isAuthenticated: false,
@@ -187,6 +205,7 @@ export default {
         eventBus.on('toggle-sidebar', this.toggleSidebar)
     },
     unmounted() {
+        if (this.sidebarOpen) this.toggleSidebar()
         eventBus.off('toggle-sidebar', this.toggleSidebar)
     },
     watch: {
@@ -311,17 +330,18 @@ export default {
     width: 100%;
     max-width: 1750px;
     padding: 2rem 1rem;
-}
-
-.grid-layout {
     display: flex;
+    justify-content: center;
     flex-direction: row;
-    gap: 2rem;
 }
 
-/* Utilities */
-.space-y-8>*+* {
-    margin-top: 2rem;
+.main-column {
+    flex-grow: 4;
+    margin-right: 1rem;
+}
+
+.sidebar-column {
+    margin-left: 1rem;
 }
 
 /* Article Card */
@@ -332,6 +352,7 @@ export default {
     box-shadow: var(--shadow-color) 0px 4px 20px -2px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 1px solid transparent;
+    margin-bottom: 2rem;
 }
 
 .article-card:hover {
@@ -344,6 +365,7 @@ export default {
 
 .article-meta-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 1rem;
@@ -408,12 +430,15 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
     font-size: 0.875rem;
     color: var(--text-color);
 }
 
 .stats-group {
     display: flex;
+    flex-wrap: wrap;
     gap: 1.25rem;
     color: var(--text-secondary);
 }
@@ -473,50 +498,75 @@ export default {
     background-color: rgba(220, 53, 69, 0.2);
 }
 
+.page-label {
+    margin: 2rem 0 1rem;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
 /* Pagination */
 .pagination-wrapper {
-    padding-top: 2rem;
+    padding-top: 3rem;
+    margin-top: 2rem;
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .page-btn {
-    height: 2rem;
-    min-width: 2rem;
-    padding: 0 0.5rem;
-    border-radius: 0.25rem;
-    border: none;
-    background: transparent;
+    height: 2.5rem;
+    min-width: 2.5rem;
+    padding: 0 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
     color: var(--text-color);
     cursor: pointer;
-    font-size: 0.875rem;
-    transition: all 0.2s;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .page-btn:hover:not(:disabled) {
     background-color: var(--hover-bg);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .page-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .page-btn.active {
-    background-color: var(--link-color);
-    color: var(--bg-color);
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .page-btn.nav-btn {
-    color: var(--text-secondary);
+    padding: 0 1.25rem;
 }
 
 .page-numbers {
     display: flex;
-    gap: 0.25rem;
+    gap: 0.5rem;
+}
+
+.number-btn {
+    padding: 0;
 }
 
 /* Sidebar Styling */
@@ -526,6 +576,7 @@ export default {
     padding: 1.5rem;
     box-shadow: var(--shadow-color) 0px 4px 20px -2px;
     border: 1px solid transparent;
+    margin-bottom: 2rem;
 }
 
 :root.dark-theme .sidebar-card {
@@ -670,84 +721,189 @@ export default {
     color: var(--text-color);
 }
 
-/* Mobile Sidebar Drawer */
-@media (max-width: 1023px) {
-    .sidebar-column {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 16rem;
-        background-color: var(--bg-color);
-        z-index: 50;
+/* Loading & Empty */
+/* Skeleton Loading & Animation */
+.skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.skeleton-card {
+    background-color: var(--card-bg);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-color) 0px 4px 20px -2px;
+    border: 1px solid transparent;
+}
+
+:root.dark-theme .skeleton-card {
+    border-color: var(--border-color);
+}
+
+.skeleton-item {
+    background: #e5e7eb;
+    border-radius: 0.375rem;
+    position: relative;
+    overflow: hidden;
+}
+
+:root.dark-theme .skeleton-item {
+    background: #1f2937;
+}
+
+.skeleton-item::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent);
+    animation: shine 1.5s infinite linear;
+}
+
+:root.dark-theme .skeleton-item::after {
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.05),
+            transparent);
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
         transform: translateX(100%);
-        transition: transform 0.3s ease-in-out;
-        overflow-y: auto;
-        box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-        padding: 0;
-    }
-
-    .mobile-open {
-        transform: translateX(0);
-    }
-
-    .sidebar-content {
-        padding: 1.5rem;
-    }
-
-    .sidebar-overlay {
-        position: fixed;
-        inset: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 40;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s;
-        backdrop-filter: blur(2px);
-    }
-
-    .sidebar-overlay.visible {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .mobile-toggle-btn {
-        position: fixed;
-        bottom: 1.5rem;
-        left: 1.5rem;
-        width: 3rem;
-        height: 3rem;
-        border-radius: 50%;
-        background-color: var(--primary-color);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        z-index: 45;
-        border: none;
     }
 }
 
-/* Loading & Empty */
-.loading-container,
-.empty-container {
+.skeleton-meta-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.skeleton-badge {
+    width: 60px;
+    height: 1.5rem;
+}
+
+.skeleton-date {
+    width: 100px;
+    height: 1.5rem;
+}
+
+.skeleton-title {
+    width: 80%;
+    height: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.skeleton-text {
+    width: 100%;
+    height: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-text.short {
+    width: 40%;
+}
+
+.skeleton-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.skeleton-stats {
+    width: 120px;
+    height: 1.25rem;
+}
+
+.skeleton-more {
+    width: 80px;
+    height: 1.25rem;
+}
+
+/* Empty State */
+.empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4rem 2rem;
-    color: var(--text-secondary);
+    padding: 8rem 2rem;
+    text-align: center;
+    background-color: var(--card-bg);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-color) 0 4px 6px -1px;
+    border: 1px solid transparent;
 }
 
-.spinner-large {
-    width: 48px;
-    height: 48px;
-    border: 4px solid rgba(59, 130, 246, 0.2);
-    border-top-color: var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+:root.dark-theme .empty-state {
+    border-color: var(--border-color);
+}
+
+.empty-icon-wrapper {
+    color: var(--text-secondary);
+    font-size: 5rem;
+}
+
+.empty-icon {
+    animation: float 3s ease-in-out infinite;
+    opacity: 0.4;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.empty-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-color);
     margin-bottom: 1rem;
+    font-family: var(--font-serif);
+}
+
+.empty-desc {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    max-width: 400px;
+    margin-bottom: 2.5rem;
+}
+
+.back-home-btn {
+    padding: 0.75rem 2rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.back-home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    background-color: var(--primary-hover);
 }
 
 @keyframes spin {
@@ -779,19 +935,72 @@ export default {
     .page-container {
         max-width: 900px;
     }
+
+    .main-column {
+        margin-right: 0.5rem;
+    }
+
+    .sidebar-column {
+        margin-left: 0.5rem;
+    }
 }
 
+/* Mobile Sidebar Drawer */
 @media (max-width: 768px) {
     .page-container {
         max-width: 100%;
         width: 100%;
-        padding: 1rem;
+        padding: 10px;
+        display: block;
     }
 
-    .grid-layout {
-        display: block;
-        flex-direction: initial;
-        gap: initial;
+    .main-column {
+        margin-right: 0;
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-column {
+        margin-left: 0;
+    }
+
+    .sidebar-column {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 16rem;
+        background-color: var(--bg-color);
+        z-index: 50;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        overflow-y: auto;
+        box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+        padding: 80px 0 0;
+    }
+
+    .mobile-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-content {
+        padding: 1.5rem;
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s;
+        backdrop-filter: blur(2px);
+    }
+
+    .sidebar-overlay.visible {
+        opacity: 1;
+        visibility: visible;
     }
 }
 
@@ -812,10 +1021,6 @@ export default {
 @media (min-width: 1024px) {
     .sidebar-column {
         display: block;
-    }
-
-    .mobile-toggle-btn {
-        display: none;
     }
 
     .sidebar-content {

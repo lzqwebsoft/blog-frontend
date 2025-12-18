@@ -2,11 +2,11 @@
     <header class="header" :class="{ hidden: isHidden }">
         <nav class="nav">
             <div class="nav-left">
-                <img src="@/assets/images/avatar.jpg" alt="头像" class="avatar">
                 <div class="brand-slogan">
                     <div class="nav-brand">
-                        <RouterLink to="/">飘痕の博客</RouterLink>
+                        <RouterLink to="/">飘痕</RouterLink>
                     </div>
+                    <div class="brand-divider"></div>
                     <div class="slogan">自由自在的学习编程艺术</div>
                 </div>
             </div>
@@ -21,6 +21,8 @@
                     <font-awesome-icon icon="magnifying-glass" />
                 </button>
 
+                <RouterLink class="nav-item about-link" to="/about">关于</RouterLink>
+
                 <button class="nav-item theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
                     <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
                 </button>
@@ -28,7 +30,8 @@
                 <!-- 已登录：显示下拉菜单 -->
                 <div v-if="isAuthenticated" class="dropdown" ref="dropdownRef">
                     <button class="nav-item" @click="showMenu = !showMenu">
-                        <font-awesome-icon icon="gear" class="menu" />
+                        <img src="@/assets/images/avatar.jpg" alt="头像" class="avatar">
+                        <font-awesome-icon icon="angle-down" class="menu" />
                     </button>
                     <div class="dropdown-content" v-show="showMenu">
                         <RouterLink v-for="(item, index) in menuItems" :key="index" :to="item.url" class="dropdown-item"
@@ -44,8 +47,9 @@
                     <font-awesome-icon icon="right-to-bracket" />
                 </button>
 
-                <!-- 小屏时显示右侧菜单 -->
-                <button id="mobile-menu-btn" class="nav-item" @click="toggleSidebar">
+                <!-- 小屏时显示右侧菜单(仅在首页显示) -->
+                <button v-if="['index', 'category'].includes($route.name)" id="mobile-menu-btn" class="nav-item"
+                    @click="toggleSidebar">
                     <font-awesome-icon icon="bars" />
                 </button>
             </div>
@@ -87,8 +91,8 @@ export default {
             menuItems: [
                 { title: '发表博客', url: '/new', icon: 'edit' },
                 { title: '修改密码', url: '/change_pwd', icon: 'lock' },
-                { title: '设&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;置', url: '/set', icon: 'cog' },
-                { title: '注&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;销', url: '/login', icon: 'sign-out-alt', action: 'logout' },
+                { title: '博客设置', url: '/set', icon: 'cog' },
+                { title: '注销登录', url: '/login', icon: 'sign-out-alt', action: 'logout' },
             ],
         }
     },
@@ -101,13 +105,17 @@ export default {
     unmounted() {
         window.removeEventListener('scroll', this.handleScroll)
         document.removeEventListener('click', this.handleClickOutside)
+        document.body.style.overflow = '';
     },
     watch: {
         showSearchDialog(newVal) {
             if (newVal) {
+                document.body.style.overflow = 'hidden';
                 this.$nextTick(() => {
                     this.$refs.searchInput?.focus();
                 });
+            } else {
+                document.body.style.overflow = '';
             }
         },
         $route() {
@@ -227,33 +235,29 @@ export default {
     gap: 0.5rem;
 }
 
-.avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--border-color);
-    transition: transform 0.3s ease;
-}
-
-.avatar:hover {
-    transform: scale(1.1);
-}
-
 .brand-slogan {
-    font-family: var(--font-serif);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
 }
 
 .nav-brand {
     font-size: 1.5rem;
     font-weight: bold;
+    font-family: var(--font-serif);
 }
 
 .nav-brand a {
     color: var(--text-color);
     text-decoration: none;
+}
+
+.brand-divider {
+    width: 1px;
+    height: 1.25rem;
+    background-color: var(--border-color);
 }
 
 .slogan {
@@ -309,6 +313,37 @@ export default {
     position: relative;
 }
 
+.dropdown .nav-item {
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+    transition: transform 0.3s ease;
+}
+
+.dropdown .nav-item:hover {
+    transform: scale(1.1);
+}
+
+.dropdown .nav-item:hover {
+    background-color: transparent;
+}
+
+.dropdown .nav-item .menu {
+    font-size: 0.75rem;
+    line-height: 1rem;
+}
+
 .dropdown-content {
     position: absolute;
     right: 0;
@@ -324,7 +359,6 @@ export default {
     display: block;
     padding: 0.75rem 1rem;
     text-decoration: none;
-    border-bottom: 1px solid var(--hover-bg);
     color: var(--text-color);
 }
 
@@ -337,17 +371,12 @@ export default {
 }
 
 .dropdown-item:last-child {
-    border-bottom: none;
+    border-top: 1px solid var(--hover-bg);
+    color: #dc2626;
 }
 
-.menu-icon {
-    margin-right: 0.5rem;
-    width: 16px;
-    text-align: center;
-}
-
-.search-button {
-    display: none;
+.dropdown-item:last-child:hover {
+    background-color: rgba(220, 38, 38, 0.1);
 }
 
 .nav-item {
@@ -363,6 +392,29 @@ export default {
 
 .nav-item:hover {
     background-color: rgba(0, 0, 0, 0.1);
+}
+
+.menu-icon {
+    margin-right: 0.5rem;
+    width: 16px;
+    text-align: center;
+}
+
+.search-button {
+    display: none;
+}
+
+.about-link {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.about-link:hover {
+    text-decoration: none;
+}
+
+.theme-toggle .fa-sun {
+    color: #facc15;
 }
 
 :root.dark-theme .nav-item {
@@ -460,17 +512,16 @@ export default {
         gap: 0.75rem;
     }
 
-    .avatar {
-        width: 50px;
-        height: 50px;
-    }
-
     .nav-brand {
         font-size: 1.25rem;
     }
 
+    .brand-divider {
+        display: none;
+    }
+
     .slogan {
-        font-size: 0.8rem;
+        display: none;
     }
 
     .header-search {
