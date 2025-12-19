@@ -78,7 +78,7 @@ export default {
     margin: 2.5rem 0;
     padding: 1.5rem;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
-    border-radius: 16px;
+    border-radius: 8px;
     border: 1px solid rgba(99, 102, 241, 0.1);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
@@ -260,7 +260,7 @@ export default {
 /* 移动端适配 */
 @media (max-width: 768px) {
     .sns-share {
-        padding: 1.25rem;
+        padding: 0.6rem 1.25rem;
         margin: 1.5rem 0;
     }
 
@@ -286,6 +286,7 @@ export default {
         border-radius: 50%;
         justify-content: center;
         align-items: center;
+        padding: 0;
     }
 
     .btn-text {

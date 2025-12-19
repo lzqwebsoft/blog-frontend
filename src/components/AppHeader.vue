@@ -246,14 +246,23 @@ export default {
 }
 
 .nav-brand {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.6rem;
+    font-weight: 800;
     font-family: var(--font-serif);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
 }
 
 .nav-brand a {
     color: var(--text-color);
     text-decoration: none;
+}
+
+.nav-brand a:hover {
+    transform: translateY(-1px) scale(1.05);
 }
 
 .brand-divider {
@@ -515,7 +524,7 @@ export default {
     }
 
     .nav-brand {
-        font-size: 1.25rem;
+        font-size: 1.35rem;
     }
 
     .brand-divider {

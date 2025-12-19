@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Index from '../views/Index.vue'
 import Show from '../views/Show.vue'
+import About from '../views/About.vue'
 import Login from '@/views/Login.vue'
 import EditArticle from '../views/EditArticle.vue'
 import Set from '@/views/Set.vue'
@@ -29,6 +30,15 @@ const router = createRouter({
             meta: {
                 title: '文章详情',
                 description: '显示文章详情',
+            },
+        },
+        {
+            path: '/about',
+            name: 'about',
+            component: About,
+            meta: {
+                title: '关于本站',
+                description: '了解更多关于-ZQLUO-的博客信息',
             },
         },
         {

@@ -234,7 +234,7 @@ export default {
                 const res = await getHomeData(this.currentPage, this.pageSize, categoryId)
                 const { articleTypes, page, top10Articles, links } = res.data
 
-                this.categories = (articleTypes || []).map((type) => ({
+                this.categories = (articleTypes || []).filter((type) => type.article_count > 0).map((type) => ({
                     name: type.name,
                     num: type.article_count,
                     url: `/select/${type.id}`,

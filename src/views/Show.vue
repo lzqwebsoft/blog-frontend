@@ -100,10 +100,18 @@
             <div class="comments-list" v-if="comments.length > 0">
                 <div class="comment" v-for="item in comments" :key="item.id">
                     <div class="comment-header">
-                        <strong class="comment-author" :class="{ 'blogger-badge': item.isBlogger }">
-                            {{ item.nickname }}
-                            <span v-if="item.isBlogger" class="badge-text">博主</span>
-                        </strong>
+                        <div class="comment-author-info">
+                            <img v-if="item.isBlogger" src="@/assets/images/avatar.jpg" class="comment-avatar"
+                                :alt="item.nickname" />
+                            <strong class="comment-author" :class="{ 'blogger-badge': item.isBlogger }">
+                                <template v-if="item.isBlogger">
+                                    <span class="badge-text">博主</span>
+                                </template>
+                                <template v-else>
+                                    {{ item.nickname }}
+                                </template>
+                            </strong>
+                        </div>
                         <div class="comment-actions">
                             <button class="action-btn edit-btn" @click="replyComment(item)">
                                 <font-awesome-icon icon="reply" />
@@ -125,10 +133,18 @@
                     <div class="comment-children" v-if="item.children?.length">
                         <div class="comment" v-for="child in item.children" :key="child.id">
                             <div class="comment-header">
-                                <strong class="comment-author" :class="{ 'blogger-badge': child.isBlogger }">
-                                    {{ child.nickname }}
-                                    <span v-if="child.isBlogger" class="badge-text">博主</span>
-                                </strong>
+                                <div class="comment-author-info">
+                                    <img v-if="child.isBlogger" src="@/assets/images/avatar.jpg" class="comment-avatar"
+                                        :alt="child.nickname" />
+                                    <strong class="comment-author" :class="{ 'blogger-badge': child.isBlogger }">
+                                        <template v-if="child.isBlogger">
+                                            <span class="badge-text">博主</span>
+                                        </template>
+                                        <template v-else>
+                                            {{ child.nickname }}
+                                        </template>
+                                    </strong>
+                                </div>
                                 <div class="comment-actions">
                                     <button class="action-btn edit-btn" @click="replyComment(child)">
                                         <font-awesome-icon icon="reply" />
@@ -753,7 +769,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .article-detail {
     margin: 20px auto;
 }
@@ -889,7 +905,12 @@ export default {
 .submit-btn:hover {
     background-color: var(--primary-hover);
 }
+</style>
 
+<style lang="scss">
+/* ==========================================================================
+   Global Styles (for v-html content)
+   ========================================================================== */
 .article-content {
     line-height: 1.8;
     margin-bottom: 2rem;
@@ -1040,14 +1061,6 @@ export default {
 }
 
 @media (min-width: 768px) {
-
-    /*
-     * ----------------------------------------
-     * PC端照片卡片样式 (Photo Card Style)
-     * ----------------------------------------
-     * 使用 JS 包裹的 .photo-card 容器来实现拍立得/照片效果
-     * 包含: 白边、阴影、顶部胶带效果
-     */
     .article-content .photo-card {
         display: block;
         margin: 3rem auto;
@@ -1107,7 +1120,6 @@ export default {
         font-weight: 500;
     }
 
-    /* 悬停效果 */
     .article-content .photo-card:hover {
         transform: scale(1.01) rotate(0.5deg);
         box-shadow:
@@ -1116,12 +1128,8 @@ export default {
         z-index: 5;
     }
 
-    /*
-     * 暗黑模式适配 (Dark Mode)
-     */
     :root.dark-theme .article-content .photo-card {
         background-color: #252525;
-        /* 更深的背景色，接近黑色但有区分 */
         border-color: #333;
         box-shadow:
             0 1px 2px rgba(0, 0, 0, 0.3),
@@ -1130,7 +1138,6 @@ export default {
     }
 
     :root.dark-theme .article-content .photo-card::before {
-        /* 暗黑模式下胶带降低亮度和饱和度 */
         background-color: rgba(180, 170, 150, 0.6);
         border-color: rgba(255, 255, 255, 0.1);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
@@ -1200,6 +1207,13 @@ export default {
     background-color: rgba(255, 255, 255, 0.06);
 }
 
+.comment-content {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+</style>
+
+<style lang="scss" scoped>
 .related-articles {
     background: var(--card-bg);
     border-radius: 8px;
@@ -1286,11 +1300,6 @@ export default {
     gap: 0.5rem;
 }
 
-.comment-content {
-    margin-bottom: 0.5rem;
-    line-height: 1.6;
-}
-
 .comment-meta {
     font-size: 0.875rem;
     color: #666;
@@ -1303,10 +1312,6 @@ export default {
     padding-left: 1rem;
 }
 
-.blogger-badge {
-    color: var(--primary-color);
-}
-
 .badge-text {
     display: inline-block;
     background: var(--primary-color);
@@ -1315,6 +1320,20 @@ export default {
     padding: 0.1rem 0.4rem;
     border-radius: 3px;
     margin-left: 0.5rem;
+}
+
+.comment-author-info {
+    display: flex;
+    align-items: center;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .empty-comments {
@@ -1809,10 +1828,10 @@ export default {
         height: 14px;
     }
 }
+</style>
 
-
-/* PrismJS 代码高亮样式 */
-/* Light theme */
+<style lang="scss">
+/* PrismJS Styles (for global v-html content) */
 .article-content {
 
     code[class*="language-"],
@@ -2086,7 +2105,9 @@ export default {
         color: green;
     }
 }
+</style>
 
+<style lang="scss" scoped>
 /* Article Pager */
 .article-pager {
     display: flex;
