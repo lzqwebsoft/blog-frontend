@@ -16,9 +16,22 @@
 
         <!-- 文章主体 -->
         <article class="article">
-            <div v-if="loading" class="loading-container">
-                <div class="spinner-large"></div>
-                <p>加载中...</p>
+            <div v-if="loading" class="skeleton-detail">
+                <div class="skeleton-item skeleton-title"></div>
+                <div class="skeleton-meta-row">
+                    <div class="skeleton-item skeleton-meta"></div>
+                    <div class="skeleton-item skeleton-actions"></div>
+                </div>
+                <div class="skeleton-content">
+                    <div class="skeleton-item skeleton-text"></div>
+                    <div class="skeleton-item skeleton-text"></div>
+                    <div class="skeleton-item skeleton-text"></div>
+                    <div class="skeleton-item skeleton-text short"></div>
+                    <div class="skeleton-item skeleton-text"></div>
+                    <div class="skeleton-item skeleton-text"></div>
+                    <div class="skeleton-item skeleton-text"></div>
+                    <div class="skeleton-item skeleton-text short"></div>
+                </div>
             </div>
 
             <template v-else>
@@ -152,7 +165,7 @@
                         <div class="reply-info">
                             <font-awesome-icon icon="reply" class="reply-icon" />
                             <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname
-                            }}</strong></span>
+                                    }}</strong></span>
                         </div>
                         <button type="button" class="btn-cancel-reply" @click="cancelReply">
                             <font-awesome-icon icon="xmark" class="cancel-icon" />
@@ -718,9 +731,19 @@ export default {
             }
 
             try {
-                await deleteCommentApi(commentId);
-                alert('删除成功');
-                this.fetchArticleDetail();
+                const res = await deleteCommentApi(commentId);
+                if (res.code == 0) {
+                    alert('删除成功');
+                    // 更新评论列表
+                    if (res.data && res.data.comments) {
+                        this.comments = this.processComments(res.data.comments);
+                    } else {
+                        // 如果返回数据中没有评论列表，重新加载文章详情
+                        await this.fetchArticleDetail();
+                    }
+                } else {
+                    alert(res.message || '删除失败，请重试');
+                }
             } catch (error) {
                 console.error('删除评论失败:', error);
                 alert('删除失败，请重试');
@@ -1300,29 +1323,93 @@ export default {
     color: var(--text-secondary);
 }
 
-.loading-container {
+/* Skeleton Loading */
+.skeleton-detail {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-    color: var(--text-secondary);
+    gap: 1.5rem;
 }
 
-.spinner-large {
-    width: 48px;
-    height: 48px;
-    border: 4px solid rgba(59, 130, 246, 0.2);
-    border-top-color: var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+.skeleton-item {
+    background: #e5e7eb;
+    border-radius: 0.375rem;
+    position: relative;
+    overflow: hidden;
+}
+
+:root.dark-theme .skeleton-item {
+    background: #1f2937;
+}
+
+.skeleton-item::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent);
+    animation: shine 1.5s infinite linear;
+}
+
+:root.dark-theme .skeleton-item::after {
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.05),
+            transparent);
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.skeleton-title {
+    width: 70%;
+    height: 3rem;
     margin-bottom: 1rem;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+.skeleton-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skeleton-meta {
+    width: 300px;
+    height: 1.25rem;
+}
+
+.skeleton-actions {
+    width: 150px;
+    height: 2.5rem;
+}
+
+.skeleton-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.skeleton-text {
+    width: 100%;
+    height: 1.125rem;
+}
+
+.skeleton-text.short {
+    width: 60%;
 }
 
 .comment-form {

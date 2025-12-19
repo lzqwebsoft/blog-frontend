@@ -838,12 +838,8 @@ export default {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8rem 2rem;
+    padding: 3rem 2rem;
     text-align: center;
-    background-color: var(--card-bg);
-    border-radius: 1rem;
-    box-shadow: var(--shadow-color) 0 4px 6px -1px;
-    border: 1px solid transparent;
 }
 
 :root.dark-theme .empty-state {
