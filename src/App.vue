@@ -40,18 +40,23 @@ export default {
             this.scrolling = false;
         },
     },
+    computed: {
+        isEditPage() {
+            return ['article-new', 'article-edit'].includes(this.$route.name);
+        }
+    }
 }
 </script>
 
 <template>
     <div class="app">
-        <AppHeader />
+        <AppHeader v-if="!isEditPage" />
 
-        <main class="main">
+        <main class="main" :class="{ 'is-edit': isEditPage }">
             <RouterView />
         </main>
 
-        <AppFooter />
+        <AppFooter v-if="!isEditPage" />
 
         <button class="scroll-to-top" :class="{ 'show': showTop }" @click="scrollToTop">
             <font-awesome-icon icon="arrow-up" />
@@ -75,6 +80,11 @@ export default {
     width: 100%;
     box-sizing: border-box;
     padding: 0;
+}
+
+.main.is-edit {
+    margin-top: 0;
+    max-width: 100%;
 }
 
 .scroll-to-top {

@@ -1,150 +1,140 @@
 <template>
-    <div class="edit-article-page container">
-        <div class="blog-header">
-            <h2>
-                {{ isEdit ? '编辑博客' : '撰写博客' }}
-                <small class="change-to">
-                    <button type="button" class="btn-convert" @click="toggleEditorMode">
-                        {{ useMarkdown ? '切换至富文本' : '切换至Markdown' }}
-                    </button>
-                </small>
-            </h2>
-        </div>
+    <div class="fullscreen-page">
+        <EditHeader :useMarkdown="useMarkdown" :isDark="isDark" :submitting="submitting"
+            :autoSaveStatus="autoSaveStatus" :statusLabel="statusLabel" @toggle-mode="toggleEditorMode"
+            @toggle-theme="toggleTheme" @save-draft="saveAsDraft" @publish="handleSubmit" @preview="handlePreview" />
 
-        <!-- 消息提示区域 -->
-        <div class="message-container">
-            <transition name="slide-fade">
-                <div v-if="errorMessage" class="message-alert error">
-                    <div class="message-icon">
-                        <font-awesome-icon icon="circle-exclamation" />
-                    </div>
-                    <div class="message-content">
-                        <template v-if="errorMessageList.length">
-                            <ul class="message-list">
-                                <li v-for="(msg, idx) in errorMessageList" :key="idx">{{ msg }}</li>
-                            </ul>
-                        </template>
-                        <template v-else>
-                            {{ errorMessage }}
-                        </template>
-                    </div>
-                    <button class="message-close" @click="errorMessage = ''">
-                        <font-awesome-icon icon="xmark" />
-                    </button>
-                </div>
-            </transition>
-
-            <transition name="slide-fade">
-                <div v-if="successMessage" class="message-alert success">
-                    <div class="message-icon">
-                        <font-awesome-icon icon="circle-check" />
-                    </div>
-                    <div class="message-content">{{ successMessage }}</div>
-                    <button class="message-close" @click="successMessage = ''">
-                        <font-awesome-icon icon="xmark" />
-                    </button>
-                </div>
-            </transition>
-        </div>
-
-        <form @submit.prevent="handleSubmit" class="article-form">
-            <div class="form-group">
-                <label for="article_title">标题</label>
-                <div class="input-group">
-                    <select v-model="form.patternTypeId" class="form-control pattern-select">
-                        <option value="-1">类型</option>
-                        <option v-for="pattern in patterns" :key="pattern.id" :value="pattern.id">
-                            {{ pattern.name }}
-                        </option>
-                    </select>
-                    <input type="text" v-model="form.title" class="form-control title-input" id="article_title"
-                        placeholder="请输入文章标题" required />
-                </div>
-                <input type="hidden" v-model="form.id" />
-            </div>
-
-            <div class="form-group">
-                <label for="article_content">博客内容</label>
-                <!-- 富文本编辑器 -->
-                <div v-if="!useMarkdown" class="rich-text-editor-wrapper">
-                    <RichTextEditor v-model="form.content" :height="500" />
-                </div>
-                <!-- Markdown编辑器 -->
-                <div v-else class="markdown-editor-wrapper">
-                    <MarkdownEditor v-model="form.contentMD" :height="500" />
-                </div>
-                <div class="auto-save-status" :class="autoSaveStatus" v-if="autoSaveStatus">
-                    <span class="status-dot"></span>
-                    <span class="status-label">{{ statusLabel }}</span>
-                    <span class="status-time" v-if="autoSaveStatus === 'success' && autoSaveTime">{{
-                        formatDateTime(autoSaveTime) }}</span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="article_type">文章类别</label>
-                <div class="type-selector-group">
-                    <select v-if="!showNewType" v-model="form.typeId" id="type" class="form-control custom-select">
-                        <option value="0">请选择分类</option>
-                        <option v-for="type in articleTypes" :key="type.id" :value="type.id">
-                            {{ type.name }}
-                        </option>
-                    </select>
-                    <input v-else v-model="newTypeName" type="text" class="form-control" placeholder="请输入新的分类名称" />
-
-                    <button type="button" class="btn-text" @click="toggleNewType">
-                        {{ showNewType ? '取消新建' : '新建分类' }}
-                    </button>
-                </div>
-            </div>
-
-            <div class="form-group" style="display:none;">
-                <label for="codeTheme">代码主题</label>
-                <div class="input-group">
-                    <select v-model="form.codeTheme" class="form-control custom-select">
-                        <option v-for="theme in codeThemes" :key="theme.id" :value="theme.id">
-                            {{ theme.name }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>评论设置</label>
-                <div class="card-button-group">
-                    <label class="card-btn" :class="{ active: form.allowComment === true }">
-                        <input type="radio" v-model="form.allowComment" :value="true" />
-                        <span class="btn-text">允许评论</span>
-                        <div class="active-icon" v-if="form.allowComment === true">
-                            <i class="icon-check"></i>
+        <div class="edit-article-page">
+            <!-- 消息提示区域 -->
+            <div class="message-container">
+                <transition name="slide-fade">
+                    <div v-if="errorMessage" class="message-alert error">
+                        <div class="message-icon">
+                            <font-awesome-icon icon="circle-exclamation" />
                         </div>
-                    </label>
-                    <label class="card-btn" :class="{ active: form.allowComment === false }">
-                        <input type="radio" v-model="form.allowComment" :value="false" />
-                        <span class="btn-text">禁止评论</span>
-                        <div class="active-icon" v-if="form.allowComment === false">
-                            <i class="icon-check"></i>
+                        <div class="message-content">
+                            <template v-if="errorMessageList.length">
+                                <ul class="message-list">
+                                    <li v-for="(msg, idx) in errorMessageList" :key="idx">{{ msg }}</li>
+                                </ul>
+                            </template>
+                            <template v-else>
+                                {{ errorMessage }}
+                            </template>
                         </div>
-                    </label>
-                </div>
+                        <button class="message-close" @click="errorMessage = ''">
+                            <font-awesome-icon icon="xmark" />
+                        </button>
+                    </div>
+                </transition>
+
+                <transition name="slide-fade">
+                    <div v-if="successMessage" class="message-alert success">
+                        <div class="message-icon">
+                            <font-awesome-icon icon="circle-check" />
+                        </div>
+                        <div class="message-content">{{ successMessage }}</div>
+                        <button class="message-close" @click="successMessage = ''">
+                            <font-awesome-icon icon="xmark" />
+                        </button>
+                    </div>
+                </transition>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" name="publish" value="1" class="btn btn-primary" :disabled="submitting">
-                    {{ submitting ? '提交中...' : '发表' }}
-                </button>
-                <button type="button" name="save" value="1" class="btn btn-default" @click="saveAsDraft"
-                    :disabled="submitting">
-                    {{ submitting ? '保存中...' : '保存为草稿' }}
-                </button>
+            <!-- 主内容区域 -->
+            <div class="editor-layout">
+                <!-- 左侧：写作区 -->
+                <div class="editor-main">
+                    <!-- 一体化编辑容器 -->
+                    <div class="editor-wrapper">
+                        <!-- 标题输入 -->
+                        <div class="title-section">
+                            <input type="text" v-model="form.title" class="title-input" id="article_title"
+                                placeholder="请输入文章标题..." required />
+                            <input type="hidden" v-model="form.id" />
+                        </div>
+
+                        <!-- 分割线 -->
+                        <div class="editor-divider"></div>
+
+                        <!-- 编辑器区域 -->
+                        <div class="editor-content-area">
+                            <div v-if="!useMarkdown" class="editor-component-wrapper">
+                                <RichTextEditor v-model="form.content" :height="600" />
+                            </div>
+                            <div v-else class="editor-component-wrapper">
+                                <MarkdownEditor v-model="form.contentMD" :height="600" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：设置区 -->
+                <aside class="editor-sidebar">
+                    <!-- 文章设置卡片 -->
+                    <div class="settings-card">
+                        <h3 class="card-title">
+                            <font-awesome-icon icon="gear" />
+                            文章设置
+                        </h3>
+
+                        <!-- 模式选择 -->
+                        <div class="setting-item">
+                            <label class="setting-label">创作模式</label>
+                            <div class="select-wrapper">
+                                <select v-model="form.patternTypeId" class="setting-select">
+                                    <option value="-1" disabled>请选择文章类型</option>
+                                    <option v-for="pattern in patterns" :key="pattern.id" :value="pattern.id">
+                                        {{ pattern.name }}
+                                    </option>
+                                </select>
+                                <font-awesome-icon icon="chevron-down" class="select-arrow" />
+                            </div>
+                        </div>
+
+                        <!-- 分类 -->
+                        <div class="setting-item">
+                            <label class="setting-label">文章分类</label>
+                            <div class="category-selector">
+                                <div class="select-wrapper" v-if="!showNewType">
+                                    <select v-model="form.typeId" class="setting-select">
+                                        <option value="0">请选择分类</option>
+                                        <option v-for="type in articleTypes" :key="type.id" :value="type.id">
+                                            {{ type.name }}
+                                        </option>
+                                    </select>
+                                    <font-awesome-icon icon="chevron-down" class="select-arrow" />
+                                </div>
+                                <input v-else v-model="newTypeName" type="text" class="setting-input"
+                                    placeholder="请输入新的分类名称" />
+                                <button type="button" class="btn-link" @click="toggleNewType">
+                                    {{ showNewType ? '取消' : '+ 新建' }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 评论设置 -->
+                        <div class="setting-item"
+                            style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
+                            <div class="toggle-item">
+                                <span class="toggle-label">允许评论</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" v-model="form.allowComment" />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
             </div>
-        </form>
+        </div>
     </div>
 </template>
 
 <script>
 import RichTextEditor from '@/components/RichTextEditor.vue'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
+import EditHeader from '@/components/EditHeader.vue'
 import { getArticleTypes, saveArticle, getArticleDetail } from '@/api/article'
 import { formatDateTime } from '@/utils/tools'
 
@@ -152,7 +142,8 @@ export default {
     name: 'EditArticle',
     components: {
         RichTextEditor,
-        MarkdownEditor
+        MarkdownEditor,
+        EditHeader
     },
     data() {
         return {
@@ -169,6 +160,7 @@ export default {
             autoSaveStatus: null,
             autoSaveTime: null,
             autoSaveError: '',
+            isDark: false, // Theme state
             form: {
                 id: '',
                 title: '',
@@ -224,6 +216,7 @@ export default {
         }
     },
     mounted() {
+        this.initializeTheme()
         this.initializePage()
     },
 
@@ -477,6 +470,31 @@ export default {
             } finally {
                 this.submitting = false
             }
+        },
+        // Theme methods
+        toggleTheme() {
+            this.isDark = !this.isDark
+            this.applyTheme()
+            localStorage.setItem('theme', this.isDark ? 'dark' : 'light')
+        },
+        initializeTheme() {
+            const savedTheme = localStorage.getItem('theme')
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+            this.isDark = savedTheme ? savedTheme === 'dark' : prefersDark
+            this.applyTheme()
+        },
+        applyTheme() {
+            if (this.isDark) {
+                document.documentElement.classList.add('dark-theme')
+            } else {
+                document.documentElement.classList.remove('dark-theme')
+            }
+        },
+        handlePreview() {
+            this.successMessage = '预览功能开发中...';
+            setTimeout(() => {
+                this.successMessage = '';
+            }, 2000);
         }
     }
 }
@@ -484,55 +502,475 @@ export default {
 
 <style scoped>
 .edit-article-page {
-    min-height: calc(100vh - 120px);
-    padding: 2rem 0;
-    max-width: 1200px;
+    max-width: 1440px;
     margin: 0 auto;
+    padding: 2rem;
+    min-height: calc(100vh - 64px);
+    margin-top: 64px;
 }
 
-/* 消息提示样式 */
-.message-container {
-    margin-bottom: 1.5rem;
+/* 布局结构 - Flexbox */
+.editor-layout {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+}
+
+.editor-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.editor-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 2rem;
+}
+
+/* 头部样式 */
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.header-title {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+}
+
+.header-title h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.header-divider {
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+.btn-mode-switch {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-mode-switch:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* 自动保存状态 */
+.auto-save-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.save-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--text-secondary);
+}
+
+.auto-save-indicator.saving .save-dot {
+    background-color: var(--primary-color);
+    animation: pulse 1.5s infinite;
+}
+
+.auto-save-indicator.success .save-dot {
+    background-color: #10b981;
+}
+
+.auto-save-indicator.error .save-dot {
+    background-color: #ef4444;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 一体化编辑器容器 */
+.editor-wrapper {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 标题输入区 */
+.title-section {
+    padding: 1.5rem 2rem 1rem;
+}
+
+.title-input {
+    width: 100%;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text-color);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+.title-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.4;
+    font-weight: 400;
+}
+
+/* 分割线 */
+.editor-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0 2rem;
+    opacity: 0.6;
+}
+
+/* 编辑器组件区域 */
+.editor-content-area {
+    flex: 1;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-component-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 覆盖子组件样式以实现一体化 */
+:deep(.markdown-editor),
+:deep(.rich-text-editor) {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    flex: 1;
+}
+
+:deep(.editor-toolbar) {
+    border-bottom: 1px solid var(--border-color);
+    background: transparent !important;
+    padding: 0.75rem 2rem !important;
+}
+
+:deep(.markdown-textarea),
+:deep(.markdown-preview),
+:deep(.editor-content),
+:deep(.content-preview) {
+    padding: 1.5rem 2rem !important;
+}
+
+:deep(.editor-pane),
+:deep(.preview-pane) {
+    background: transparent !important;
+}
+
+/* 修复全屏模式下的样式 */
+:deep(.markdown-editor.fullscreen),
+:deep(.rich-text-editor.fullscreen) {
+    background: var(--card-bg) !important;
+    border-radius: 0 !important;
+}
+
+:deep(.markdown-editor.fullscreen .editor-toolbar),
+:deep(.rich-text-editor.fullscreen .editor-toolbar) {
+    background: var(--bg-secondary) !important;
+    padding: 0.75rem !important;
+}
+
+:deep(.markdown-editor.fullscreen .editor-pane),
+:deep(.markdown-editor.fullscreen .preview-pane),
+:deep(.rich-text-editor.fullscreen .editor-pane),
+:deep(.rich-text-editor.fullscreen .preview-pane) {
+    background: var(--card-bg) !important;
+}
+
+
+/* 侧边栏卡片 */
+.settings-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 1.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* 设置项通用 */
+.setting-item {
+    margin-bottom: 1.25rem;
+}
+
+.setting-item:last-child {
+    margin-bottom: 0;
+}
+
+.setting-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+/* 下拉框和输入框美化 */
+.select-wrapper {
+    position: relative;
+}
+
+.setting-select,
+.setting-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    appearance: none;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.setting-select:focus,
+.setting-input:focus {
+    border-color: var(--primary-color);
+    background: var(--card-bg);
+}
+
+.select-arrow {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+    font-size: 0.8rem;
+}
+
+.category-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: right;
+    padding: 0;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+/* Toggle Switch */
+.toggle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle-label {
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input:checked+.toggle-slider {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+input:checked+.toggle-slider:before {
+    transform: translateX(20px);
+}
+
+/* 发布区域 */
+.publish-actions {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.btn-publish,
+.btn-draft {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-publish {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-publish:hover:not(:disabled) {
+    background: var(--primary-hover, #2563eb);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-draft {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.btn-draft:hover:not(:disabled) {
+    background: var(--bg-secondary);
+    color: var(--text-color);
+}
+
+.btn-publish:disabled,
+.btn-draft:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 消息提示 (保留部分原有逻辑) */
+.message-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: auto;
+    min-width: 300px;
+    max-width: 90%;
 }
 
 .message-alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
-    gap: 0.875rem;
-    padding: 1rem 1.25rem;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    animation: slideIn 0.3s ease-out;
-    backdrop-filter: blur(10px);
-}
-
-.message-icon {
-    font-size: 1.35rem;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.message-content {
-    flex: 1;
+    gap: 1rem;
     font-weight: 500;
-    line-height: 1.5;
-    word-break: break-word;
 }
 
-.message-list {
-    margin: 0;
-    padding-left: 1.25rem;
-    list-style: disc;
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+    transition: all 0.3s ease;
 }
 
-.message-list li {
-    margin: 0.25rem 0;
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateY(-20px);
+    opacity: 0;
 }
 
 .message-close {
@@ -587,433 +1025,60 @@ export default {
     color: #16a34a;
 }
 
-/* 暗黑模式适配 */
-:root.dark-theme .message-alert.error {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
-    border-left: 4px solid #f87171;
-    color: #fca5a5;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-:root.dark-theme .message-alert.error .message-icon {
-    color: #f87171;
-}
-
-:root.dark-theme .message-alert.error .message-close {
-    color: #fca5a5;
-}
-
-:root.dark-theme .message-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-:root.dark-theme .message-alert.success {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.1) 100%);
-    border-left: 4px solid #4ade80;
-    color: #86efac;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-:root.dark-theme .message-alert.success .message-icon {
-    color: #4ade80;
-}
-
-:root.dark-theme .message-alert.success .message-close {
-    color: #86efac;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-    .message-container {
-        margin-bottom: 1rem;
-        gap: 0.5rem;
+/* 响应式布局 */
+@media (max-width: 1024px) {
+    .editor-layout {
+        flex-direction: column;
     }
 
-    .message-alert {
-        padding: 0.875rem 1rem;
-        font-size: 0.875rem;
-        gap: 0.75rem;
-        border-radius: 8px;
-    }
-
-    .message-icon {
-        font-size: 1.15rem;
-    }
-
-    .message-content {
-        font-size: 0.875rem;
-        line-height: 1.4;
-    }
-
-    .message-close {
-        font-size: 1rem;
-        width: 20px;
-        height: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .message-alert {
-        padding: 0.75rem 0.875rem;
-        font-size: 0.8125rem;
-        gap: 0.625rem;
-    }
-
-    .message-icon {
-        font-size: 1rem;
-    }
-
-    .message-content {
-        font-size: 0.8125rem;
-    }
-}
-
-/* 动画效果 */
-.slide-fade-enter-active {
-    transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-    transition: all 0.2s ease-in;
-}
-
-.slide-fade-enter-from {
-    transform: translateY(-10px);
-    opacity: 0;
-}
-
-.slide-fade-leave-to {
-    transform: translateY(-5px);
-    opacity: 0;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-10px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.blog-header {
-    margin-bottom: 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.blog-header h2 {
-    color: var(--text-color);
-    margin: 0;
-    font-size: 2rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.btn-convert {
-    font-size: 0.875rem;
-    padding: 0.5rem 1rem;
-    background: transparent;
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-convert:hover {
-    background: var(--primary-color);
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.2);
-}
-
-.article-form {
-    background: var(--card-bg);
-    padding: 2.5rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--border-color);
-}
-
-.form-group {
-    margin-bottom: 2rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-    color: var(--text-color);
-    font-size: 1rem;
-}
-
-.input-group {
-    display: flex;
-    gap: 1rem;
-}
-
-.pattern-select {
-    width: 120px !important;
-    flex-shrink: 0;
-}
-
-.title-input {
-    flex-grow: 1;
-}
-
-.custom-select {
-    width: 200px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 0.875rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
-    background-color: var(--card-bg);
-}
-
-.type-selector-group {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.btn-text {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    cursor: pointer;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    padding: 0.5rem;
-}
-
-.btn-text:hover {
-    text-decoration: underline;
-}
-
-/* Card Button Styles */
-.card-button-group {
-    display: flex;
-    gap: 1rem;
-    width: 100%;
-}
-
-.card-btn {
-    flex: 1;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem 1.5rem;
-    border: 2px solid transparent;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background-color: var(--bg-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    user-select: none;
-    text-align: center;
-    overflow: hidden;
-}
-
-.card-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.card-btn.active {
-    background-color: rgba(var(--primary-rgb), 0.05);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.15);
-}
-
-.card-btn input {
-    display: none;
-}
-
-.card-btn .btn-text {
-    font-size: 1rem;
-    font-weight: 600;
-    z-index: 1;
-}
-
-.card-btn.active .btn-text {
-    color: var(--primary-color);
-}
-
-.active-icon {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 24px;
-    height: 24px;
-    background: var(--primary-color);
-    border-radius: 10px 0 8px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 12px;
-}
-
-.active-icon::before {
-    content: '✓';
-    font-weight: bold;
-}
-
-@media (max-width: 480px) {
-    .card-button-group {
-        gap: 0.75rem;
-    }
-
-    .card-btn {
+    .editor-sidebar {
         width: 100%;
-        padding: 0.875rem;
+        position: static;
+        order: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
     }
 }
 
-/* Form Actions */
-.form-actions {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 1.5rem;
-    justify-content: flex-end;
-}
-
-.btn {
-    padding: 0.875rem 2rem;
-    border-radius: 8px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-    border: none;
-    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.25);
-}
-
-.btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.35);
-}
-
-.btn-default {
-    background: transparent;
-    border: 1px solid var(--border-color);
-}
-
-.btn-default:hover:not(:disabled) {
-    background: var(--bg-color);
-    border-color: var(--text-secondary);
-}
-
-/* Auto Save Status */
-.auto-save-status {
-    margin-top: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    transition: all 0.3s ease;
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--text-secondary);
-    transition: all 0.3s ease;
-}
-
-.auto-save-status.saving .status-dot {
-    background-color: var(--primary-color);
-    animation: pulse 1.5s infinite;
-}
-
-.auto-save-status.success .status-dot {
-    background-color: #22c55e;
-}
-
-.auto-save-status.error .status-dot {
-    background-color: #ef4444;
-}
-
-.status-label {
-    font-weight: 500;
-}
-
-.status-time {
-    opacity: 0.8;
-    font-size: 0.8rem;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: scale(1.5);
-        opacity: 0.5;
-    }
-
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* Responsive */
 @media (max-width: 768px) {
     .edit-article-page {
         padding: 1rem;
     }
 
-    .article-form {
-        padding: 1.5rem;
+    .editor-sidebar {
+        grid-template-columns: 1fr;
     }
 
-    .type-selector-group {
+    .title-input {
+        font-size: 1.5rem;
+    }
+
+    .title-section {
+        padding: 1.25rem 1.5rem 0.75rem;
+    }
+
+    .editor-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 1rem;
     }
 
-    .form-actions {
-        flex-direction: column;
-    }
-
-    .btn {
+    .header-actions {
         width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    :deep(.editor-toolbar) {
+        padding: 0.75rem 1rem !important;
+    }
+
+    :deep(.markdown-textarea),
+    :deep(.markdown-preview),
+    :deep(.editor-content),
+    :deep(.content-preview) {
+        padding: 1rem 1rem !important;
     }
 }
 </style>
