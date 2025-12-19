@@ -1,5 +1,5 @@
 <template>
-    <div class="container article-detail">
+    <div class="article-detail">
         <!-- 面包屑导航 -->
         <nav class="breadcrumbs">
             <div class="breadcrumb">
@@ -34,9 +34,15 @@
                             formatReadCount(article.readed_num) }}次阅读</span>
 
                         <div class="article-actions">
-                            <button class="btn btn-secondary" @click="scrollToComments">评论</button>
-                            <button v-if="isAuthenticated" class="btn btn-primary" @click="handleEdit">编辑</button>
-                            <button v-if="isAuthenticated" class="btn btn-danger" @click="handleDelete">删除</button>
+                            <button class="action-btn comment-btn" @click="scrollToComments">
+                                <font-awesome-icon icon="comment-dots" /> 评论
+                            </button>
+                            <button v-if="isAuthenticated" class="action-btn edit-btn" @click="handleEdit">
+                                <font-awesome-icon icon="edit" /> 编辑
+                            </button>
+                            <button v-if="isAuthenticated" class="action-btn delete-btn" @click="handleDelete">
+                                <font-awesome-icon icon="trash" /> 删除
+                            </button>
                         </div>
                     </div>
                 </header>
@@ -86,12 +92,14 @@
                             <span v-if="item.isBlogger" class="badge-text">博主</span>
                         </strong>
                         <div class="comment-actions">
-                            <button class="btn btn-sm btn-secondary" @click="replyComment(item)">
-                                回复
+                            <button class="action-btn edit-btn" @click="replyComment(item)">
+                                <font-awesome-icon icon="reply" />
+                                <span>回复</span>
                             </button>
-                            <button v-if="isAuthenticated" class="btn btn-sm btn-danger"
+                            <button v-if="isAuthenticated" class="action-btn delete-btn"
                                 @click="deleteComment(item.id)">
-                                删除
+                                <font-awesome-icon icon="trash" />
+                                <span>删除</span>
                             </button>
                         </div>
                     </div>
@@ -109,12 +117,14 @@
                                     <span v-if="child.isBlogger" class="badge-text">博主</span>
                                 </strong>
                                 <div class="comment-actions">
-                                    <button class="btn btn-sm btn-secondary" @click="replyComment(child)">
-                                        回复
+                                    <button class="action-btn edit-btn" @click="replyComment(child)">
+                                        <font-awesome-icon icon="reply" />
+                                        <span>回复</span>
                                     </button>
-                                    <button v-if="isAuthenticated" class="btn btn-sm btn-danger"
+                                    <button v-if="isAuthenticated" class="action-btn delete-btn"
                                         @click="deleteComment(child.id)">
-                                        删除
+                                        <font-awesome-icon icon="trash" />
+                                        <span>删除</span>
                                     </button>
                                 </div>
                             </div>
@@ -134,13 +144,15 @@
             <!-- 评论表单 -->
             <form class="comment-form" @submit.prevent="submitComment">
                 <div class="comment-head">
-                    <h4>发表评论</h4>
+                    <h4 class="form-title">
+                        发表评论
+                    </h4>
 
                     <div class="comment-reply" v-if="replyTo">
                         <div class="reply-info">
                             <font-awesome-icon icon="reply" class="reply-icon" />
                             <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname
-                                    }}</strong></span>
+                            }}</strong></span>
                         </div>
                         <button type="button" class="btn-cancel-reply" @click="cancelReply">
                             <font-awesome-icon icon="xmark" class="cancel-icon" />
@@ -149,37 +161,48 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-12 col-md-6" v-if="!isAuthenticated">
-                        <div class="form-group">
-                            <input type="text" class="form-control" v-model="nickname" placeholder="昵称" required />
+                <div class="form-body">
+                    <div class="input-row" v-if="!isAuthenticated">
+                        <div class="input-group">
+                            <div class="input-wrapper">
+                                <font-awesome-icon icon="user" class="input-icon" />
+                                <input type="text" class="form-control" v-model="nickname" placeholder="您的昵称"
+                                    required />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-wrapper">
+                                <font-awesome-icon icon="link" class="input-icon" />
+                                <input type="url" class="form-control" v-model="website" placeholder="个人网站 (可选)" />
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-md-6" v-if="!isAuthenticated">
-                        <div class="form-group">
-                            <input type="url" class="form-control" v-model="website" placeholder="个人网站（可选）" />
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <textarea class="form-control" rows="4" v-model="comment" placeholder="请输入评论内容..."
+                    <div class="input-group">
+                        <div class="input-wrapper textarea-wrapper">
+                            <textarea class="form-control" rows="4" v-model="comment" placeholder="说点什么吧..."
                                 @focus="handleCommentFocus" required></textarea>
                         </div>
                     </div>
 
-                    <div class="col-12" v-if="showCaptcha && !isAuthenticated">
-                        <div class="form-group captcha-group">
-                            <input type="text" class="form-control captcha-input" v-model="captchaCode"
-                                placeholder="请输入验证码" required />
+                    <div class="footer-row">
+                        <div class="captcha-section" v-if="showCaptcha && !isAuthenticated">
+                            <div class="input-wrapper captcha-wrapper">
+                                <font-awesome-icon icon="shield-halved" class="input-icon" />
+                                <input type="text" class="form-control captcha-input" v-model="captchaCode"
+                                    placeholder="验证码" required />
+                            </div>
                             <img v-if="captchaImage" :src="captchaImage" alt="验证码" class="captcha-image"
                                 @click="refreshCaptcha" title="点击刷新验证码" />
                         </div>
-                    </div>
 
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">确认发送</button>
+                        <div class="submit-section">
+                            <button type="submit" class="action-btn submit-btn">
+                                <font-awesome-icon icon="paper-plane" />
+                                <span>提交评论</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -791,7 +814,57 @@ export default {
 
 .article-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
+}
+
+.action-btn {
+    font-size: 1rem;
+    padding: 0.4rem 1rem;
+    border-radius: 0.4rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: background-color 0.3s;
+}
+
+.edit-btn {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+
+.edit-btn:hover {
+    background-color: rgba(37, 99, 235, 0.2);
+}
+
+.delete-btn {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.delete-btn:hover {
+    background-color: rgba(220, 53, 69, 0.2);
+}
+
+.comment-btn {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.comment-btn:hover {
+    background-color: rgba(16, 185, 129, 0.2);
+}
+
+.submit-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+}
+
+.submit-btn:hover {
+    background-color: var(--primary-hover);
 }
 
 .article-content {
@@ -886,9 +959,8 @@ export default {
     margin-bottom: 1rem;
 }
 
-.article-content p a,
-.article-content strong,
-.article-content a {
+.article-content a,
+.article-content strong {
     word-break: break-all;
 }
 
@@ -1105,23 +1177,6 @@ export default {
     background-color: rgba(255, 255, 255, 0.06);
 }
 
-.article-pager {
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.btn-outline {
-    background: transparent;
-    border: 1px solid #007bff;
-    color: #007bff;
-}
-
-.btn-outline:hover {
-    background: #007bff;
-    color: white;
-}
-
 .related-articles {
     background: var(--card-bg);
     border-radius: 8px;
@@ -1271,17 +1326,34 @@ export default {
 }
 
 .comment-form {
-    background: var(--bg-color);
-    border-radius: 8px;
+    margin-top: 3rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
     padding: 2rem;
+    transition: all 0.3s ease;
 }
 
 .comment-head {
     margin-bottom: 1.5rem;
 }
 
+.form-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    color: var(--text-color);
+    font-weight: 600;
+
+    .title-icon {
+        color: var(--primary-color);
+    }
+}
+
 .comment-reply {
-    margin-top: 1rem;
+    margin-bottom: 1.5rem;
     padding: 1rem 1.25rem;
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 51, 234, 0.08) 100%);
     border: 1px solid rgba(59, 130, 246, 0.2);
@@ -1293,12 +1365,12 @@ export default {
     gap: 1rem;
     transition: all 0.3s ease;
     animation: slideDown 0.3s ease-out;
-}
 
-.comment-reply:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 51, 234, 0.12) 100%);
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    &:hover {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 51, 234, 0.12) 100%);
+        border-color: rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
 }
 
 @keyframes slideDown {
@@ -1358,59 +1430,251 @@ export default {
     transition: all 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
 }
 
-.btn-cancel-reply:hover {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.5);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+.form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
-.btn-cancel-reply:active {
-    transform: translateY(0);
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+    }
 }
 
-.cancel-icon {
-    width: 16px;
-    height: 16px;
-    stroke-width: 2.5;
+.input-group {
+    width: 100%;
 }
 
-/* 暗黑模式适配 */
-:root.dark-theme .comment-reply {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 51, 234, 0.12) 100%);
-    border-color: rgba(59, 130, 246, 0.3);
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        pointer-events: none;
+        transition: color 0.3s ease;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        background: var(--bg-color);
+        border: 1.5px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        color: var(--text-color);
+        transition: all 0.3s ease;
+
+        &::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        &:focus {
+            background: var(--card-bg);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            outline: none;
+
+            &+.input-icon {
+                color: var(--primary-color);
+            }
+        }
+    }
+
+    &.textarea-wrapper {
+        align-items: flex-start;
+
+        .input-icon {
+            top: 1rem;
+        }
+
+        .form-control {
+            padding: 1rem;
+            min-height: 120px;
+            resize: vertical;
+        }
+    }
 }
 
-:root.dark-theme .comment-reply:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(147, 51, 234, 0.18) 100%);
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+.footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+
+    @media (max-width: 640px) {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
-:root.dark-theme .reply-text {
-    color: #e5e7eb;
+.captcha-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+
+    .captcha-wrapper {
+        max-width: 160px;
+
+        .form-control {
+            padding-left: 2.75rem;
+        }
+    }
+
+    .captcha-image {
+        height: 42px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+
+        &:hover {
+            opacity: 0.8;
+            border-color: var(--primary-color);
+        }
+    }
 }
 
-:root.dark-theme .reply-nickname {
-    color: #60a5fa;
+.submit-section {
+    margin-left: auto;
+
+    .submit-btn {
+        display: flex;
+        gap: 0.6rem;
+        padding: 0.75rem 2rem;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+
+        &:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+
+        span {
+            font-size: 0.95rem;
+        }
+    }
 }
 
-:root.dark-theme .btn-cancel-reply {
-    background: rgba(239, 68, 68, 0.15);
-    color: #f87171;
-    border-color: rgba(239, 68, 68, 0.4);
+:root.dark-theme {
+    .comment-form {
+        background: #1e1e1e;
+        border-color: #333;
+
+        .form-control {
+            background: #2d2d2d;
+            border-color: #444;
+
+            &:focus {
+                background: #252525;
+            }
+        }
+    }
+
+    .comment-reply {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 51, 234, 0.12) 100%);
+        border-color: rgba(59, 130, 246, 0.3);
+
+        &:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(147, 51, 234, 0.18) 100%);
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+    }
+
+    .reply-text {
+        color: #e5e7eb;
+    }
+
+    .reply-nickname {
+        color: #60a5fa;
+    }
+
+    .btn-cancel-reply {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.4);
+
+        &:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.6);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+    }
 }
 
-:root.dark-theme .btn-cancel-reply:hover {
-    background: rgba(239, 68, 68, 0.25);
-    border-color: rgba(239, 68, 68, 0.6);
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-}
-
-/* 响应式设计 - 平板 */
 @media (max-width: 768px) {
+    .breadcrumbs {
+        margin-bottom: 1rem;
+    }
+
+    .article-detail {
+        margin: 10px;
+    }
+
+    .breadcrumb {
+        padding: 0 10px;
+    }
+
+    .article {
+        padding: 1rem;
+    }
+
+    .article-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .related-articles,
+    .comments {
+        padding: 1rem;
+    }
+
+    .comment-form {
+        padding: 1.5rem 1rem;
+    }
+
+    .comment-children {
+        margin-left: 1rem;
+    }
+
     .comment-reply {
         padding: 0.875rem 1rem;
         gap: 0.75rem;
@@ -1426,7 +1690,6 @@ export default {
     }
 }
 
-/* 响应式设计 - 手机 */
 @media (max-width: 480px) {
     .comment-reply {
         flex-direction: column;
@@ -1460,61 +1723,6 @@ export default {
     }
 }
 
-.captcha-group {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.captcha-input {
-    flex: 1;
-    max-width: 200px;
-}
-
-.captcha-image {
-    height: 40px;
-    cursor: pointer;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    transition: opacity 0.2s;
-}
-
-.captcha-image:hover {
-    opacity: 0.8;
-}
-
-@media (max-width: 768px) {
-    .breadcrumbs {
-        margin-bottom: 1rem;
-    }
-
-    .article-detail {
-        margin: 10px;
-    }
-
-    .breadcrumb {
-        padding: 0 10px;
-    }
-
-    .article {
-        padding: 1rem;
-    }
-
-    .article-meta {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .related-articles,
-    .comments,
-    .comment-form {
-        padding: 1rem;
-    }
-
-    .comment-children {
-        margin-left: 1rem;
-    }
-}
 
 /* PrismJS 代码高亮样式 */
 /* Light theme */
@@ -1848,6 +2056,11 @@ export default {
             display: none;
         }
     }
+
+    @media (max-width: 768px) {
+        display: block;
+        width: 100%;
+    }
 }
 
 .pager-label {
@@ -1872,5 +2085,11 @@ export default {
 
 .pager-title:hover {
     color: var(--link-color);
+}
+
+@media (max-width: 768px) {
+    .comment-actions .action-btn span {
+        display: none;
+    }
 }
 </style>

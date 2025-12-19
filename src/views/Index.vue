@@ -469,9 +469,9 @@ export default {
 }
 
 .action-btn {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    font-size: 1rem;
+    padding: 0.4rem 1rem;
+    border-radius: 0.4rem;
     border: none;
     cursor: pointer;
     display: flex;
@@ -991,6 +991,8 @@ export default {
         position: fixed;
         inset: 0;
         background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         z-index: 40;
         opacity: 0;
         visibility: hidden;

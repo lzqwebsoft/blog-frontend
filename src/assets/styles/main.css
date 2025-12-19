@@ -9,7 +9,7 @@
     --bg-color: #f8f9fa;
     --text-color: #333;
     --text-secondary: #6c757d;
-    --header-bg: #fff;
+    --header-bg: rgba(255, 255, 255, 0.8);
     --border-color: #ddd;
     --card-bg: #fff;
     --shadow-color: rgba(0, 0, 0, 0.1);
@@ -35,7 +35,7 @@
     --bg-color: #0a0a0a;
     --text-color: #FFFFFF;
     --text-secondary: #adb5bd;
-    --header-bg: #171717;
+    --header-bg: rgba(23, 23, 23, 0.8);
     --border-color: #1f2937;
     --card-bg: #171717;
     --shadow-color: rgba(0, 0, 0, 0.3);

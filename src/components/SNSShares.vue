@@ -248,12 +248,12 @@ export default {
     .share-container {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
     .share-buttons {
         width: 100%;
-        justify-content: flex-start;
+        justify-content: center;
     }
 }
 
@@ -265,14 +265,13 @@ export default {
     }
 
     .share-container {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
         gap: 1rem;
     }
 
     .share-title {
-        font-size: 1rem;
-        justify-content: center;
+        display: none;
     }
 
     .share-buttons {
@@ -282,27 +281,15 @@ export default {
 
     .share-btn {
         font-size: 0.85rem;
-        padding: 0.55rem 1rem;
-        flex: 1;
-        min-width: calc(50% - 0.25rem);
-        max-width: calc(50% - 0.25rem);
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
         justify-content: center;
+        align-items: center;
     }
 
     .btn-text {
-        font-size: 0.8rem;
-    }
-}
-
-/* 小屏手机适配 */
-@media (max-width: 480px) {
-    .share-btn {
-        min-width: 100%;
-        max-width: 100%;
-    }
-
-    .share-btn .btn-text {
-        display: inline;
+        display: none;
     }
 }
 </style>
