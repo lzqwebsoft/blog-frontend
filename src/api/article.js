@@ -106,3 +106,53 @@ export function saveArticle(data) {
         }
     })
 }
+
+/**
+ * 分页查询文章列表（按类型/标题）
+ * @param {Object} params - 查询参数
+ * @param {number} [params.articleTypeId] - 文章类型 ID
+ * @param {string} [params.title] - 标题关键字
+ * @param {number} [params.pageNo] - 页码，默认 1
+ * @param {number} [params.pageSize] - 每页条数，默认 15
+ */
+export function selectArticles(params) {
+    return request.get('/article/select', {
+        params
+    })
+}
+
+/**
+ * 切换文章评论权限
+ * @param {string|number} id - 文章ID
+ * @param {boolean} allow - 是否允许评论
+ */
+export function toggleAllowComment(id, allow) {
+    return request.get(`/article/allow_comment/${id}`, {
+        params: { allow }
+    })
+}
+
+/**
+ * 切换文章置顶状态
+ * @param {string|number} id - 文章ID
+ * @param {boolean} top - 是否置顶
+ */
+export function toggleTop(id, top) {
+    return request.get(`/article/is_top/${id}`, {
+        params: { top }
+    })
+}
+
+/**
+ * 获取草稿列表
+ * @param {number} pageNo - 页码
+ * @param {number} pageSize - 每页数量
+ */
+export function getDrafts(pageNo = 1, pageSize = 15) {
+    return request.get('/article/drafts', {
+        params: {
+            pageNo,
+            pageSize
+        }
+    })
+}

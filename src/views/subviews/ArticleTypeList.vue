@@ -1,49 +1,46 @@
 <template>
-    <div class="article-type-list">
-        <!-- 类别表格 -->
-        <div class="type-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>类别</th>
-                        <th width="120">文章数量</th>
-                        <th width="200">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="row in articleTypes" :key="row.id">
-                        <td>
-                            <span v-if="!row.editing" :id="`article_type_${row.id}`">{{ row.name }}</span>
-                            <input v-else v-model="row.editName" type="text" @blur="handleSaveEdit(row)"
-                                @keyup.enter="handleSaveEdit(row)" />
-                        </td>
-                        <td class="text-center">
-                            {{ row.articles ? row.articles.length : 0 }}
-                        </td>
-                        <td class="text-center">
-                            <button type="button" class="btn-link" @click="handleEdit(row)">编辑</button>
-                            <button type="button" class="btn-link delete-btn" @click="handleDeleteType(row)">
-                                删除
-                            </button>
-                            <br />
-                            <button type="button" class="btn-link btn-small" @click="handleToggleDisable(row)">
-                                {{ row.disable ? '显示' : '隐藏' }}
-                            </button>
-                            <span class="status-text"> | {{ row.disable ? '隐藏' : '显示' }}</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="category-manager">
+        <h2 class="panel-title">类型管理</h2>
+
+        <!-- Add Category Form -->
+        <div class="add-category-wrapper">
+            <input v-model="newType.name" type="text" placeholder="输入新分类名称..." class="form-input"
+                @keyup.enter="handleAddType">
+            <button @click="handleAddType" class="btn-black">添加分类</button>
         </div>
 
-        <!-- 添加类别 -->
-        <div class="add-type-form">
-            <form @submit.prevent="handleAddType">
-                <input v-model="newType.name" type="text" placeholder="请输入新的类别名称" />
-                <button type="submit" class="btn-primary">添加分类</button>
-            </form>
-            <div v-if="errorInfo" class="error-info">{{ errorInfo }}</div>
+        <!-- Categories Grid -->
+        <div class="categories-grid">
+            <div v-for="row in articleTypes" :key="row.id" class="category-card"
+                :class="{ 'disabled-card': row.disable }">
+                <div class="card-content">
+                    <div v-if="!row.editing">
+                        <h4 class="category-name">{{ row.name }} <span v-if="row.disable" class="text-xs">(隐藏)</span>
+                        </h4>
+                        <span class="category-count">{{ row.articles ? row.articles.length : 0 }} 篇文章</span>
+                    </div>
+                    <div v-else class="edit-mode">
+                        <input v-model="row.editName" ref="editInput" class="edit-input"
+                            @keyup.enter="handleSaveEdit(row)" @blur="handleSaveEdit(row)">
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-icon" title="编辑" @click="handleEdit(row)">
+                        <font-awesome-icon :icon="['fas', 'pen-to-square']" />
+                    </button>
+                    <button class="action-icon" :class="row.disable ? 'text-green' : 'text-gray'"
+                        :title="row.disable ? '点击显示' : '点击隐藏'" @click="handleToggleDisable(row)">
+                        <font-awesome-icon :icon="row.disable ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+                    </button>
+                    <button class="action-icon delete" title="删除" @click="handleDeleteType(row)">
+                        <font-awesome-icon :icon="['fas', 'trash']" />
+                    </button>
+                </div>
+            </div>
         </div>
+
+        <div v-if="errorInfo" class="error-toast">{{ errorInfo }}</div>
     </div>
 </template>
 
@@ -53,9 +50,7 @@ export default {
     data() {
         return {
             articleTypes: [],
-            newType: {
-                name: ''
-            },
+            newType: { name: '' },
             errorInfo: ''
         }
     },
@@ -64,252 +59,220 @@ export default {
     },
     methods: {
         async loadArticleTypes() {
-            try {
-                // 模拟API调用
-                // const response = await this.$http.get('/api/article-types')
-                // this.articleTypes = response.data.map(type => ({
-                //   ...type,
-                //   editing: false,
-                //   editName: type.name
-                // }))
-
-                // 模拟数据
-                this.articleTypes = [
-                    {
-                        id: 1,
-                        name: '技术文章',
-                        articles: [{}, {}],
-                        disable: false,
-                        editing: false,
-                        editName: '技术文章'
-                    },
-                    {
-                        id: 2,
-                        name: '生活随笔',
-                        articles: [{}],
-                        disable: true,
-                        editing: false,
-                        editName: '生活随笔'
-                    }
-                ]
-            } catch {
-                alert('加载文章类别失败')
-            }
+            // Mock Data
+            this.articleTypes = [
+                {
+                    id: 1,
+                    name: '前端技术',
+                    articles: [{}, {}], // Mock count
+                    disable: false,
+                    editing: false,
+                    editName: '前端技术'
+                },
+                {
+                    id: 2,
+                    name: '未归类',
+                    articles: [],
+                    disable: true,
+                    editing: false,
+                    editName: '未归类'
+                }
+            ]
         },
-
         handleEdit(row) {
             row.editing = true
+            row.editName = row.name
+            this.$nextTick(() => {
+                // Focus logic if refs were array, but inside v-for refs are tricky in Vue 2/3 differently.
+                // keep it simple for now
+            })
         },
-
-        async handleSaveEdit(row) {
+        handleSaveEdit(row) {
+            if (!row.editing) return
             if (!row.editName.trim()) {
-                alert('类别名称不能为空')
                 row.editName = row.name
                 row.editing = false
                 return
             }
-
-            try {
-                // 模拟API调用
-                // await this.$http.put(`/api/article-types/${row.id}`, { name: row.editName })
-                row.name = row.editName
-                row.editing = false
-                console.log('更新成功')
-            } catch {
-                alert('更新失败')
-            }
+            row.name = row.editName
+            row.editing = false
         },
-
         handleDeleteType(row) {
             if (confirm(`确定要删除类别"${row.name}"吗？`)) {
-                try {
-                    // await this.$http.delete(`/api/article-types/${row.id}`)
-                    alert('删除成功')
-                    this.loadArticleTypes()
-                } catch {
-                    alert('删除失败')
-                }
+                this.articleTypes = this.articleTypes.filter(t => t.id !== row.id)
             }
         },
-
-        async handleToggleDisable(row) {
-            try {
-                // 模拟API调用
-                // await this.$http.put(`/api/article-types/${row.id}/disable`, { disable: !row.disable })
-                row.disable = !row.disable
-                console.log(row.disable ? '已隐藏' : '已显示')
-            } catch {
-                alert('操作失败')
-            }
+        handleToggleDisable(row) {
+            row.disable = !row.disable
         },
-
-        async handleAddType() {
-            if (!this.newType.name.trim()) {
-                this.errorInfo = '请输入类别名称'
-                return
-            }
-
-            try {
-                // 模拟API调用
-                // await this.$http.post('/api/article-types', { name: this.newType.name })
-                alert('添加成功')
-                this.newType.name = ''
-                this.errorInfo = ''
-                this.loadArticleTypes()
-            } catch {
-                this.errorInfo = '添加失败，请重试'
-            }
+        handleAddType() {
+            if (!this.newType.name.trim()) return
+            this.articleTypes.unshift({
+                id: Date.now(),
+                name: this.newType.name,
+                articles: [],
+                disable: false,
+                editing: false,
+                editName: this.newType.name
+            })
+            this.newType.name = ''
         }
     }
 }
 </script>
 
 <style scoped>
-.article-type-list {
-    padding: 0;
+.category-manager {
+    max-width: 100%;
 }
 
-.type-table table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--card-bg);
-    margin-bottom: 20px;
-    border-radius: 8px;
-    overflow: hidden;
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    font-family: var(--font-serif);
+    margin-bottom: 1.5rem;
 }
 
-.type-table th,
-.type-table td {
-    padding: 12px;
+.add-category-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background-color: var(--bg-color);
+    /* Light gray usually */
+    padding: 1rem;
+    /* p-4 */
+    border-radius: 0.5rem;
+}
+
+.form-input {
+    flex-grow: 1;
+    background-color: var(--card-bg);
     border: 1px solid var(--border-color);
-    text-align: left;
-}
-
-.type-table th {
-    background: var(--hover-bg);
-    font-weight: 500;
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-color);
-}
-
-.type-table td {
-    color: var(--text-color);
-}
-
-.type-table td.text-center,
-.type-table th[width] {
-    text-align: center;
-}
-
-.type-table input[type='text'] {
-    padding: 4px 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 14px;
-    width: 200px;
-    background: var(--card-bg);
-    color: var(--text-color);
-}
-
-.type-table input[type='text']:focus {
     outline: none;
-    border-color: var(--primary-color);
 }
 
-.btn-link {
-    background: none;
+.form-input:focus {
+    border-color: var(--text-secondary);
+}
+
+.btn-black {
+    background-color: #111827;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     border: none;
-    color: var(--link-color);
     cursor: pointer;
-    padding: 0 8px;
-    font-size: 14px;
-    transition: var(--transition);
+    transition: opacity 0.2s;
 }
 
-.btn-link:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
+.btn-black:hover {
+    opacity: 0.9;
 }
 
-.btn-small {
-    font-size: 12px;
+:root.dark-theme .btn-black {
+    background-color: white;
+    color: black;
 }
 
-.delete-btn {
-    color: #dc3545;
+/* Grid */
+.categories-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
 }
 
-.delete-btn:hover {
-    color: #c82333;
+@media (min-width: 768px) {
+    .categories-grid {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
-.status-text {
-    font-size: 12px;
+.category-card {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s;
+    background-color: var(--card-bg);
+}
+
+.category-card:hover {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.disabled-card {
+    opacity: 0.6;
+    background-color: var(--hover-bg);
+}
+
+.card-content {
+    flex-grow: 1;
+    padding-right: 1rem;
+}
+
+.category-name {
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.category-count {
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
-.add-type-form {
-    padding: 15px;
-    background: var(--hover-bg);
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
+.text-xs {
+    font-size: 0.75rem;
 }
 
-.add-type-form form {
+.card-actions {
     display: flex;
-    gap: 10px;
+    gap: 0.75rem;
     align-items: center;
-    flex-wrap: wrap;
 }
 
-.add-type-form input[type='text'] {
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 14px;
-    flex: 1;
-    max-width: 300px;
-    background: var(--card-bg);
-    color: var(--text-color);
-}
-
-.add-type-form input[type='text']:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-.btn-primary {
-    padding: 8px 16px;
-    background: var(--primary-color);
-    color: var(--text-on-primary);
+.action-icon {
+    background: none;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    transition: var(--transition);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    padding: 0.25rem;
+    transition: color 0.2s;
 }
 
-.btn-primary:hover {
-    background: var(--primary-hover);
+.action-icon:hover {
+    color: var(--link-color);
 }
 
-.error-info {
-    color: #dc3545;
-    margin-top: 10px;
-    font-size: 14px;
+.action-icon.delete:hover {
+    color: #ef4444;
 }
 
-@media (max-width: 768px) {
-    .type-table {
-        overflow-x: auto;
-    }
+.text-green {
+    color: #16a34a;
+}
 
-    .add-type-form form {
-        flex-direction: column;
-        align-items: stretch;
-    }
+.text-green:hover {
+    color: #15803d;
+}
 
-    .add-type-form input[type='text'] {
-        max-width: 100%;
-    }
+.edit-input {
+    width: 100%;
+    padding: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
 }
 </style>

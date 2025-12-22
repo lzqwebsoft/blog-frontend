@@ -62,7 +62,7 @@ export function changePassword(data) {
         formData.append(key, data[key])
     })
 
-    return request.post('/user/changepwd_handle', formData, {
+    return request.post('/user/changepwd', formData, {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         }

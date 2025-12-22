@@ -1,41 +1,34 @@
 <template>
-    <div class="image-list">
+    <div class="image-list-view">
+        <h2 class="panel-title">博客图片管理</h2>
+
         <div class="image-grid" v-if="images.length > 0">
-            <div class="image-item" v-for="(image, index) in images" :key="image.id">
-                <div class="image-container">
-                    <img :src="getImageUrl(image.id)" :alt="`图片${index + 1}`" @click="previewImage(image.id)" />
-                </div>
-                <div class="image-info">
-                    <a :href="getImageUrl(image.id)" target="_blank">图片{{ index + 1 }}</a>
-                    <button type="button" class="btn-link delete-btn" @click="handleDeleteImage(image)">
-                        删除
-                    </button>
+            <div class="image-card" v-for="image in images" :key="image.id">
+                <div class="img-wrapper" @click="openLightbox(getImageUrl(image.id))">
+                    <img :src="getImageUrl(image.id)" :alt="image.descriptions || 'Image'" class="grid-img" />
+
+                    <div class="overlay">
+                        <p class="overlay-text">{{ image.fileName || 'image.jpg' }}</p>
+                        <button class="btn-delete-sm" @click.stop="handleDeleteImage(image)">
+                            删除
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 分页 -->
-        <div class="pagination-container" v-if="images.length > 0">
-            <div class="pagination">
-                <button :disabled="pagination.currentPage === 1" @click="handlePageChange(pagination.currentPage - 1)">
-                    上一页
-                </button>
-                <button v-for="page in totalPages" :key="page" :class="{ active: page === pagination.currentPage }"
-                    @click="handlePageChange(page)">
-                    {{ page }}
-                </button>
-                <button :disabled="pagination.currentPage === totalPages"
-                    @click="handlePageChange(pagination.currentPage + 1)">
-                    下一页
-                </button>
-            </div>
-            <div class="page-description">
-                {{ pagination.total }}张图片,共{{ totalPages }}页
-            </div>
+        <div class="pagination-bar">
+            <button class="load-more-btn">加载更多...</button>
         </div>
 
-        <div v-if="images.length === 0" class="empty-state">
-            <p>暂无内容</p>
+        <!-- Lightbox -->
+        <div v-if="lightboxVisible" class="lightbox" @click="closeLightbox">
+            <img :src="lightboxSrc" class="lightbox-img"
+                :class="{ 'zoom-in': zoomLevel > 1, 'zoom-out': zoomLevel === 1 }"
+                :style="{ transform: `scale(${zoomLevel})` }" @click.stop="toggleZoom">
+            <button class="close-btn" @click="closeLightbox">
+                <font-awesome-icon :icon="['fas', 'times']" />
+            </button>
         </div>
     </div>
 </template>
@@ -46,16 +39,10 @@ export default {
     data() {
         return {
             images: [],
-            pagination: {
-                currentPage: 1,
-                pageSize: 12,
-                total: 0
-            }
-        }
-    },
-    computed: {
-        totalPages() {
-            return Math.ceil(this.pagination.total / this.pagination.pageSize)
+            pagination: { total: 0 },
+            lightboxVisible: false,
+            lightboxSrc: '',
+            zoomLevel: 1
         }
     },
     mounted() {
@@ -63,43 +50,36 @@ export default {
     },
     methods: {
         async loadImages() {
-            try {
-                // 模拟数据
-                this.images = [
-                    {
-                        id: 1,
-                        fileName: 'example.jpg',
-                        descriptions: '示例图片'
-                    }
-                ]
-                this.pagination.total = 1
-            } catch {
-                alert('加载图片失败')
-            }
+            // Mock Data - using some external placeholders for visual test if real ids provided, matching set.html
+            this.images = [
+                { id: '1498050108023-c5249f4df085', fileName: 'coding-setup.jpg' },
+                { id: '1555066931-4365d14bab8c', fileName: 'screen-code.jpg' },
+                { id: '1555066931-4365d14bab8d', fileName: 'screen-code-2.jpg' }
+            ]
         },
-
-        handlePageChange(page) {
-            this.pagination.currentPage = page
-            this.loadImages()
+        getImageUrl(id) {
+            // Using ID to generate unsplash url as in set.html for demo, or local
+            if (id.length > 20 || id.includes('-')) return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=300&q=80`;
+            return `/images/show/${id}.jpg`
         },
-
-        getImageUrl(imageId) {
-            return `/images/show/${imageId}.jpg`
+        openLightbox(src) {
+            // Use high res for lightbox
+            this.lightboxSrc = src.replace('w=300', 'w=1200');
+            this.lightboxVisible = true;
+            this.zoomLevel = 1;
+            document.body.style.overflow = 'hidden';
         },
-
-        previewImage(imageId) {
-            window.open(this.getImageUrl(imageId), '_blank')
+        closeLightbox() {
+            this.lightboxVisible = false;
+            this.lightboxSrc = '';
+            document.body.style.overflow = '';
         },
-
-        handleDeleteImage() {
-            if (confirm('确定要删除这张图片吗？')) {
-                try {
-                    // await this.$http.delete(`/api/images/${image.id}`)
-                    alert('删除成功')
-                    this.loadImages()
-                } catch {
-                    alert('删除失败')
-                }
+        toggleZoom() {
+            this.zoomLevel = this.zoomLevel === 1 ? 1.5 : 1;
+        },
+        handleDeleteImage(image) {
+            if (confirm('Delete?')) {
+                this.images = this.images.filter(i => i.id !== image.id)
             }
         }
     }
@@ -107,143 +87,144 @@ export default {
 </script>
 
 <style scoped>
-.image-list {
-    padding: 0;
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    font-family: var(--font-serif);
+    margin-bottom: 1.5rem;
 }
 
 .image-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
 }
 
-.image-item {
+@media (min-width: 768px) {
+    .image-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .image-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.image-card {
+    aspect-ratio: 1 / 1;
+    background-color: var(--hover-bg);
+    border-radius: 0.5rem;
+    overflow: hidden;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-    transition: var(--transition);
-    background: var(--card-bg);
+    position: relative;
 }
 
-.image-item:hover {
-    box-shadow: 0 4px 20px var(--shadow-color);
-    transform: translateY(-2px);
+.img-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    cursor: zoom-in;
 }
 
-.image-container {
-    height: 200px;
-    overflow: hidden;
-    background: var(--hover-bg);
-}
-
-.image-container img {
+.grid-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    cursor: pointer;
-    transition: transform 0.3s;
 }
 
-.image-container img:hover {
-    transform: scale(1.05);
-}
-
-.image-info {
-    padding: 10px;
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.2s;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0.75rem;
 }
 
-.image-info a {
-    color: var(--link-color);
-    text-decoration: none;
+.img-wrapper:hover .overlay {
+    opacity: 1;
 }
 
-.image-info a:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
+.overlay-text {
+    color: white;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.5rem;
 }
 
-.btn-link {
+.btn-delete-sm {
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    border: none;
+    cursor: pointer;
+    align-self: flex-start;
+}
+
+.btn-delete-sm:hover {
+    background-color: #dc2626;
+}
+
+.pagination-bar {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.load-more-btn {
+    color: var(--text-secondary);
     background: none;
     border: none;
-    color: var(--link-color);
     cursor: pointer;
-    padding: 0;
-    font-size: 14px;
-    transition: var(--transition);
+    font-size: 0.875rem;
 }
 
-.btn-link:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
-}
-
-.delete-btn {
-    color: #dc3545;
-}
-
-.delete-btn:hover {
-    color: #c82333;
-}
-
-.pagination-container {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.pagination {
-    display: inline-flex;
-    gap: 5px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-}
-
-.pagination button {
-    padding: 6px 12px;
-    border: 1px solid var(--border-color);
-    background: var(--button-bg);
+.load-more-btn:hover {
     color: var(--text-color);
+}
+
+/* Lightbox */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.lightbox-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+}
+
+.lightbox-img.zoom-in {
+    cursor: zoom-out;
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: white;
+    font-size: 1.5rem;
+    background: none;
+    border: none;
     cursor: pointer;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: var(--transition);
-}
-
-.pagination button:hover:not(:disabled) {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.pagination button.active {
-    background: var(--primary-color);
-    color: var(--text-on-primary);
-    border-color: var(--primary-color);
-}
-
-.pagination button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.page-description {
-    margin-top: 10px;
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-secondary);
-}
-
-@media (max-width: 768px) {
-    .image-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
-    }
 }
 </style>

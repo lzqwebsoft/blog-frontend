@@ -1,51 +1,29 @@
 <template>
-    <div class="blog-management">
-        <h2>博客管理</h2>
+    <div class="set-page responsive-container">
+        <div class="layout-grid">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <nav class="sidebar-nav">
+                    <button v-for="tab in tabs" :key="tab.name" @click="handleTabClick(tab.name)"
+                        :class="['nav-item', { active: activeTab === tab.name }]">
+                        <font-awesome-icon :icon="tab.icon" class="nav-icon" />
+                        <span class="nav-label">{{ tab.label }}</span>
+                        <span v-if="tab.count" class="badge">{{ tab.count }}</span>
+                    </button>
+                </nav>
+            </aside>
 
-        <!-- 标签页导航 -->
-        <div class="tabs-container">
-            <div class="tabs">
-                <button v-for="tab in tabs" :key="tab.name" :class="['tab-item', { active: activeTab === tab.name }]"
-                    @click="handleTabClick(tab.name)">
-                    {{ tab.label }}
-                </button>
-            </div>
+            <!-- Main Content Area -->
+            <main class="content-area">
+                <div class="panel-container">
+                    <keep-alive>
+                        <component :is="currentTabComponent" />
+                    </keep-alive>
+                </div>
+            </main>
         </div>
 
-        <!-- 标签页内容 -->
-        <div class="tab-content">
-            <!-- 文章列表 -->
-            <div v-show="activeTab === 'articles'">
-                <article-list />
-            </div>
-
-            <!-- 类别管理 -->
-            <div v-show="activeTab === 'types'">
-                <article-type-list />
-            </div>
-
-            <!-- 草稿箱 -->
-            <div v-show="activeTab === 'drafts'">
-                <draft-list />
-            </div>
-
-            <!-- 相关链接 -->
-            <div v-show="activeTab === 'links'">
-                <link-list />
-            </div>
-
-            <!-- 博客用图 -->
-            <div v-show="activeTab === 'images'">
-                <image-list />
-            </div>
-
-            <!-- 信息设置 -->
-            <div v-show="activeTab === 'settings'">
-                <blog-settings />
-            </div>
-        </div>
-
-        <!-- 链接编辑对话框 -->
+        <!-- Link Edit Dialog (Global for this view) -->
         <link-edit-dialog v-if="linkDialogVisible" :visible="linkDialogVisible" :link-data="currentLink"
             @save="handleSaveLink" @close="linkDialogVisible = false" />
     </div>
@@ -61,7 +39,7 @@ import BlogSettings from './subviews/BlogSettings.vue'
 import LinkEditDialog from '../components/LinkEditDialog.vue'
 
 export default {
-    name: 'BlogManagement',
+    name: 'SettingsView',
     components: {
         ArticleList,
         ArticleTypeList,
@@ -77,13 +55,26 @@ export default {
             linkDialogVisible: false,
             currentLink: null,
             tabs: [
-                { name: 'articles', label: '文章列表' },
-                { name: 'types', label: '类别管理' },
-                { name: 'drafts', label: '草稿箱' },
-                { name: 'links', label: '相关链接' },
-                { name: 'images', label: '博客用图' },
-                { name: 'settings', label: '信息设置' }
+                { name: 'articles', label: '文章列表', icon: ['fas', 'list-ul'] },
+                { name: 'types', label: '类型管理', icon: ['fas', 'folder'] },
+                { name: 'drafts', label: '草稿箱', icon: ['fas', 'pen-to-square'] },
+                { name: 'links', label: '友情链接', icon: ['fas', 'link'] },
+                { name: 'images', label: '博客用图', icon: ['fas', 'images'] },
+                { name: 'settings', label: '信息设置', icon: ['fas', 'gear'] }
             ]
+        }
+    },
+    computed: {
+        currentTabComponent() {
+            const map = {
+                'articles': 'ArticleList',
+                'types': 'ArticleTypeList',
+                'drafts': 'DraftList',
+                'links': 'LinkList',
+                'images': 'ImageList',
+                'settings': 'BlogSettings'
+            }
+            return map[this.activeTab]
         }
     },
     provide() {
@@ -94,12 +85,13 @@ export default {
     methods: {
         handleTabClick(tabName) {
             this.activeTab = tabName
-            console.log('切换到标签:', tabName)
         },
         handleSaveLink(linkData) {
-            // 保存链接逻辑
-            console.log('保存链接:', linkData)
+            // This logic might need to be moved to LinkList or handled via event bus/store
+            // For now, just close dialog as the List component will likely handle the refresh
+            console.log('Save link', linkData)
             this.linkDialogVisible = false
+            // You might want to trigger a refresh in LinkList here
         },
         openLinkDialog(link = null) {
             this.currentLink = link
@@ -110,87 +102,137 @@ export default {
 </script>
 
 <style scoped>
-.blog-management {
-    padding: 20px;
-    max-width: 1400px;
-    margin: 0 auto;
+/* Page Layout */
+.set-page {
+    padding: 2rem 1rem;
+    min-height: calc(100vh - 64px);
 }
 
-.blog-management h2 {
-    margin-bottom: 20px;
+.responsive-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1400px;
+}
+
+.layout-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2rem;
+    min-height: 600px;
+}
+
+/* Sidebar */
+.sidebar {
+    position: relative;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: sticky;
+    top: 6rem;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.nav-item:hover {
+    background-color: var(--hover-bg);
     color: var(--text-color);
-    font-size: 24px;
+}
+
+.nav-item.active {
+    background-color: #111827;
+    color: white;
+}
+
+:root.dark-theme .nav-item.active {
+    background-color: white;
+    color: #000;
+}
+
+.nav-icon {
+    width: 1.25rem;
+    text-align: center;
+}
+
+.badge {
+    margin-left: auto;
+    background-color: #fee2e2;
+    color: #dc2626;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 9999px;
     font-weight: 600;
 }
 
-.tabs-container {
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--border-color);
+/* Content Area */
+.content-area {
+    min-width: 0;
+    /* Prevent overflow */
+}
+
+.panel-container {
     background: var(--card-bg);
-    border-radius: 8px 8px 0 0;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    /* Reduced from 2rem for better mobile fit */
+    min-height: 100%;
 }
 
-.tabs {
-    display: flex;
-    gap: 0;
-    flex-wrap: wrap;
-}
-
-.tab-item {
-    padding: 12px 20px;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text-secondary);
-    transition: var(--transition);
-    position: relative;
-    bottom: -2px;
-}
-
-.tab-item:hover {
-    color: var(--primary-color);
-    background: var(--hover-bg);
-}
-
-.tab-item.active {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
-    font-weight: 500;
-}
-
-.tab-content {
-    background: var(--card-bg);
-    border-radius: 0 0 8px 8px;
-    min-height: 400px;
-    padding: 20px;
-    box-shadow: 0 4px 20px var(--shadow-color);
+/* Responsive */
+@media (max-width: 1024px) {
+    .layout-grid {
+        grid-template-columns: 200px 1fr;
+        gap: 1.5rem;
+    }
 }
 
 @media (max-width: 768px) {
-    .blog-management {
-        padding: 10px;
+    .set-page {
+        padding: 1rem;
     }
 
-    .blog-management h2 {
-        font-size: 20px;
-        margin-bottom: 15px;
+    .layout-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
-    .tabs {
+    .sidebar-nav {
+        flex-direction: row;
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+        position: static;
+        width: 100%;
     }
 
-    .tab-item {
-        padding: 10px 15px;
-        font-size: 13px;
+    .nav-item {
+        flex-shrink: 0;
+        width: auto;
         white-space: nowrap;
+        padding: 0.5rem 1rem;
     }
 
-    .tab-content {
-        padding: 15px;
+    .panel-container {
+        padding: 1rem;
     }
 }
 </style>

@@ -283,7 +283,7 @@ export default {
         async loadArticleTypes() {
             try {
                 const res = await getArticleTypes()
-                this.articleTypes = (res.data || []).map((item) => ({ id: String(item.id), name: item.name }))
+                this.articleTypes = (res.data || []).filter((item) => !item.disable).map((item) => ({ id: String(item.id), name: item.name }))
             } catch (error) {
                 console.error('加载文章分类失败:', error)
                 this.errorMessage = '加载文章分类失败'

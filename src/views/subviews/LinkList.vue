@@ -1,34 +1,36 @@
 <template>
-    <div class="link-list">
-        <!-- 操作栏 -->
-        <div class="operation-bar">
-            <button type="button" class="btn-primary" @click="handleAddLink">添加链接</button>
+    <div class="link-list-view">
+        <div class="panel-header">
+            <h2 class="panel-title">友情链接</h2>
+            <button class="btn-black" @click="handleAddLink">
+                <font-awesome-icon :icon="['fas', 'link']" /> 添加链接
+            </button>
         </div>
 
-        <!-- 链接表格 -->
-        <div class="link-table">
-            <table>
+        <div class="table-container">
+            <table class="data-table">
                 <thead>
                     <tr>
-                        <th>名称</th>
-                        <th>地址</th>
-                        <th>备注</th>
+                        <th class="pl-4">网站名称</th>
+                        <th>URL / 备注</th>
                         <th>创建时间</th>
-                        <th width="140">操作</th>
+                        <th class="text-right pr-4">操作</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="link in links" :key="link.id">
-                        <td>{{ link.name }}</td>
-                        <td class="text-center">
-                            <a :href="link.path" target="_blank">{{ link.path }}</a>
+                    <tr v-for="link in links" :key="link.id" class="hover-row">
+                        <td class="pl-4 font-bold">{{ link.name }}</td>
+                        <td>
+                            <div class="text-xs text-mono text-gray-dark">{{ link.path }}</div>
+                            <div class="text-xs text-gray-light">{{ link.remark }}</div>
                         </td>
-                        <td class="text-center">{{ link.remark }}</td>
-                        <td class="text-center">{{ formatDate(link.createAt) }}</td>
-                        <td class="text-center">
-                            <button type="button" class="btn-link" @click="handleEditLink(link)">编辑</button>
-                            <button type="button" class="btn-link delete-btn" @click="handleDeleteLink(link)">
-                                删除
+                        <td class="text-xs text-gray-light">{{ formatDate(link.createAt) }}</td>
+                        <td class="text-right pr-4 action-col">
+                            <button class="action-btn edit" title="编辑" @click="handleEditLink(link)">
+                                <font-awesome-icon :icon="['fas', 'pen-to-square']" />
+                            </button>
+                            <button class="action-btn delete" title="删除" @click="handleDeleteLink(link)">
+                                <font-awesome-icon :icon="['fas', 'trash']" />
                             </button>
                         </td>
                     </tr>
@@ -36,28 +38,8 @@
             </table>
         </div>
 
-        <!-- 分页 -->
-        <div class="pagination-container" v-if="links.length > 0">
-            <div class="pagination">
-                <button :disabled="pagination.currentPage === 1" @click="handlePageChange(pagination.currentPage - 1)">
-                    上一页
-                </button>
-                <button v-for="page in totalPages" :key="page" :class="{ active: page === pagination.currentPage }"
-                    @click="handlePageChange(page)">
-                    {{ page }}
-                </button>
-                <button :disabled="pagination.currentPage === totalPages"
-                    @click="handlePageChange(pagination.currentPage + 1)">
-                    下一页
-                </button>
-            </div>
-            <div class="page-description">
-                {{ pagination.total }}个相关链接, 共{{ totalPages }}页
-            </div>
-        </div>
-
-        <div v-if="links.length === 0" class="empty-state">
-            <p>暂无内容</p>
+        <div class="pagination-bar" v-if="links.length > 0">
+            <span class="page-info">共 {{ pagination.total }} 个相关链接</span>
         </div>
     </div>
 </template>
@@ -69,16 +51,7 @@ export default {
     data() {
         return {
             links: [],
-            pagination: {
-                currentPage: 1,
-                pageSize: 10,
-                total: 0
-            }
-        }
-    },
-    computed: {
-        totalPages() {
-            return Math.ceil(this.pagination.total / this.pagination.pageSize)
+            pagination: { total: 0 }
         }
     },
     mounted() {
@@ -86,56 +59,32 @@ export default {
     },
     methods: {
         async loadLinks() {
-            try {
-                // 模拟数据
-                this.links = [
-                    {
-                        id: 1,
-                        name: 'Vue.js 官网',
-                        path: 'https://vuejs.org',
-                        remark: '前端框架',
-                        createAt: new Date()
-                    }
-                ]
-                this.pagination.total = 1
-            } catch {
-                alert('加载链接失败')
-            }
+            // Mock Data
+            this.links = [
+                {
+                    id: 1,
+                    name: 'Google',
+                    path: 'https://google.com',
+                    remark: '常用搜索引擎',
+                    createAt: new Date('2023-05-20')
+                }
+            ]
+            this.pagination.total = 1
         },
-
-        handlePageChange(page) {
-            this.pagination.currentPage = page
-            this.loadLinks()
-        },
-
         handleAddLink() {
             this.openLinkDialog()
         },
-
         handleEditLink(link) {
             this.openLinkDialog(link)
         },
-
         handleDeleteLink(link) {
             if (confirm(`确定要删除链接"${link.name}"吗？`)) {
-                try {
-                    // await this.$http.delete(`/api/links/${link.id}`)
-                    alert('删除成功')
-                    this.loadLinks()
-                } catch {
-                    alert('删除失败')
-                }
+                this.links = this.links.filter(l => l.id !== link.id)
             }
         },
-
         formatDate(date) {
             return new Date(date).toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
+                year: 'numeric', month: '2-digit', day: '2-digit'
             }).replace(/\//g, '-')
         }
     }
@@ -143,146 +92,128 @@ export default {
 </script>
 
 <style scoped>
-.link-list {
-    padding: 0;
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
 }
 
-.operation-bar {
-    margin-bottom: 20px;
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    font-family: var(--font-serif);
 }
 
-.btn-primary {
-    padding: 8px 16px;
-    background: var(--primary-color);
-    color: var(--text-on-primary);
+.btn-black {
+    background-color: #111827;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.btn-primary:hover {
-    background: var(--primary-hover);
+.btn-black:hover {
+    opacity: 0.9;
 }
 
-.link-table table {
+:root.dark-theme .btn-black {
+    background-color: white;
+    color: black;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--card-bg);
-    border-radius: 8px;
-    overflow: hidden;
+    font-size: 0.875rem;
 }
 
-.link-table th,
-.link-table td {
-    padding: 12px;
-    border: 1px solid var(--border-color);
+.data-table th {
     text-align: left;
-}
-
-.link-table th {
-    background: var(--hover-bg);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
     font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.data-table td {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
     color: var(--text-color);
 }
 
-.link-table td {
+.hover-row:hover {
+    background-color: var(--hover-bg);
+}
+
+.pl-4 {
+    padding-left: 1rem;
+}
+
+.pr-4 {
+    padding-right: 1rem;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.text-mono {
+    font-family: monospace;
+}
+
+.text-gray-dark {
     color: var(--text-color);
+    opacity: 0.8;
 }
 
-.link-table td.text-center,
-.link-table th[width] {
-    text-align: center;
+.text-gray-light {
+    color: var(--text-secondary);
 }
 
-.link-table a {
-    color: var(--link-color);
-    text-decoration: none;
-}
-
-.link-table a:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
-}
-
-.btn-link {
+.action-btn {
     background: none;
     border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 4px;
+    margin-left: 4px;
+    transition: color 0.2s;
+}
+
+.action-btn:hover {
     color: var(--link-color);
-    cursor: pointer;
-    padding: 0 8px;
-    font-size: 14px;
-    transition: var(--transition);
 }
 
-.btn-link:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
+.action-btn.delete:hover {
+    color: #ef4444;
 }
 
-.delete-btn {
-    color: #dc3545;
-}
-
-.delete-btn:hover {
-    color: #c82333;
-}
-
-.pagination-container {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.pagination {
-    display: inline-flex;
-    gap: 5px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-}
-
-.pagination button {
-    padding: 6px 12px;
-    border: 1px solid var(--border-color);
-    background: var(--button-bg);
-    color: var(--text-color);
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: var(--transition);
-}
-
-.pagination button:hover:not(:disabled) {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.pagination button.active {
-    background: var(--primary-color);
-    color: var(--text-on-primary);
-    border-color: var(--primary-color);
-}
-
-.pagination button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
-.page-description {
-    margin-top: 10px;
+.pagination-bar {
+    margin-top: 1rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-secondary);
-}
-
-@media (max-width: 768px) {
-    .link-table {
-        overflow-x: auto;
-    }
 }
 </style>

@@ -1,46 +1,45 @@
 <template>
-    <div class="blog-settings">
-        <div class="settings-form">
-            <div v-if="errorMessage" class="alert alert-error">
-                {{ errorMessage }}
-                <button class="close-btn" @click="errorMessage = ''">×</button>
-            </div>
-            <div v-if="successMessage" class="alert alert-success">
-                {{ successMessage }}
-                <button class="close-btn" @click="successMessage = ''">×</button>
-            </div>
+    <div class="blog-settings-view">
+        <h2 class="panel-title">基本信息设置</h2>
 
-            <form @submit.prevent="handleSubmit">
-                <div class="form-item">
-                    <label class="required">博客名</label>
-                    <input v-model="formData.head" type="text" placeholder="请输入博客名" required />
-                    <span v-if="errors.head" class="error-text">{{ errors.head }}</span>
+        <div class="settings-container">
+            <form @submit.prevent="handleSubmit" class="space-y-6">
+                <!-- Blog Name -->
+                <div class="form-group">
+                    <label class="form-label">博客名称</label>
+                    <input v-model="formData.head" type="text" class="form-input" />
                 </div>
 
-                <div class="form-item">
-                    <label class="required">博客签名</label>
-                    <input v-model="formData.descriptions" type="text" placeholder="请输入博客签名" required />
-                    <span v-if="errors.descriptions" class="error-text">{{ errors.descriptions }}</span>
+                <!-- Blog Slogan -->
+                <div class="form-group">
+                    <label class="form-label">博客标语 (Slogan)</label>
+                    <input v-model="formData.descriptions" type="text" class="form-input" />
                 </div>
 
-                <div class="form-item">
-                    <label class="required">关联邮箱</label>
-                    <input v-model="formData.email" type="email" placeholder="请输入关联邮箱" required />
-                    <span v-if="errors.email" class="error-text">{{ errors.email }}</span>
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label">关联邮箱</label>
+                    <input v-model="formData.email" type="email" class="form-input" />
                 </div>
 
-                <div class="form-item">
-                    <label>关于</label>
-                    <textarea v-model="formData.about" rows="6" placeholder="请输入关于内容"></textarea>
-                    <div class="editor-tips">
-                        <small>支持富文本编辑，您可以在这里介绍您的博客</small>
+                <!-- About HTML -->
+                <div class="form-group">
+                    <label class="form-label">关于页面内容 (HTML)</label>
+                    <div class="rich-editor">
+                        <div class="editor-toolbar">
+                            <button type="button" class="toolbar-btn"><font-awesome-icon
+                                    :icon="['fas', 'bold']" /></button>
+                            <button type="button" class="toolbar-btn"><font-awesome-icon
+                                    :icon="['fas', 'italic']" /></button>
+                            <button type="button" class="toolbar-btn"><font-awesome-icon
+                                    :icon="['fas', 'list-ul']" /></button>
+                        </div>
+                        <textarea v-model="formData.about" class="editor-content" rows="6"></textarea>
                     </div>
                 </div>
 
-                <div class="form-item">
-                    <button type="submit" class="btn-primary" :disabled="loading">
-                        {{ loading ? '保存中...' : '保存' }}
-                    </button>
+                <div class="form-footer">
+                    <button type="submit" class="btn-black">保存更改</button>
                 </div>
             </form>
         </div>
@@ -52,230 +51,133 @@ export default {
     name: 'BlogSettings',
     data() {
         return {
-            loading: false,
-            errorMessage: '',
-            successMessage: '',
-            errors: {},
             formData: {
-                id: null,
-                head: '',
-                descriptions: '',
-                email: '',
-                about: ''
+                head: '墨痕',
+                descriptions: '落笔生花，代码构建世界。',
+                email: 'contact@mohen.blog',
+                about: '在这个信息爆炸的时代，我希望构建一个安静的角落...'
             }
         }
     },
-    mounted() {
-        this.loadBlogInfo()
-    },
     methods: {
-        async loadBlogInfo() {
-            try {
-                // 模拟API调用
-                // const response = await this.$http.get('/api/blog-info')
-                // this.formData = response.data
-
-                // 模拟数据
-                this.formData = {
-                    id: 1,
-                    head: '我的技术博客',
-                    descriptions: '分享前端开发、Vue、React等技术文章',
-                    email: 'admin@example.com',
-                    about: '<p>欢迎来到我的技术博客！这里主要分享前端开发相关的内容。</p>'
-                }
-            } catch {
-                alert('加载博客信息失败')
-            }
-        },
-
-        validateForm() {
-            this.errors = {}
-            let isValid = true
-
-            if (!this.formData.head || this.formData.head.length < 2 || this.formData.head.length > 50) {
-                this.errors.head = '博客名长度在 2 到 50 个字符'
-                isValid = false
-            }
-
-            if (!this.formData.descriptions || this.formData.descriptions.length < 5 || this.formData.descriptions.length > 200) {
-                this.errors.descriptions = '博客签名长度在 5 到 200 个字符'
-                isValid = false
-            }
-
-            if (!this.formData.email || !this.validateEmail(this.formData.email)) {
-                this.errors.email = '请输入正确的邮箱地址'
-                isValid = false
-            }
-
-            return isValid
-        },
-
-        async handleSubmit() {
-            if (!this.validateForm()) {
-                return
-            }
-
-            this.loading = true
-            this.errorMessage = ''
-            this.successMessage = ''
-
-            try {
-                // 模拟API调用
-                // const response = await this.$http.post('/api/blog-info/save', this.formData)
-
-                // 模拟成功响应
-                this.successMessage = '博客信息保存成功'
-            } catch {
-                this.errorMessage = '保存失败，请检查网络连接或稍后重试'
-            } finally {
-                this.loading = false
-            }
-        },
-
-        validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            return re.test(email)
+        handleSubmit() {
+            // Mock API save
+            console.log('Saving settings:', this.formData)
+            alert('Settings Saved!')
         }
     }
 }
 </script>
 
 <style scoped>
-.blog-settings {
-    padding: 0;
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    font-family: var(--font-serif);
+    margin-bottom: 1.5rem;
 }
 
-.settings-form {
-    max-width: 600px;
+.settings-container {
+    max-width: 42rem;
+    /* max-w-2xl */
 }
 
-.alert {
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    position: relative;
+.space-y-6>*+* {
+    margin-top: 1.5rem;
+}
+
+.form-group {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid var(--border-color);
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.alert-error {
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
-    border-color: #dc3545;
-}
-
-.alert-success {
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-    border-color: #28a745;
-}
-
-:root.dark-theme .alert-error {
-    background: rgba(220, 53, 69, 0.2);
-}
-
-:root.dark-theme .alert-success {
-    background: rgba(40, 167, 69, 0.2);
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    line-height: 1;
-    color: inherit;
-    transition: var(--transition);
-}
-
-.close-btn:hover {
-    opacity: 0.7;
-}
-
-.form-item {
-    margin-bottom: 20px;
-}
-
-.form-item label {
+.form-label {
     display: block;
-    margin-bottom: 8px;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-color);
 }
 
-.form-item label.required::before {
-    content: '*';
-    color: #dc3545;
-    margin-right: 4px;
-}
-
-.form-item input[type='text'],
-.form-item input[type='email'],
-.form-item textarea {
+.form-input {
     width: 100%;
-    padding: 8px 12px;
+    background-color: var(--bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 14px;
-    box-sizing: border-box;
-    background: var(--card-bg);
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-color);
-    transition: var(--transition);
-}
-
-.form-item textarea {
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    resize: vertical;
-}
-
-.form-item input:focus,
-.form-item textarea:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transition: all 0.2s;
 }
 
-.error-text {
-    display: block;
-    color: #dc3545;
-    font-size: 12px;
-    margin-top: 4px;
+.form-input:focus {
+    border-color: var(--text-secondary);
 }
 
-.editor-tips {
-    margin-top: 8px;
-    color: var(--text-secondary);
-    font-size: 12px;
+.rich-editor {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
 }
 
-.btn-primary {
-    padding: 10px 20px;
-    background: var(--primary-color);
-    color: var(--text-on-primary);
+.editor-toolbar {
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.toolbar-btn {
+    background: none;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    transition: var(--transition);
+    color: var(--text-secondary);
+    padding: 0.25rem;
+    font-size: 0.875rem;
 }
 
-.btn-primary:hover:not(:disabled) {
-    background: var(--primary-hover);
+.toolbar-btn:hover {
+    color: var(--text-color);
 }
 
-.btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.editor-content {
+    width: 100%;
+    border: none;
+    padding: 0.75rem;
+    min-height: 150px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    resize: vertical;
+    outline: none;
+    font-family: monospace;
 }
 
-@media (max-width: 768px) {
-    .settings-form {
-        max-width: 100%;
-    }
+.form-footer {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-black {
+    background-color: #111827;
+    color: white;
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-black:hover {
+    opacity: 0.9;
+}
+
+:root.dark-theme .btn-black {
+    background-color: white;
+    color: black;
 }
 </style>

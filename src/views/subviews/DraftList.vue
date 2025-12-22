@@ -1,30 +1,34 @@
 <template>
-    <div class="draft-list">
-        <!-- 草稿表格 -->
-        <div class="draft-table">
-            <table>
+    <div class="draft-list-view">
+        <h2 class="panel-title">草稿箱</h2>
+
+        <div class="table-container">
+            <table class="data-table">
                 <thead>
                     <tr>
-                        <th>标题</th>
-                        <th width="80">阅读</th>
-                        <th width="80">评论</th>
-                        <th width="140">操作</th>
+                        <th class="pl-4">标题</th>
+                        <th>数据</th>
+                        <th>最后修改</th>
+                        <th class="text-right pr-4">操作</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="draft in drafts" :key="draft.id">
-                        <td>
-                            <a :href="`/show/${draft.id}.html`" target="_blank">
-                                {{ draft.title || '无标题' }}
-                            </a>
-                            <span class="create-time">({{ formatDate(draft.createAt) }})</span>
+                    <tr v-for="draft in drafts" :key="draft.id" class="hover-row">
+                        <td class="pl-4 font-medium">
+                            <span class="icon-draft"><font-awesome-icon :icon="['fas', 'pen-to-square']" /></span>
+                            {{ draft.title || '无标题草稿' }}
                         </td>
-                        <td class="text-center">{{ draft.readedNum }}</td>
-                        <td class="text-center">{{ draft.commentCount }}</td>
-                        <td class="text-center">
-                            <a :href="`/edit/${draft.id}.html`" class="btn-link">编辑</a>
-                            <button type="button" class="btn-link delete-btn" @click="handleDeleteDraft(draft)">
-                                删除
+                        <td class="text-gray">
+                            <div class="data-col">
+                                <span>阅: {{ draft.readed_num }}</span>
+                                <span>评: {{ draft.comment_count }}</span>
+                            </div>
+                        </td>
+                        <td class="text-xs text-gray">{{ formatDateTime(draft.update_at) }}</td>
+                        <td class="text-right pr-4 action-col">
+                            <button class="btn-black-small" @click="goEdit(draft.id)">继续编辑</button>
+                            <button class="action-btn delete" title="删除" @click="handleDeleteDraft(draft)">
+                                <font-awesome-icon :icon="['fas', 'trash']" />
                             </button>
                         </td>
                     </tr>
@@ -32,33 +36,23 @@
             </table>
         </div>
 
-        <!-- 分页 -->
-        <div class="pagination-container" v-if="drafts.length > 0">
-            <div class="pagination">
-                <button :disabled="pagination.currentPage === 1" @click="handlePageChange(pagination.currentPage - 1)">
-                    上一页
-                </button>
-                <button v-for="page in totalPages" :key="page" :class="{ active: page === pagination.currentPage }"
-                    @click="handlePageChange(page)">
-                    {{ page }}
-                </button>
-                <button :disabled="pagination.currentPage === totalPages"
-                    @click="handlePageChange(pagination.currentPage + 1)">
-                    下一页
-                </button>
+        <div class="pagination-bar" v-if="drafts.length > 0">
+            <span class="page-info">共 {{ pagination.total }} 篇草稿，当前 {{ pagination.currentPage }}/{{ totalPages }}
+                页</span>
+            <div class="page-btns">
+                <button class="page-btn" :disabled="pagination.currentPage === 1"
+                    @click="handlePageChange(pagination.currentPage - 1)">上一页</button>
+                <button class="page-btn" :disabled="pagination.currentPage === totalPages"
+                    @click="handlePageChange(pagination.currentPage + 1)">下一页</button>
             </div>
-            <div class="page-description">
-                {{ pagination.total }}篇文章, 共{{ totalPages }}页
-            </div>
-        </div>
-
-        <div v-if="drafts.length === 0" class="empty-state">
-            <p>暂无内容</p>
         </div>
     </div>
 </template>
 
 <script>
+import { getDrafts, deleteArticle } from '@/api/article'
+import { formatDateTime } from '@/utils/tools';
+
 export default {
     name: 'DraftList',
     data() {
@@ -66,205 +60,201 @@ export default {
             drafts: [],
             pagination: {
                 currentPage: 1,
-                pageSize: 10,
+                pageSize: 15,
                 total: 0
             }
         }
     },
     computed: {
         totalPages() {
-            return Math.ceil(this.pagination.total / this.pagination.pageSize)
+            return Math.ceil(this.pagination.total / this.pagination.pageSize) || 1
         }
     },
     mounted() {
         this.loadDrafts()
     },
     methods: {
+        formatDateTime,
+
         async loadDrafts() {
             try {
-                // 模拟数据
-                this.drafts = [
-                    {
-                        id: 1,
-                        title: 'Vue 3 新特性探索',
-                        createAt: new Date('2024-01-15'),
-                        readedNum: 5,
-                        commentCount: 0
-                    },
-                    {
-                        id: 2,
-                        title: '',
-                        createAt: new Date('2024-01-10'),
-                        readedNum: 2,
-                        commentCount: 0
-                    }
-                ]
-                this.pagination.total = 2
-            } catch {
-                alert('加载草稿失败')
+                const res = await getDrafts(this.pagination.currentPage, this.pagination.pageSize)
+                const pageResult = res.data.page
+                this.drafts = pageResult.data || []
+                this.pagination.total = pageResult.totalCount
+            } catch (err) {
+                console.error('加载草稿失败:', err)
+                alert(err.message || '加载草稿失败')
             }
         },
-
         handlePageChange(page) {
             this.pagination.currentPage = page
             this.loadDrafts()
         },
-
-        handleDeleteDraft(draft) {
-            const title = draft.title || '无标题'
-            if (confirm(`确定要删除草稿"${title}"吗？`)) {
+        goEdit(id) {
+            this.$router.push(`/edit/${id}`)
+        },
+        async handleDeleteDraft(draft) {
+            if (confirm(`确认删除草稿"${draft.title || '无标题'}"?`)) {
                 try {
-                    // await this.$http.delete(`/api/drafts/${draft.id}`)
+                    await deleteArticle(draft.id)
                     alert('删除成功')
                     this.loadDrafts()
-                } catch {
-                    alert('删除失败')
+                } catch (err) {
+                    alert('删除失败: ' + (err.message || '未知错误'))
                 }
             }
-        },
-
-        formatDate(date) {
-            return new Date(date).toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            }).replace(/\//g, '-')
         }
     }
 }
 </script>
 
 <style scoped>
-.draft-list {
-    padding: 0;
+.panel-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    font-family: var(--font-serif);
+    margin-bottom: 1.5rem;
 }
 
-.draft-table table {
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--card-bg);
-    border-radius: 8px;
-    overflow: hidden;
+    font-size: 0.875rem;
 }
 
-.draft-table th,
-.draft-table td {
-    padding: 12px;
-    border: 1px solid var(--border-color);
+.data-table th {
     text-align: left;
-}
-
-.draft-table th {
-    background: var(--hover-bg);
-    font-weight: 500;
-    color: var(--text-color);
-}
-
-.draft-table td {
-    color: var(--text-color);
-}
-
-.draft-table td.text-center,
-.draft-table th[width] {
-    text-align: center;
-}
-
-.draft-table a {
-    color: var(--link-color);
-    text-decoration: none;
-}
-
-.draft-table a:hover {
-    text-decoration: underline;
-}
-
-.create-time {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
     color: var(--text-secondary);
-    font-size: 12px;
-    margin-left: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
 }
 
-.btn-link {
+.data-table td {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    color: var(--text-color);
+}
+
+.hover-row:hover {
+    background-color: var(--hover-bg);
+}
+
+.pl-4 {
+    padding-left: 1rem;
+}
+
+.pr-4 {
+    padding-right: 1rem;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-gray {
+    color: var(--text-secondary);
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.icon-draft {
+    color: #f97316;
+    /* Orange */
+    margin-right: 0.5rem;
+}
+
+.btn-black-small {
+    background-color: #111827;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    border: none;
+    cursor: pointer;
+    margin-right: 0.5rem;
+}
+
+.btn-black-small:hover {
+    opacity: 0.9;
+}
+
+:root.dark-theme .btn-black-small {
+    background-color: white;
+    color: black;
+}
+
+.action-btn {
     background: none;
     border: none;
-    color: var(--link-color);
     cursor: pointer;
-    padding: 0 8px;
-    font-size: 14px;
-    text-decoration: none;
-    transition: var(--transition);
+    color: var(--text-secondary);
+    padding: 4px;
+    transition: color 0.2s;
 }
 
-.btn-link:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
+.action-btn:hover {
+    color: #ef4444;
 }
 
-.delete-btn {
-    color: #dc3545;
+.data-col {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.75rem;
+    gap: 2px;
 }
 
-.delete-btn:hover {
-    color: #c82333;
+.pagination-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
 }
 
-.pagination-container {
-    margin-top: 20px;
-    text-align: center;
+.page-info {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
 }
 
-.pagination {
-    display: inline-flex;
-    gap: 5px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
+.page-btns {
+    display: flex;
+    gap: 0.5rem;
 }
 
-.pagination button {
-    padding: 6px 12px;
+.page-btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
     border: 1px solid var(--border-color);
-    background: var(--button-bg);
-    color: var(--text-color);
+    background: var(--card-bg);
+    border-radius: 0.25rem;
     cursor: pointer;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: var(--transition);
+    color: var(--text-color);
+    transition: all 0.2s;
 }
 
-.pagination button:hover:not(:disabled) {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+.page-btn:hover:not(:disabled) {
+    background-color: var(--hover-bg);
 }
 
-.pagination button.active {
-    background: var(--primary-color);
-    color: var(--text-on-primary);
-    border-color: var(--primary-color);
-}
-
-.pagination button:disabled {
-    cursor: not-allowed;
+.page-btn:disabled {
     opacity: 0.5;
-}
-
-.page-description {
-    margin-top: 10px;
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-secondary);
-}
-
-@media (max-width: 768px) {
-    .draft-table {
-        overflow-x: auto;
-    }
+    cursor: not-allowed;
 }
 </style>
