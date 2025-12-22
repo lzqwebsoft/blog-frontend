@@ -88,6 +88,56 @@ export function getArticleTypes() {
 }
 
 /**
+ * 添加文章分类
+ * @param {URLSearchParams} data - 分类数据
+ */
+export function addArticleType(data) {
+    return request.post('/article_type/add', data, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+}
+
+/**
+ * 删除文章分类
+ * @param {string|number} id - 分类ID
+ */
+export function deleteArticleType(id) {
+    return request.delete(`/article_type/delete/${id}`)
+}
+
+/**
+ * 切换文章分类禁用状态
+ * @param {string|number} id - 分类ID
+ * @param {boolean} disable - 是否禁用
+ */
+export function toggleArticleTypeDisable(id, disable) {
+    const params = new URLSearchParams()
+    params.append('disable', disable)
+    return request.put(`/article_type/disable/${id}`, params, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+}
+
+/**
+ * 更新文章分类名称
+ * @param {string|number} id - 分类ID
+ * @param {string} name - 分类数据
+ */
+export function updateArticleType(id, name) {
+    const params = new URLSearchParams()
+    params.append('type_name', name)
+    return request.put(`/article_type/update/${id}`, params, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+}
+
+/**
  * 保存文章
  * @param {URLSearchParams} data - 文章数据（x-www-form-urlencoded格式）
  * @param {string} data.title - 文章标题
@@ -127,8 +177,12 @@ export function selectArticles(params) {
  * @param {boolean} allow - 是否允许评论
  */
 export function toggleAllowComment(id, allow) {
-    return request.get(`/article/allow_comment/${id}`, {
-        params: { allow }
+    const params = new URLSearchParams()
+    params.append('allow', allow)
+    return request.put(`/article/allow_comment/${id}`, params, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
     })
 }
 
@@ -138,8 +192,12 @@ export function toggleAllowComment(id, allow) {
  * @param {boolean} top - 是否置顶
  */
 export function toggleTop(id, top) {
-    return request.get(`/article/is_top/${id}`, {
-        params: { top }
+    const params = new URLSearchParams()
+    params.append('top', top)
+    return request.put(`/article/is_top/${id}`, params, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
     })
 }
 

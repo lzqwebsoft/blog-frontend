@@ -17,7 +17,7 @@
                     <div v-if="!row.editing">
                         <h4 class="category-name">{{ row.name }} <span v-if="row.disable" class="text-xs">(隐藏)</span>
                         </h4>
-                        <span class="category-count">{{ row.articles ? row.articles.length : 0 }} 篇文章</span>
+                        <span class="category-count">{{ row.article_count || 0 }} 篇文章</span>
                     </div>
                     <div v-else class="edit-mode">
                         <input v-model="row.editName" ref="editInput" class="edit-input"
@@ -40,11 +40,18 @@
             </div>
         </div>
 
-        <div v-if="errorInfo" class="error-toast">{{ errorInfo }}</div>
+        <transition name="toast">
+            <div v-if="errorInfo" class="error-toast" @click="errorInfo = ''">
+                <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="error-icon" />
+                <span>{{ errorInfo }}</span>
+            </div>
+        </transition>
     </div>
 </template>
 
 <script>
+import { getArticleTypes, addArticleType, deleteArticleType, toggleArticleTypeDisable, updateArticleType } from '@/api/article'
+
 export default {
     name: 'ArticleTypeList',
     data() {
@@ -59,63 +66,113 @@ export default {
     },
     methods: {
         async loadArticleTypes() {
-            // Mock Data
-            this.articleTypes = [
-                {
-                    id: 1,
-                    name: '前端技术',
-                    articles: [{}, {}], // Mock count
-                    disable: false,
+            try {
+                const res = await getArticleTypes()
+                this.articleTypes = (res.data || []).map(item => ({
+                    ...item,
                     editing: false,
-                    editName: '前端技术'
-                },
-                {
-                    id: 2,
-                    name: '未归类',
-                    articles: [],
-                    disable: true,
-                    editing: false,
-                    editName: '未归类'
-                }
-            ]
+                    editName: item.name
+                }))
+            } catch (err) {
+                console.error('加载分类失败:', err)
+                this.errorInfo = '加载分类失败'
+            }
         },
         handleEdit(row) {
             row.editing = true
             row.editName = row.name
             this.$nextTick(() => {
-                // Focus logic if refs were array, but inside v-for refs are tricky in Vue 2/3 differently.
-                // keep it simple for now
+
             })
         },
-        handleSaveEdit(row) {
+        async handleSaveEdit(row) {
             if (!row.editing) return
-            if (!row.editName.trim()) {
+            const newName = row.editName.trim()
+
+            if (!newName || newName === row.name) {
                 row.editName = row.name
                 row.editing = false
                 return
             }
-            row.name = row.editName
-            row.editing = false
-        },
-        handleDeleteType(row) {
-            if (confirm(`确定要删除类别"${row.name}"吗？`)) {
-                this.articleTypes = this.articleTypes.filter(t => t.id !== row.id)
+
+            try {
+                await updateArticleType(row.id, newName)
+                row.name = newName
+                row.editing = false
+                this.errorInfo = ''
+            } catch (err) {
+                console.error('更新分类名称失败:', err)
+                this.errorInfo = err.message || '更新失败'
+
+                row.editName = row.name
+                row.editing = false
+
+                setTimeout(() => {
+                    if (this.errorInfo === (err.message || '更新失败')) {
+                        this.errorInfo = ''
+                    }
+                }, 3000)
             }
         },
-        handleToggleDisable(row) {
-            row.disable = !row.disable
+        async handleDeleteType(row) {
+            if (confirm(`确定要删除类别"${row.name}"吗？`)) {
+                // 检查当前类型下是否文章数不为0，如果不为0，则禁止删除
+                if (row.article_count > 0) {
+                    this.errorInfo = '当前类别下有文章，无法删除'
+                    return
+                }
+                try {
+                    await deleteArticleType(row.id)
+                    await this.loadArticleTypes()
+                    this.errorInfo = ''
+                } catch (err) {
+                    console.error('删除分类失败:', err)
+                    this.errorInfo = err.message || '删除分类失败'
+                    setTimeout(() => {
+                        if (this.errorInfo === (err.message || '删除分类失败')) {
+                            this.errorInfo = ''
+                        }
+                    }, 3000)
+                }
+            }
         },
-        handleAddType() {
-            if (!this.newType.name.trim()) return
-            this.articleTypes.unshift({
-                id: Date.now(),
-                name: this.newType.name,
-                articles: [],
-                disable: false,
-                editing: false,
-                editName: this.newType.name
-            })
-            this.newType.name = ''
+        async handleToggleDisable(row) {
+            const newStatus = !row.disable
+            try {
+                await toggleArticleTypeDisable(row.id, newStatus)
+                row.disable = newStatus
+                this.errorInfo = ''
+            } catch (err) {
+                console.error('切换分类状态失败:', err)
+                this.errorInfo = err.message || '操作失败'
+                setTimeout(() => {
+                    if (this.errorInfo === (err.message || '操作失败')) {
+                        this.errorInfo = ''
+                    }
+                }, 3000)
+            }
+        },
+        async handleAddType() {
+            const name = this.newType.name.trim()
+            if (!name) return
+
+            try {
+                const params = new URLSearchParams()
+                params.append('type_name', name)
+                await addArticleType(params)
+                this.newType.name = ''
+                await this.loadArticleTypes()
+                this.errorInfo = ''
+            } catch (err) {
+                console.error('添加分类失败:', err)
+                this.errorInfo = err.message || '添加分类失败'
+                // 3秒后自动清除错误信息
+                setTimeout(() => {
+                    if (this.errorInfo === (err.message || '添加分类失败')) {
+                        this.errorInfo = ''
+                    }
+                }, 3000)
+            }
         }
     }
 }
@@ -274,5 +331,48 @@ export default {
     font-weight: bold;
     border: 1px solid var(--primary-color);
     border-radius: 4px;
+}
+
+/* Error Toast */
+.error-toast {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 1000;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #fecaca;
+}
+
+.error-icon {
+    font-size: 1rem;
+}
+
+:root.dark-theme .error-toast {
+    background-color: #450a0a;
+    color: #f87171;
+    border-color: #7f1d1d;
+}
+
+/* Toast Transition */
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translate(-50%, -20px);
 }
 </style>
