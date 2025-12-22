@@ -48,3 +48,23 @@ export function getCaptcha() {
 export function refreshToken(refreshToken) {
     return request.post('/user/refreshToken', { refresh_token: refreshToken })
 }
+
+/**
+ * 修改密码
+ * @param {Object} data - 修改密码参数
+ * @param {string} data.password - 当前密码
+ * @param {string} data.newPassword - 新密码
+ * @param {string} data.confirmPassword - 确认新密码
+ */
+export function changePassword(data) {
+    const formData = new URLSearchParams()
+    Object.keys(data).forEach((key) => {
+        formData.append(key, data[key])
+    })
+
+    return request.post('/user/changepwd_handle', formData, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+}
