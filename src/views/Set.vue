@@ -22,10 +22,6 @@
                 </div>
             </main>
         </div>
-
-        <!-- Link Edit Dialog (Global for this view) -->
-        <link-edit-dialog v-if="linkDialogVisible" :visible="linkDialogVisible" :link-data="currentLink"
-            @save="handleSaveLink" @close="linkDialogVisible = false" />
     </div>
 </template>
 
@@ -36,7 +32,6 @@ import DraftList from './subviews/DraftList.vue'
 import LinkList from './subviews/LinkList.vue'
 import ImageList from './subviews/ImageList.vue'
 import BlogSettings from './subviews/BlogSettings.vue'
-import LinkEditDialog from '../components/LinkEditDialog.vue'
 
 export default {
     name: 'SettingsView',
@@ -46,14 +41,11 @@ export default {
         DraftList,
         LinkList,
         ImageList,
-        BlogSettings,
-        LinkEditDialog
+        BlogSettings
     },
     data() {
         return {
             activeTab: 'articles',
-            linkDialogVisible: false,
-            currentLink: null,
             tabs: [
                 { name: 'articles', label: '文章列表', icon: ['fas', 'list-ul'] },
                 { name: 'types', label: '类型管理', icon: ['fas', 'folder'] },
@@ -77,25 +69,10 @@ export default {
             return map[this.activeTab]
         }
     },
-    provide() {
-        return {
-            openLinkDialog: this.openLinkDialog
-        }
-    },
+
     methods: {
         handleTabClick(tabName) {
             this.activeTab = tabName
-        },
-        handleSaveLink(linkData) {
-            // This logic might need to be moved to LinkList or handled via event bus/store
-            // For now, just close dialog as the List component will likely handle the refresh
-            console.log('Save link', linkData)
-            this.linkDialogVisible = false
-            // You might want to trigger a refresh in LinkList here
-        },
-        openLinkDialog(link = null) {
-            this.currentLink = link
-            this.linkDialogVisible = true
         }
     }
 }

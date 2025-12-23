@@ -24,7 +24,7 @@
                             <div class="text-xs text-mono text-gray-dark">{{ link.path }}</div>
                             <div class="text-xs text-gray-light">{{ link.remark }}</div>
                         </td>
-                        <td class="text-xs text-gray-light">{{ formatDate(link.createAt) }}</td>
+                        <td class="text-xs text-gray-light">{{ formatDate(link.created_at) }}</td>
                         <td class="text-right pr-4 action-col">
                             <button class="action-btn edit" title="编辑" @click="handleEditLink(link)">
                                 <font-awesome-icon :icon="['fas', 'pen-to-square']" />
@@ -41,51 +41,89 @@
         <div class="pagination-bar" v-if="links.length > 0">
             <span class="page-info">共 {{ pagination.total }} 个相关链接</span>
         </div>
+
+        <!-- Link Edit Dialog -->
+        <link-edit-dialog v-if="linkDialogVisible" :visible="linkDialogVisible" :link-data="currentLink"
+            @save="handleSaveLink" @close="linkDialogVisible = false" />
     </div>
 </template>
 
 <script>
+import LinkEditDialog from '@/components/LinkEditDialog.vue'
+import { getLinkList, saveLink, deleteLink } from '@/api/link'
+import { formatDate } from '@/utils/tools'
+
 export default {
     name: 'LinkList',
-    inject: ['openLinkDialog'],
+    components: {
+        LinkEditDialog
+    },
     data() {
         return {
             links: [],
-            pagination: { total: 0 }
+            linkDialogVisible: false,
+            currentLink: null,
+            pagination: {
+                total: 0,
+                pageNo: 1,
+                pageSize: 10
+            }
         }
     },
     mounted() {
         this.loadLinks()
     },
     methods: {
+        formatDate,
         async loadLinks() {
-            // Mock Data
-            this.links = [
-                {
-                    id: 1,
-                    name: 'Google',
-                    path: 'https://google.com',
-                    remark: '常用搜索引擎',
-                    createAt: new Date('2023-05-20')
+            try {
+                const res = await getLinkList(this.pagination.pageNo, this.pagination.pageSize)
+                if (res.code === 0) {
+                    this.links = res.data.data
+                    this.pagination.total = res.data.totalCount
                 }
-            ]
-            this.pagination.total = 1
-        },
-        handleAddLink() {
-            this.openLinkDialog()
-        },
-        handleEditLink(link) {
-            this.openLinkDialog(link)
-        },
-        handleDeleteLink(link) {
-            if (confirm(`确定要删除链接"${link.name}"吗？`)) {
-                this.links = this.links.filter(l => l.id !== link.id)
+            } catch (error) {
+                console.error('加载链接失败:', error)
             }
         },
-        formatDate(date) {
-            return new Date(date).toLocaleString('zh-CN', {
-                year: 'numeric', month: '2-digit', day: '2-digit'
-            }).replace(/\//g, '-')
+        handleAddLink() {
+            this.currentLink = null
+            this.linkDialogVisible = true
+        },
+        handleEditLink(link) {
+            this.currentLink = link
+            this.linkDialogVisible = true
+        },
+        async handleDeleteLink(link) {
+            if (confirm(`确定要删除链接"${link.name}"吗？`)) {
+                try {
+                    await deleteLink(link.id)
+                    await this.loadLinks()
+                } catch (error) {
+                    console.error('删除链接失败:', error)
+                    alert(error.message || '删除失败')
+                }
+            }
+        },
+        async handleSaveLink(formData) {
+            try {
+                const params = new URLSearchParams()
+                params.append('name', formData.name)
+                params.append('path', formData.path)
+                params.append('remark', formData.remark || '')
+
+                if (formData.id) {
+                    params.append('id', formData.id)
+                }
+
+                await saveLink(params)
+
+                this.linkDialogVisible = false
+                await this.loadLinks()
+            } catch (error) {
+                console.error('保存链接失败:', error)
+                alert(error.message || '保存失败')
+            }
         }
     }
 }
