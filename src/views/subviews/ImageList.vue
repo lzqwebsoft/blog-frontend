@@ -8,7 +8,7 @@
                     <img :src="getImageUrl(image.id)" :alt="image.descriptions || 'Image'" class="grid-img" />
 
                     <div class="overlay">
-                        <p class="overlay-text">{{ image.fileName || 'image.jpg' }}</p>
+                        <p class="overlay-text">{{ image.descriptions || image.filename }}</p>
                         <button class="btn-delete-sm" @click.stop="handleDeleteImage(image)">
                             删除
                         </button>
@@ -17,69 +17,112 @@
             </div>
         </div>
 
-        <div class="pagination-bar">
-            <button class="load-more-btn">加载更多...</button>
-        </div>
-
-        <!-- Lightbox -->
-        <div v-if="lightboxVisible" class="lightbox" @click="closeLightbox">
-            <img :src="lightboxSrc" class="lightbox-img"
-                :class="{ 'zoom-in': zoomLevel > 1, 'zoom-out': zoomLevel === 1 }"
-                :style="{ transform: `scale(${zoomLevel})` }" @click.stop="toggleZoom">
-            <button class="close-btn" @click="closeLightbox">
-                <font-awesome-icon :icon="['fas', 'times']" />
+        <div class="pagination-bar" v-if="images.length > 0 && currentPage < totalPageCount">
+            <button class="load-more-btn" @click="handleLoadMore" :disabled="loading">
+                <font-awesome-icon v-if="loading" icon="spinner" spin />
+                {{ loading ? '加载中...' : '加载更多...' }}
             </button>
         </div>
+
+        <div v-else-if="images.length === 0 && !loading" class="empty-state">
+            <font-awesome-icon icon="image" class="empty-icon" />
+            <p>暂无图片</p>
+        </div>
+
+        <!-- Image Preview -->
+        <ImagePreview :visible="lightboxVisible" :imageUrl="lightboxSrc" @close="closeLightbox" />
     </div>
 </template>
 
 <script>
+import { getImageList, deleteImage } from '@/api/image'
+import ImagePreview from '@/components/ImagePreview.vue'
+
 export default {
     name: 'ImageList',
+    components: {
+        ImagePreview
+    },
     data() {
         return {
             images: [],
-            pagination: { total: 0 },
+            loading: false,
+            currentPage: 1,
+            pageSize: 12,
+            totalPageCount: 0,
             lightboxVisible: false,
-            lightboxSrc: '',
-            zoomLevel: 1
+            lightboxSrc: ''
         }
     },
     mounted() {
         this.loadImages()
     },
     methods: {
-        async loadImages() {
-            // Mock Data - using some external placeholders for visual test if real ids provided, matching set.html
-            this.images = [
-                { id: '1498050108023-c5249f4df085', fileName: 'coding-setup.jpg' },
-                { id: '1555066931-4365d14bab8c', fileName: 'screen-code.jpg' },
-                { id: '1555066931-4365d14bab8d', fileName: 'screen-code-2.jpg' }
-            ]
+        async loadImages(isLoadMore = false) {
+            if (this.loading) return
+
+            this.loading = true
+            if (!isLoadMore) {
+                this.currentPage = 1
+            }
+
+            try {
+                const result = await getImageList(this.currentPage, this.pageSize)
+                if (result.code === 0 && result.data) {
+                    const newImages = result.data.data || []
+                    if (isLoadMore) {
+                        this.images = [...this.images, ...newImages]
+                    } else {
+                        this.images = newImages
+                    }
+                    this.totalPageCount = result.data.totalPageCount || 0
+                } else {
+                    if (!isLoadMore) this.images = []
+                    this.totalPageCount = 0
+                }
+            } catch (error) {
+                console.error('获取图片列表失败:', error)
+                if (!isLoadMore) this.images = []
+            } finally {
+                this.loading = false
+            }
+        },
+        handleLoadMore() {
+            if (this.currentPage < this.totalPageCount) {
+                this.currentPage++
+                this.loadImages(true)
+            }
         },
         getImageUrl(id) {
-            // Using ID to generate unsplash url as in set.html for demo, or local
-            if (id.length > 20 || id.includes('-')) return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=300&q=80`;
+            if (!id) return ''
             return `/images/show/${id}.jpg`
         },
         openLightbox(src) {
-            // Use high res for lightbox
-            this.lightboxSrc = src.replace('w=300', 'w=1200');
+            this.lightboxSrc = src;
             this.lightboxVisible = true;
-            this.zoomLevel = 1;
-            document.body.style.overflow = 'hidden';
         },
         closeLightbox() {
             this.lightboxVisible = false;
             this.lightboxSrc = '';
-            document.body.style.overflow = '';
         },
-        toggleZoom() {
-            this.zoomLevel = this.zoomLevel === 1 ? 1.5 : 1;
-        },
-        handleDeleteImage(image) {
-            if (confirm('Delete?')) {
-                this.images = this.images.filter(i => i.id !== image.id)
+        async handleDeleteImage(image) {
+            if (!confirm('确定要删除这张图片吗？')) return
+
+            try {
+                const result = await deleteImage(image.id)
+                if (result.code === 0) {
+                    this.images = this.images.filter(i => i.id !== image.id)
+                    // 如果删除后当前页没数据了，且不是第一页，尝试重新加载
+                    if (this.images.length === 0 && this.currentPage > 1) {
+                        this.currentPage--
+                        this.loadImages()
+                    }
+                } else {
+                    alert('删除失败：' + (result.message || '未知错误'))
+                }
+            } catch (error) {
+                console.error('删除图片失败:', error)
+                alert('删除图片失败，请稍后重试')
             }
         }
     }
@@ -182,49 +225,45 @@ export default {
 }
 
 .load-more-btn {
-    color: var(--text-secondary);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 0.875rem;
-}
-
-.load-more-btn:hover {
-    color: var(--text-color);
-}
-
-/* Lightbox */
-.lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    background-color: rgba(0, 0, 0, 0.9);
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 1rem;
-}
-
-.lightbox-img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    transition: transform 0.3s ease;
-    cursor: zoom-in;
-}
-
-.lightbox-img.zoom-in {
-    cursor: zoom-out;
-}
-
-.close-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    color: white;
-    font-size: 1.5rem;
-    background: none;
-    border: none;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    padding: 0.625rem 1.5rem;
+    border-radius: 2rem;
     cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.load-more-btn:hover:not(:disabled) {
+    color: var(--text-color);
+    border-color: var(--text-color);
+    background: var(--border-color);
+}
+
+.load-more-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+    background: var(--hover-bg);
+    border-radius: 0.75rem;
+    border: 2px dashed var(--border-color);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
 }
 </style>

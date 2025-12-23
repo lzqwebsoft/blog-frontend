@@ -29,3 +29,11 @@ export function getImageList(page = 1, limit = 12) {
         }
     })
 }
+
+/**
+ * 删除图片
+ * @param {string|number} id - 图片 ID
+ */
+export function deleteImage(id) {
+    return request.delete(`/images/delete/${id}`)
+}
