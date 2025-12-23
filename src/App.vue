@@ -2,6 +2,8 @@
 import { RouterView } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
+import { mapActions } from 'pinia'
+import { useBlogStore } from '@/stores/blog'
 
 export default {
     components: {
@@ -15,6 +17,9 @@ export default {
             scrolling: false,
         }
     },
+    created() {
+        this.fetchBlogInfo();
+    },
     mounted() {
         window.addEventListener('scroll', this.handleScroll);
     },
@@ -22,6 +27,7 @@ export default {
         window.removeEventListener('scroll', this.handleScroll);
     },
     methods: {
+        ...mapActions(useBlogStore, ['fetchBlogInfo']),
         scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         },

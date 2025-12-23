@@ -13,8 +13,8 @@
 
         <div class="page-container content-wrapper">
             <!-- Main Content Card -->
-            <article class="about-card" v-if="!loading">
-                <div class="about-content" v-html="aboutData"></div>
+            <article class="about-card" v-if="blogInfo && blogInfo.about">
+                <div class="about-content" v-html="blogInfo.about"></div>
             </article>
 
             <!-- Loading State -->
@@ -32,42 +32,16 @@
 </template>
 
 <script>
-import { getAboutData } from '@/api/common';
 import Prism from 'prismjs';
 
 export default {
     name: 'AboutView',
-    data() {
-        return {
-            aboutData: '',
-            loading: true
-        };
-    },
-    mounted() {
-        this.fetchAboutData();
-    },
     updated() {
         this.$nextTick(() => {
             Prism.highlightAll();
         });
     },
     methods: {
-        async fetchAboutData() {
-            this.loading = true;
-            try {
-                const res = await getAboutData();
-                if (res.code === 0) {
-                    this.aboutData = res.data;
-                    this.$nextTick(() => {
-                        this.initCodeHighlight();
-                    });
-                }
-            } catch (error) {
-                console.error('获取关于页面数据失败:', error);
-            } finally {
-                this.loading = false;
-            }
-        },
         initCodeHighlight() {
             let docPre = document.querySelectorAll('.about-content pre');
             if (docPre && docPre.length > 0) {

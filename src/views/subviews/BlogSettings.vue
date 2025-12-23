@@ -25,21 +25,13 @@
                 <!-- About HTML -->
                 <div class="form-group">
                     <label class="form-label">关于页面内容 (HTML)</label>
-                    <div class="rich-editor">
-                        <div class="editor-toolbar">
-                            <button type="button" class="toolbar-btn"><font-awesome-icon
-                                    :icon="['fas', 'bold']" /></button>
-                            <button type="button" class="toolbar-btn"><font-awesome-icon
-                                    :icon="['fas', 'italic']" /></button>
-                            <button type="button" class="toolbar-btn"><font-awesome-icon
-                                    :icon="['fas', 'list-ul']" /></button>
-                        </div>
-                        <textarea v-model="formData.about" class="editor-content" rows="6"></textarea>
-                    </div>
+                    <RichTextEditor v-model="formData.about" :height="400" />
                 </div>
 
                 <div class="form-footer">
-                    <button type="submit" class="btn-black">保存更改</button>
+                    <button type="submit" class="btn-black" :disabled="saving">
+                        {{ saving ? '正在保存...' : '保存更改' }}
+                    </button>
                 </div>
             </form>
         </div>
@@ -47,23 +39,68 @@
 </template>
 
 <script>
+import { updateBlogInfo } from '@/api/common'
+import RichTextEditor from '@/components/RichTextEditor.vue'
+
 export default {
     name: 'BlogSettings',
+    components: {
+        RichTextEditor
+    },
     data() {
         return {
             formData: {
-                head: '墨痕',
-                descriptions: '落笔生花，代码构建世界。',
-                email: 'contact@mohen.blog',
-                about: '在这个信息爆炸的时代，我希望构建一个安静的角落...'
-            }
+                id: 0,
+                head: '',
+                descriptions: '',
+                email: '',
+                about: ''
+            },
+            saving: false
+        }
+    },
+    created() {
+        this.initFormData()
+    },
+    watch: {
+        blogInfo: {
+            handler() {
+                this.initFormData()
+            },
+            deep: true
         }
     },
     methods: {
-        handleSubmit() {
-            // Mock API save
-            console.log('Saving settings:', this.formData)
-            alert('Settings Saved!')
+        initFormData() {
+            if (this.blogInfo && Object.keys(this.blogInfo).length > 0) {
+                this.formData = {
+                    id: this.blogInfo.id || 0,
+                    head: this.blogInfo.head || '',
+                    descriptions: this.blogInfo.descriptions || '',
+                    email: this.blogInfo.email || '',
+                    about: this.blogInfo.about || ''
+                }
+            }
+        },
+        async handleSubmit() {
+            if (this.saving) return
+
+            this.saving = true
+            try {
+                const res = await updateBlogInfo(this.formData)
+                if (res.code === 0) {
+                    // Update global store
+                    await this.$blog.fetchBlogInfo()
+                    alert('设置已保存！')
+                } else {
+                    alert(res.message || '保存失败')
+                }
+            } catch (error) {
+                console.error('Failed to save blog settings:', error)
+                alert('保存出错：' + error.message)
+            } finally {
+                this.saving = false
+            }
         }
     }
 }
@@ -114,45 +151,6 @@ export default {
 
 .form-input:focus {
     border-color: var(--text-secondary);
-}
-
-.rich-editor {
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    overflow: hidden;
-}
-
-.editor-toolbar {
-    background-color: var(--bg-color);
-    border-bottom: 1px solid var(--border-color);
-    padding: 0.5rem;
-    display: flex;
-    gap: 0.5rem;
-}
-
-.toolbar-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-secondary);
-    padding: 0.25rem;
-    font-size: 0.875rem;
-}
-
-.toolbar-btn:hover {
-    color: var(--text-color);
-}
-
-.editor-content {
-    width: 100%;
-    border: none;
-    padding: 0.75rem;
-    min-height: 150px;
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    resize: vertical;
-    outline: none;
-    font-family: monospace;
 }
 
 .form-footer {

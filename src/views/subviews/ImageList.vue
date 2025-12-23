@@ -17,11 +17,28 @@
             </div>
         </div>
 
-        <div class="pagination-bar" v-if="images.length > 0 && currentPage < totalPageCount">
-            <button class="load-more-btn" @click="handleLoadMore" :disabled="loading">
-                <font-awesome-icon v-if="loading" icon="spinner" spin />
-                {{ loading ? '加载中...' : '加载更多...' }}
-            </button>
+        <div class="pagination-bar" v-if="images.length > 0">
+            <div class="pagination-info">
+                共 {{ totalPageCount }} 页
+            </div>
+            <div class="pagination-controls">
+                <button class="page-nav-btn" :disabled="currentPage === 1 || loading"
+                    @click="handlePageChange(currentPage - 1)">
+                    <font-awesome-icon icon="chevron-left" />
+                </button>
+
+                <div class="page-numbers">
+                    <button v-for="page in visiblePages" :key="page" class="page-num-btn"
+                        :class="{ active: currentPage === page }" @click="handlePageChange(page)">
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button class="page-nav-btn" :disabled="currentPage === totalPageCount || loading"
+                    @click="handlePageChange(currentPage + 1)">
+                    <font-awesome-icon icon="chevron-right" />
+                </button>
+            </div>
         </div>
 
         <div v-else-if="images.length === 0 && !loading" class="empty-state">
@@ -50,48 +67,60 @@ export default {
             currentPage: 1,
             pageSize: 12,
             totalPageCount: 0,
+            totalCount: 0,
             lightboxVisible: false,
             lightboxSrc: ''
+        }
+    },
+    computed: {
+        visiblePages() {
+            const pages = []
+            const maxVisible = 5
+            let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2))
+            let end = Math.min(this.totalPageCount, start + maxVisible - 1)
+
+            if (end - start + 1 < maxVisible) {
+                start = Math.max(1, end - maxVisible + 1)
+            }
+
+            for (let i = start; i <= end; i++) {
+                pages.push(i)
+            }
+            return pages
         }
     },
     mounted() {
         this.loadImages()
     },
     methods: {
-        async loadImages(isLoadMore = false) {
+        async loadImages() {
             if (this.loading) return
 
             this.loading = true
-            if (!isLoadMore) {
-                this.currentPage = 1
-            }
-
             try {
                 const result = await getImageList(this.currentPage, this.pageSize)
                 if (result.code === 0 && result.data) {
-                    const newImages = result.data.data || []
-                    if (isLoadMore) {
-                        this.images = [...this.images, ...newImages]
-                    } else {
-                        this.images = newImages
-                    }
+                    this.images = result.data.data || []
                     this.totalPageCount = result.data.totalPageCount || 0
+                    this.totalCount = result.data.totalCount || 0
                 } else {
-                    if (!isLoadMore) this.images = []
+                    this.images = []
                     this.totalPageCount = 0
+                    this.totalCount = 0
                 }
             } catch (error) {
                 console.error('获取图片列表失败:', error)
-                if (!isLoadMore) this.images = []
+                this.images = []
             } finally {
                 this.loading = false
             }
         },
-        handleLoadMore() {
-            if (this.currentPage < this.totalPageCount) {
-                this.currentPage++
-                this.loadImages(true)
-            }
+        handlePageChange(page) {
+            if (page < 1 || page > this.totalPageCount) return
+            this.currentPage = page
+            this.loadImages()
+            // Optional: scroll to top of list
+            window.scrollTo({ top: 0, behavior: 'smooth' })
         },
         getImageUrl(id) {
             if (!id) return ''
@@ -111,12 +140,11 @@ export default {
             try {
                 const result = await deleteImage(image.id)
                 if (result.code === 0) {
-                    this.images = this.images.filter(i => i.id !== image.id)
-                    // 如果删除后当前页没数据了，且不是第一页，尝试重新加载
-                    if (this.images.length === 0 && this.currentPage > 1) {
+                    // Check if we need to go back a page
+                    if (this.images.length === 1 && this.currentPage > 1) {
                         this.currentPage--
-                        this.loadImages()
                     }
+                    this.loadImages()
                 } else {
                     alert('删除失败：' + (result.message || '未知错误'))
                 }
@@ -219,33 +247,70 @@ export default {
 }
 
 .pagination-bar {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
-.load-more-btn {
+@media (min-width: 640px) {
+    .pagination-bar {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+.pagination-info {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.pagination-controls {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--text-secondary);
-    background: var(--hover-bg);
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.page-num-btn,
+.page-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.5rem;
+    border-radius: 0.5rem;
     border: 1px solid var(--border-color);
-    padding: 0.625rem 1.5rem;
-    border-radius: 2rem;
-    cursor: pointer;
+    background: var(--card-bg);
+    color: var(--text-color);
     font-size: 0.875rem;
+    cursor: pointer;
     transition: all 0.2s;
 }
 
-.load-more-btn:hover:not(:disabled) {
-    color: var(--text-color);
-    border-color: var(--text-color);
-    background: var(--border-color);
+.page-num-btn:hover:not(.active),
+.page-nav-btn:hover:not(:disabled) {
+    background-color: var(--hover-bg);
+    border-color: var(--text-secondary);
 }
 
-.load-more-btn:disabled {
-    opacity: 0.6;
+.page-num-btn.active {
+    background-color: var(--text-color);
+    color: var(--bg-color);
+    border-color: var(--text-color);
+    font-weight: 600;
+}
+
+.page-nav-btn:disabled {
+    opacity: 0.4;
     cursor: not-allowed;
 }
 

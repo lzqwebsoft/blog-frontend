@@ -4,10 +4,10 @@
             <div class="nav-left">
                 <div class="brand-slogan">
                     <div class="nav-brand">
-                        <RouterLink to="/">飘痕</RouterLink>
+                        <RouterLink to="/">{{ blogInfo.head }}</RouterLink>
                     </div>
                     <div class="brand-divider"></div>
-                    <div class="slogan">自由自在的学习编程艺术</div>
+                    <div class="slogan">{{ blogInfo.descriptions }}</div>
                 </div>
             </div>
 

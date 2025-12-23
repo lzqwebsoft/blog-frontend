@@ -23,6 +23,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import App from './App.vue'
 import router from './router'
+import { useBlogStore } from './stores/blog'
 
 library.add(
     faQq, faXTwitter, faWeibo, faFacebook, faGithub, faStackOverflow,
@@ -46,5 +47,11 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.component('font-awesome-icon', FontAwesomeIcon)
+
+const blogStore = useBlogStore()
+app.config.globalProperties.$blog = blogStore
+Object.defineProperty(app.config.globalProperties, 'blogInfo', {
+    get: () => blogStore.blogInfo
+})
 
 app.mount('#app')
