@@ -52,8 +52,25 @@ export default {
                 { name: 'drafts', label: '草稿箱', icon: ['fas', 'pen-to-square'] },
                 { name: 'links', label: '友情链接', icon: ['fas', 'link'] },
                 { name: 'images', label: '博客用图', icon: ['fas', 'images'] },
-                { name: 'settings', label: '信息设置', icon: ['fas', 'gear'] }
+                { name: 'settings', label: '信息设置', icon: ['fas', 'sliders'] }
             ]
+        }
+    },
+    created() {
+        // Initialize active tab from URL query
+        const queryTab = this.$route.query.tab
+        if (queryTab && this.tabs.some(tab => tab.name === queryTab)) {
+            this.activeTab = queryTab
+        }
+    },
+    watch: {
+        // Sync active tab when URL changes (e.g., browser back/forward)
+        '$route.query.tab'(newTab) {
+            if (newTab && this.tabs.some(tab => tab.name === newTab)) {
+                this.activeTab = newTab
+            } else if (!newTab) {
+                this.activeTab = 'articles'
+            }
         }
     },
     computed: {
@@ -72,7 +89,11 @@ export default {
 
     methods: {
         handleTabClick(tabName) {
+            if (this.activeTab === tabName) return
             this.activeTab = tabName
+            this.$router.push({
+                query: { ...this.$route.query, tab: tabName }
+            })
         }
     }
 }
