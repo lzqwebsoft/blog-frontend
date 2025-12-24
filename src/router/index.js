@@ -96,7 +96,7 @@ const router = createRouter({
             },
         },
         {
-            path: '/reset_pwd',
+            path: '/reset_pwd/:sid',
             name: 'reset-password',
             component: ResetPassword,
             meta: {

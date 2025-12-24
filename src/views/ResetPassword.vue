@@ -27,17 +27,9 @@
                         <span class="input-icon">
                             <font-awesome-icon icon="lock" />
                         </span>
-                        <input
-                            v-model="formData.newPassword"
-                            :type="showNewPassword ? 'text' : 'password'"
-                            id="newPassword"
-                            class="form-control"
-                            placeholder="请输入新密码（6-20位）"
-                            maxlength="20"
-                            required
-                            autofocus
-                            @focus="clearError('newPassword')"
-                        />
+                        <input v-model="formData.newPassword" :type="showNewPassword ? 'text' : 'password'"
+                            id="newPassword" class="form-control" placeholder="请输入新密码（6-20位）" maxlength="20" required
+                            autofocus @focus="clearError('newPassword')" />
                         <span class="password-toggle" @click="showNewPassword = !showNewPassword">
                             <font-awesome-icon :icon="showNewPassword ? 'eye' : 'eye-slash'" />
                         </span>
@@ -45,11 +37,8 @@
                     <div v-if="fieldErrors.newPassword" class="field-error">{{ fieldErrors.newPassword }}</div>
                     <div class="password-strength">
                         <div class="strength-bar">
-                            <div
-                                class="strength-fill"
-                                :class="'strength-' + passwordStrength.level"
-                                :style="{ width: passwordStrength.percent + '%' }"
-                            ></div>
+                            <div class="strength-fill" :class="'strength-' + passwordStrength.level"
+                                :style="{ width: passwordStrength.percent + '%' }"></div>
                         </div>
                         <span class="strength-text" :class="'strength-' + passwordStrength.level">
                             {{ passwordStrength.text }}
@@ -64,16 +53,9 @@
                         <span class="input-icon">
                             <font-awesome-icon icon="lock" />
                         </span>
-                        <input
-                            v-model="formData.confirmPassword"
-                            :type="showConfirmPassword ? 'text' : 'password'"
-                            id="confirmPassword"
-                            class="form-control"
-                            placeholder="请再次输入新密码"
-                            maxlength="20"
-                            required
-                            @focus="clearError('confirmPassword')"
-                        />
+                        <input v-model="formData.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
+                            id="confirmPassword" class="form-control" placeholder="请再次输入新密码" maxlength="20" required
+                            @focus="clearError('confirmPassword')" />
                         <span class="password-toggle" @click="showConfirmPassword = !showConfirmPassword">
                             <font-awesome-icon :icon="showConfirmPassword ? 'eye' : 'eye-slash'" />
                         </span>
@@ -124,10 +106,25 @@
                 </div>
             </form>
         </div>
+
+        <div v-if="showSuccessModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-icon">
+                    <font-awesome-icon icon="circle-check" />
+                </div>
+                <h3>重置密码成功</h3>
+                <p>您的密码已成功重置，请使用新密码登录。</p>
+                <button @click="goToLogin" class="modal-btn">
+                    立即登录
+                </button>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
+import { verifyAuth, resetPassword } from '@/api/user'
+
 export default {
     name: 'ResetPasswordView',
     data() {
@@ -136,7 +133,7 @@ export default {
                 newPassword: '',
                 confirmPassword: '',
                 sid: '',
-                uid: ''
+                resetToken: ''
             },
             fieldErrors: {
                 newPassword: '',
@@ -144,6 +141,7 @@ export default {
             },
             errorInfos: [],
             successInfo: '',
+            showSuccessModal: false,
             showNewPassword: false,
             showConfirmPassword: false,
             isSubmitting: false
@@ -197,17 +195,37 @@ export default {
             }
         }
     },
-    created() {
-        // 从 URL 参数获取 sid 和 uid
-        this.formData.sid = this.$route.query.sid || ''
-        this.formData.uid = this.$route.query.uid || ''
+    async created() {
+        // 从 URL 参数获取 sid
+        this.formData.sid = this.$route.params.sid || ''
 
         // 验证参数是否存在
-        if (!this.formData.sid || !this.formData.uid) {
-            this.errorInfos.push('重置密码链接无效或已过期')
+        if (!this.formData.sid) {
+            this.errorInfos.push('重置密码链接无效')
+            return
+        }
+
+        // 验证链接有效性
+        try {
+            const res = await verifyAuth(this.formData.sid)
+            // 保存 token 作为重置 token
+            if (res.token) {
+                this.formData.resetToken = res.token
+            } else if (res.data && res.data.token) {
+                this.formData.resetToken = res.data.token
+            }
+        } catch (err) {
+            console.error('Verify auth error:', err)
+            let msg = '重置密码链接无效或已过期'
+            if (err.message) msg = err.message
+            this.errorInfos.push(msg)
         }
     },
     methods: {
+        goToLogin() {
+            this.$router.push('/login')
+        },
+
         clearError(fieldName) {
             this.fieldErrors[fieldName] = ''
             this.errorInfos = []
@@ -256,9 +274,9 @@ export default {
                 isValid = false
             }
 
-            // 验证 sid 和 uid
-            if (!this.formData.sid || !this.formData.uid) {
-                this.errorInfos.push('重置密码链接无效或已过期')
+            // 验证 resetToken
+            if (!this.formData.resetToken) {
+                this.errorInfos.push('重置密码链接无效或已过期，请重新申请')
                 isValid = false
             }
 
@@ -278,37 +296,22 @@ export default {
                 const resetData = {
                     newPassword: this.formData.newPassword,
                     confirmPassword: this.formData.confirmPassword,
-                    sid: this.formData.sid,
-                    uid: this.formData.uid
+                    resetToken: this.formData.resetToken
                 }
 
-                // 模拟API调用
-                // const response = await this.$http.post('/api/reset-password', resetData)
+                await resetPassword(resetData)
 
-                // 模拟网络延迟
-                await new Promise(resolve => setTimeout(resolve, 1500))
-
-                // 模拟成功响应
-                console.log('重置密码数据:', resetData)
-
-                // 显示成功消息
-                this.successInfo = '密码重置成功！正在跳转到登录页面...'
-
-                // 清空表单
-                this.formData.newPassword = ''
-                this.formData.confirmPassword = ''
-
-                // 3秒后跳转到登录页
-                setTimeout(() => {
-                    this.$router.push('/login')
-                }, 3000)
+                this.showSuccessModal = true
 
             } catch (err) {
-                // 模拟错误响应
                 console.error('Reset password error:', err)
 
                 // 显示错误消息
-                this.errorInfos.push('密码重置失败，请稍后重试或重新申请重置密码')
+                let msg = '密码重置失败，请稍后重试'
+                if (err.message) {
+                    msg = err.message
+                }
+                this.errorInfos.push(msg)
 
             } finally {
                 this.isSubmitting = false
@@ -417,6 +420,11 @@ export default {
 .form-control::placeholder {
     color: var(--text-secondary);
     opacity: 0.7;
+}
+
+input.form-control:focus {
+    outline: none;
+    box-shadow: none;
 }
 
 .password-toggle {
@@ -720,6 +728,89 @@ export default {
 
     .password-requirements {
         padding: 10px;
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    animation: slideUp 0.3s ease;
+}
+
+.modal-icon {
+    font-size: 48px;
+    color: #4caf50;
+    margin-bottom: 20px;
+}
+
+.modal-content h3 {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+    font-size: 24px;
+}
+
+.modal-content p {
+    color: var(--text-secondary);
+    margin: 0 0 30px 0;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.modal-btn {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.modal-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
 }
 </style>

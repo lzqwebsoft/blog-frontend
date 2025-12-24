@@ -60,6 +60,8 @@
 </template>
 
 <script>
+import { foundPwd } from '@/api/user'
+
 export default {
     name: 'FoundPasswordView',
     data() {
@@ -102,13 +104,8 @@ export default {
             if (this.countdown > 0) return
 
             try {
-                // 模拟API调用
-                // const response = await this.$http.post('/api/resend-password-reset', { email: this.email })
-
-                // 模拟网络延迟
-                await new Promise(resolve => setTimeout(resolve, 500))
-
-                console.log('重新发送邮件到:', this.email)
+                // API调用
+                await foundPwd(this.email)
 
                 // 显示成功消息
                 this.$notify({
@@ -123,9 +120,14 @@ export default {
             } catch (err) {
                 console.error('重新发送邮件失败:', err)
 
+                let errorMessage = '邮件发送失败，请稍后重试'
+                if (err.message) {
+                    errorMessage = err.message
+                }
+
                 this.$notify({
                     title: '发送失败',
-                    message: '邮件发送失败，请稍后重试',
+                    message: errorMessage,
                     type: 'error'
                 })
             }

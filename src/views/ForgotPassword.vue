@@ -63,6 +63,8 @@
 </template>
 
 <script>
+import { foundPwd } from '@/api/user'
+
 export default {
     name: 'ForgotPasswordView',
     data() {
@@ -113,21 +115,11 @@ export default {
             }
 
             this.isSubmitting = true
+            this.clearMessages()
 
             try {
-                // 准备提交的数据
-                const resetData = {
-                    email: this.formData.email
-                }
-
-                // 模拟API调用
-                // const response = await this.$http.post('/api/forgot-password', resetData)
-
-                // 模拟网络延迟
-                await new Promise(resolve => setTimeout(resolve, 1500))
-
-                // 模拟成功响应
-                console.log('找回密码数据:', resetData)
+                // API调用
+                await foundPwd(this.formData.email)
 
                 // 跳转到成功提示页面，并传递邮箱参数
                 this.$router.push({
@@ -136,11 +128,14 @@ export default {
                 })
 
             } catch (err) {
-                // 模拟错误响应
                 console.error('Forgot password error:', err)
 
                 // 显示错误消息
-                this.errorInfo = '发送失败，请检查邮箱地址是否正确或稍后重试'
+                if (err.message) {
+                    this.errorInfo = err.message
+                } else {
+                    this.errorInfo = '发送失败，请检查邮箱地址是否正确或稍后重试'
+                }
 
             } finally {
                 this.isSubmitting = false

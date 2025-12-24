@@ -68,3 +68,46 @@ export function changePassword(data) {
         }
     })
 }
+
+/**
+ * 找回密码
+ * @param {string} email - 用户邮箱
+ */
+export function foundPwd(email) {
+    const formData = new URLSearchParams()
+    formData.append('email', email)
+
+    return request.post('/user/found_pwd', formData, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+}
+
+/**
+ * 验证找回密码链接
+ * @param {string} sid - 验证ID
+ */
+export function verifyAuth(sid) {
+    return request.get(`/user/auth/${sid}`)
+}
+
+/**
+ * 重置密码
+ * @param {Object} data - 重置密码参数
+ * @param {string} data.resetToken - 重置令牌
+ * @param {string} data.newPassword - 新密码
+ * @param {string} data.confirmPassword - 确认新密码
+ */
+export function resetPassword(data) {
+    const formData = new URLSearchParams()
+    formData.append('resetToken', data.resetToken)
+    formData.append('newPassword', data.newPassword)
+    formData.append('confirmPassword', data.confirmPassword)
+
+    return request.post('/user/reset_pwd', formData, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+}
