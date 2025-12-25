@@ -201,6 +201,7 @@ export default {
     },
     mounted() {
         this.checkAuthStatus()
+        this.currentPage = parseInt(this.$route.query.page) || 1
         this.fetchHomeData()
         eventBus.on('toggle-sidebar', this.toggleSidebar)
     },
@@ -209,11 +210,14 @@ export default {
         eventBus.off('toggle-sidebar', this.toggleSidebar)
     },
     watch: {
-        '$route.params.categoryId': {
-            handler() {
-                this.currentPage = 1
-                this.fetchHomeData()
-                window.scrollTo({ top: 0, behavior: 'smooth' })
+        '$route': {
+            handler(to, from) {
+                // 当分类 ID 改变或页码改变时，重新获取数据
+                if (to.params.categoryId !== from.params.categoryId || to.query.page !== from.query.page) {
+                    this.currentPage = parseInt(to.query.page) || 1
+                    this.fetchHomeData()
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                }
             }
         }
     },
@@ -285,9 +289,9 @@ export default {
 
         changePage(pageNum) {
             if (pageNum >= 1 && pageNum <= this.totalPages && pageNum !== this.currentPage) {
-                this.currentPage = pageNum
-                this.fetchHomeData()
-                window.scrollTo({ top: 0, behavior: 'smooth' })
+                this.$router.push({
+                    query: { ...this.$route.query, page: pageNum }
+                })
             }
         },
 
