@@ -21,6 +21,10 @@
                     <font-awesome-icon icon="magnifying-glass" />
                 </button>
 
+                <a class="nav-item rss-button" href="/feed.xml" target="_blank" title="RSS 订阅">
+                    <font-awesome-icon icon="square-rss" />
+                </a>
+
                 <RouterLink class="nav-item about-link" to="/about">关于</RouterLink>
 
                 <button class="nav-item theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">

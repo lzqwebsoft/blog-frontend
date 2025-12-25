@@ -53,7 +53,11 @@ export default defineConfig({
             "/sitemap.xml": {
                 target: 'http://localhost:8080',
                 changeOrigin: true,
-            }
+            },
+            "/feed.xml": {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+            },
         }
     },
 })
