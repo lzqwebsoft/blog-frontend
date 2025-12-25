@@ -1,0 +1,13 @@
+User-agent: *
+
+# Allow specific routes
+Allow: /$
+Allow: /show/
+Allow: /about
+Allow: /select/
+
+# Disallow everything else
+Disallow: /
+
+# Sitemap declaration
+Sitemap: https://blog.zqluo.com/sitemap.xml
