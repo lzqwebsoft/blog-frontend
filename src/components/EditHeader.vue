@@ -228,6 +228,10 @@ export default {
     background: var(--hover-bg);
 }
 
+.theme-toggle .fa-sun {
+    color: #facc15;
+}
+
 .v-divider {
     width: 1px;
     height: 1.25rem;

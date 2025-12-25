@@ -491,10 +491,14 @@ export default {
             }
         },
         handlePreview() {
-            this.successMessage = '预览功能开发中...';
+            const targetId = this.form.id
             setTimeout(() => {
-                this.successMessage = '';
-            }, 2000);
+                if (targetId) {
+                    this.$router.push(`/show/${targetId}`)
+                } else {
+                    this.$router.push('/')
+                }
+            }, 1000)
         }
     }
 }
@@ -958,6 +962,7 @@ input:checked+.toggle-slider:before {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
     font-weight: 500;
 }

@@ -3,16 +3,20 @@
         <!-- 工具栏 -->
         <div class="editor-toolbar">
             <div class="toolbar-group">
-                <button type="button" @click="execCommand('bold')" title="粗体 (Ctrl+B)" class="toolbar-btn">
+                <button type="button" @click="execCommand('bold')" title="粗体 (Ctrl+B)" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="bold" />
                 </button>
-                <button type="button" @click="execCommand('italic')" title="斜体 (Ctrl+I)" class="toolbar-btn">
+                <button type="button" @click="execCommand('italic')" title="斜体 (Ctrl+I)" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="italic" />
                 </button>
-                <button type="button" @click="execCommand('underline')" title="下划线" class="toolbar-btn">
+                <button type="button" @click="execCommand('underline')" title="下划线" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="underline" />
                 </button>
-                <button type="button" @click="execCommand('strikeThrough')" title="删除线" class="toolbar-btn">
+                <button type="button" @click="execCommand('strikeThrough')" title="删除线" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="strikethrough" />
                 </button>
             </div>
@@ -20,13 +24,16 @@
             <div class="toolbar-separator"></div>
 
             <div class="toolbar-group">
-                <button type="button" @click="execCommand('formatBlock', '<h1>')" title="标题 1" class="toolbar-btn">
+                <button type="button" @click="execCommand('formatBlock', '<h1>')" title="标题 1" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     H1
                 </button>
-                <button type="button" @click="execCommand('formatBlock', '<h2>')" title="标题 2" class="toolbar-btn">
+                <button type="button" @click="execCommand('formatBlock', '<h2>')" title="标题 2" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     H2
                 </button>
-                <button type="button" @click="execCommand('formatBlock', '<h3>')" title="标题 3" class="toolbar-btn">
+                <button type="button" @click="execCommand('formatBlock', '<h3>')" title="标题 3" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     H3
                 </button>
             </div>
@@ -34,14 +41,16 @@
             <div class="toolbar-separator"></div>
 
             <div class="toolbar-group">
-                <button type="button" @click="execCommand('insertUnorderedList')" title="无序列表" class="toolbar-btn">
+                <button type="button" @click="execCommand('insertUnorderedList')" title="无序列表" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="list-ul" />
                 </button>
-                <button type="button" @click="execCommand('insertOrderedList')" title="有序列表" class="toolbar-btn">
+                <button type="button" @click="execCommand('insertOrderedList')" title="有序列表" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="list-ol" />
                 </button>
-                <button type="button" @click="execCommand('formatBlock', '<blockquote>')" title="引用"
-                    class="toolbar-btn">
+                <button type="button" @click="execCommand('formatBlock', '<blockquote>')" title="引用" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="quote-left" />
                 </button>
             </div>
@@ -49,27 +58,42 @@
             <div class="toolbar-separator"></div>
 
             <div class="toolbar-group">
-                <button type="button" @click="insertLink" title="插入链接" class="toolbar-btn">
+                <button type="button" @click="insertLink" title="插入链接" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="link" />
                 </button>
-                <button type="button" @click="execCommand('unlink')" title="移除链接" class="toolbar-btn">
+                <button type="button" @click="execCommand('unlink')" title="移除链接" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="unlink" />
                 </button>
-                <button type="button" @click="insertCodeBlock" title="代码块" class="toolbar-btn">
+                <button type="button" @click="insertCodeBlock" title="代码块" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="code" />
                 </button>
-                <button type="button" @click="insertImage" title="插入图片" class="toolbar-btn">
+                <button type="button" @click="insertImage" title="插入图片" class="toolbar-btn"
+                    :disabled="viewMode !== 'edit'">
                     <font-awesome-icon icon="image" />
                 </button>
             </div>
 
             <div class="toolbar-separator"></div>
 
-            <div class="toolbar-group">
-                <button type="button" @click="togglePreview" :title="showPreview ? '编辑' : '预览'"
-                    class="toolbar-btn mode-btn" :class="{ active: showPreview }">
-                    <font-awesome-icon :icon="showPreview ? 'edit' : 'eye'" />
+            <div class="toolbar-group mode-selector">
+                <button type="button" @click="setViewMode('edit')" title="可视化编辑" class="toolbar-btn"
+                    :class="{ active: viewMode === 'edit' }">
+                    <font-awesome-icon icon="edit" />
                 </button>
+                <button type="button" @click="setViewMode('code')" title="源代码" class="toolbar-btn"
+                    :class="{ active: viewMode === 'code' }">
+                    <font-awesome-icon icon="file-code" />
+                </button>
+                <button type="button" @click="setViewMode('preview')" title="预览" class="toolbar-btn"
+                    :class="{ active: viewMode === 'preview' }">
+                    <font-awesome-icon icon="eye" />
+                </button>
+            </div>
+
+            <div class="toolbar-group">
                 <button type="button" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'"
                     class="toolbar-btn" :class="{ active: isFullscreen }">
                     <font-awesome-icon :icon="isFullscreen ? 'compress' : 'expand'" />
@@ -80,14 +104,21 @@
         <!-- 编辑器内容区 -->
         <div class="editor-container">
             <!-- 编辑区 -->
-            <div v-show="!showPreview" class="editor-pane">
+            <div v-show="viewMode === 'edit'" class="editor-pane">
                 <div ref="editor" class="editor-content" contenteditable="true" @input="handleInput"
                     @paste="handlePaste" @keydown="handleKeyDown"
                     :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"></div>
             </div>
 
+            <!-- 源代码区 -->
+            <div v-show="viewMode === 'code'" class="code-pane">
+                <textarea v-model="internalValue" @input="handleCodeInput" placeholder="在此输入 HTML 源代码..."
+                    class="code-editor"
+                    :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"></textarea>
+            </div>
+
             <!-- 预览区 -->
-            <div v-show="showPreview" class="preview-pane">
+            <div v-show="viewMode === 'preview'" class="preview-pane">
                 <div class="content-preview" v-html="internalValue"
                     :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"></div>
             </div>
@@ -120,7 +151,7 @@ export default {
     data() {
         return {
             internalValue: '',
-            showPreview: false,
+            viewMode: 'edit', // 'edit', 'code', 'preview'
             isFullscreen: false,
             showImageDialog: false
         }
@@ -141,7 +172,7 @@ export default {
     },
     methods: {
         updateEditorContent() {
-            if (this.$refs.editor && !this.showPreview) {
+            if (this.$refs.editor && this.viewMode === 'edit') {
                 this.$refs.editor.innerHTML = this.internalValue
             }
         },
@@ -151,7 +182,13 @@ export default {
             this.$emit('update:modelValue', this.internalValue)
         },
 
+        handleCodeInput() {
+            this.$emit('update:modelValue', this.internalValue)
+        },
+
         handleKeyDown(e) {
+            if (this.viewMode !== 'edit') return
+
             // Ctrl+B 粗体
             if (e.ctrlKey && e.key === 'b') {
                 e.preventDefault()
@@ -429,7 +466,7 @@ export default {
         },
 
         insertCodeBlock() {
-            const codeBlock = '<pre><code class="language-javascript">// 在这里输入代码\nconsole.log("Hello, World!");</code></pre><p><br></p>'
+            const codeBlock = '<pre><code class="language-javascript">// 在这里输入代码\n</code></pre><p><br></p>'
             this.insertHTML(codeBlock)
         },
 
@@ -448,9 +485,9 @@ export default {
             this.insertText(text)
         },
 
-        togglePreview() {
-            this.showPreview = !this.showPreview
-            if (!this.showPreview) {
+        setViewMode(mode) {
+            this.viewMode = mode
+            if (mode === 'edit') {
                 this.$nextTick(() => {
                     this.updateEditorContent()
                 })
@@ -562,8 +599,44 @@ export default {
     border-color: var(--primary-color);
 }
 
-.toolbar-btn.mode-btn {
+.toolbar-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: transparent;
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.toolbar-btn:disabled:hover {
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+    color: var(--text-secondary);
+}
+
+.mode-selector {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 2px;
     margin-left: auto;
+}
+
+.mode-selector .toolbar-btn {
+    border: none;
+    border-radius: 4px;
+    height: 30px;
+    min-width: 32px;
+    padding: 0 0.5rem;
+}
+
+.mode-selector .toolbar-btn:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.mode-selector .toolbar-btn.active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toolbar-separator {
@@ -600,6 +673,25 @@ export default {
 
 .editor-content:focus {
     outline: none;
+}
+
+/* 源代码区 */
+.code-pane {
+    width: 100%;
+}
+
+.code-editor {
+    width: 100%;
+    padding: 1.25rem;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-color);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    resize: none;
+    display: block;
 }
 
 /* 预览区 */

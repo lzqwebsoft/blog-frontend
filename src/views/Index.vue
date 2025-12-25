@@ -159,7 +159,7 @@
                                 :icon="['fab', 'github']" /></a>
                         <a href="https://twitter.com/lzqwebsoft" target="_blank" class="social-icon"><font-awesome-icon
                                 :icon="['fab', 'x-twitter']" /></a>
-                        <a href="mailto:lzqwebsoft@gmail.com" class="social-icon"><font-awesome-icon
+                        <a :href="'mailto:' + blogInfo.email" class="social-icon"><font-awesome-icon
                                 icon="envelope" /></a>
                     </div>
                 </div>

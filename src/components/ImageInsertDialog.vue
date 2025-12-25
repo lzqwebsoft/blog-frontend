@@ -247,7 +247,7 @@ export default {
                 const result = response
 
                 if (result.code === 0 && result.data) {
-                    this.remoteImageUrl = `/images/show/${result.data.id}.jpg`
+                    this.remoteImageUrl = result.data.url
                     this.confirmInsert()
                 } else {
                     alert('上传失败：' + (result.message || '未知错误'))

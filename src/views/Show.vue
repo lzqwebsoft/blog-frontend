@@ -181,7 +181,7 @@
                         <div class="reply-info">
                             <font-awesome-icon icon="reply" class="reply-icon" />
                             <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname
-                            }}</strong></span>
+                                    }}</strong></span>
                         </div>
                         <button type="button" class="btn-cancel-reply" @click="cancelReply">
                             <font-awesome-icon icon="xmark" class="cancel-icon" />
@@ -1003,8 +1003,10 @@ export default {
     margin-bottom: 1rem;
 }
 
+.article-content,
 .article-content a,
-.article-content strong {
+.article-content strong,
+.article-content em {
     word-break: break-all;
 }
 

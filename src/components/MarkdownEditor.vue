@@ -248,7 +248,7 @@ export default {
                     break
                 }
                 case 'code':
-                    insertion = '```javascript\n' + (selectedText || '// 代码内容\nconsole.log("Hello World");') + '\n```'
+                    insertion = '```javascript\n' + (selectedText || '// 代码内容\n') + '\n```'
                     cursorOffset = selectedText ? insertion.length : -4
                     break
                 case 'image': {
