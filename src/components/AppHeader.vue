@@ -13,7 +13,8 @@
 
             <div class="header-search">
                 <font-awesome-icon icon="magnifying-glass" class="search-icon" />
-                <input type="text" class="search-input" placeholder="搜索博客内容...">
+                <input type="text" class="search-input" placeholder="搜索博客内容..." v-model="searchText"
+                    @keyup.enter="handleSearch">
             </div>
 
             <div class="nav-menu">
@@ -104,6 +105,7 @@ export default {
         window.addEventListener('scroll', this.handleScroll)
         this.initializeTheme()
         this.checkAuthStatus()
+        this.searchText = this.$route.query.q || ''
         document.addEventListener('click', this.handleClickOutside)
     },
     unmounted() {
@@ -122,9 +124,15 @@ export default {
                 document.body.style.overflow = '';
             }
         },
-        $route() {
+        $route(to) {
             // 路由变化时重新检查登录状态
             this.checkAuthStatus()
+            // 同步搜索关键词
+            if (to.query.q !== undefined) {
+                this.searchText = to.query.q || '';
+            } else {
+                this.searchText = '';
+            }
         }
     },
     methods: {
@@ -179,9 +187,8 @@ export default {
         },
         handleSearch() {
             if (this.searchText.trim()) {
-                console.log('搜索:', this.searchText);
+                this.$router.push({ path: '/', query: { q: this.searchText.trim() } });
                 this.showSearchDialog = false;
-                this.searchText = '';
             }
         },
         checkAuthStatus() {

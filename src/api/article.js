@@ -6,14 +6,19 @@ import request from '@/utils/request'
 
 /**
  * 获取首页数据
+ * @param {string} q - 搜索关键字
  * @param {number} pageNo - 页码
  * @param {number} pageSize - 每页数量
  * @param {string} categoryId - 分类ID（可选）
  */
-export function getHomeData(pageNo = 1, pageSize = 15, categoryId = null) {
+export function getHomeData(q = null, pageNo = 1, pageSize = 15, categoryId = null) {
     const params = {
         pageNo,
         pageSize
+    }
+
+    if (q && q.trim() != "") {
+        params.q = q
     }
 
     if (categoryId) {

@@ -26,7 +26,8 @@
                 </div>
                 <h3 class="empty-title">暂无文章</h3>
                 <p class="empty-desc">这里空空如也，博主可能正在闭关修炼中...</p>
-                <button class="back-home-btn" @click="$router.push('/')" v-if="$route.params.categoryId">
+                <button class="back-home-btn" @click="$router.push('/')"
+                    v-if="$route.params.categoryId || $route.query.q">
                     返回首页
                 </button>
             </div>
@@ -50,14 +51,12 @@
                     <!-- Title -->
                     <h2 class="article-title">
                         <RouterLink :to="getArticleUrl(article)">
-                            {{ article.title }}
+                            <span v-html="article.title"></span>
                         </RouterLink>
                     </h2>
 
                     <!-- Summary -->
-                    <p class="article-summary">
-                        {{ truncateContent(article.content) }}
-                    </p>
+                    <p class="article-summary" v-html="article.content"></p>
 
                     <!-- Footer -->
                     <div class="article-footer">
@@ -177,7 +176,7 @@ import ArticleBadge from '../components/ArticleBadge.vue'
 import { getHomeData, deleteArticle } from '@/api/article'
 import { isAuthenticated } from '@/utils/auth'
 import eventBus from '@/utils/eventBus'
-import { formatDate, formatReadCount, truncateContent, getPatternType } from '@/utils/tools'
+import { formatDate, formatReadCount, getPatternType } from '@/utils/tools'
 
 export default {
     components: {
@@ -212,8 +211,10 @@ export default {
     watch: {
         '$route': {
             handler(to, from) {
-                // 当分类 ID 改变或页码改变时，重新获取数据
-                if (to.params.categoryId !== from.params.categoryId || to.query.page !== from.query.page) {
+                // 当分类 ID 改变、关键字搜索改变或页码改变时，重新获取数据
+                if (to.params.categoryId !== from.params.categoryId ||
+                    to.query.q !== from.query.q ||
+                    to.query.page !== from.query.page) {
                     this.currentPage = parseInt(to.query.page) || 1
                     this.fetchHomeData()
                     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -224,7 +225,6 @@ export default {
     methods: {
         formatDate,
         formatReadCount,
-        truncateContent,
         getPatternType,
 
         checkAuthStatus() {
@@ -235,7 +235,8 @@ export default {
             this.loading = true
             try {
                 const categoryId = this.$route.params.categoryId || null
-                const res = await getHomeData(this.currentPage, this.pageSize, categoryId)
+                const q = this.$route.query.q || null
+                const res = await getHomeData(q, this.currentPage, this.pageSize, categoryId)
                 const { articleTypes, page, top10Articles, links } = res.data
 
                 this.categories = (articleTypes || []).filter((type) => type.article_count > 0).map((type) => ({
@@ -1028,5 +1029,16 @@ export default {
     .sidebar-content {
         width: 300px;
     }
+}
+
+/* Search Highlight */
+:deep(mark) {
+    background-color: transparent;
+    color: #ef4444 !important;
+    padding: 0 2px;
+}
+
+:deep(.article-summary mark) {
+    font-weight: 600;
 }
 </style>

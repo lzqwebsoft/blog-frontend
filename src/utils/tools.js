@@ -46,17 +46,6 @@ export function formatReadCount(count) {
 }
 
 /**
- * 截断文本内容
- * @param {string} content - 文本内容
- * @param {number} maxLength - 最大长度，默认300
- * @returns {string} 截断后的文本
- */
-export function truncateContent(content, maxLength = 300) {
-    if (!content) return ''
-    if (content.length <= maxLength) return content
-    return content.substring(0, maxLength) + '...'
-}
-/**
  * 获取文章类型标识
  * @param {number} patternTypeId - 文章类型ID (1:原创, 2:转载, 3:翻译)
  * @returns {string} 类型标识字符串
