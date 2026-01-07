@@ -2,74 +2,14 @@
     <div class="markdown-editor" :class="{ 'fullscreen': isFullscreen }">
         <!-- 工具栏 -->
         <div class="editor-toolbar">
-            <div class="toolbar-group">
-                <button type="button" @click="insertMarkdown('bold')" title="粗体 (Ctrl+B)" class="toolbar-btn">
-                    <font-awesome-icon icon="bold" />
+            <template v-for="(item, index) in toolbarList" :key="index">
+                <div v-if="item.type === 'separator'" class="toolbar-separator"></div>
+                <button v-else type="button" @click="handleToolbarClick(item)" :title="item.title" class="toolbar-btn"
+                    :class="[item.class, { active: item.active }]">
+                    <font-awesome-icon v-if="item.icon" :icon="item.icon" />
+                    <span v-else>{{ item.text }}</span>
                 </button>
-                <button type="button" @click="insertMarkdown('italic')" title="斜体 (Ctrl+I)" class="toolbar-btn">
-                    <font-awesome-icon icon="italic" />
-                </button>
-                <button type="button" @click="insertMarkdown('strikethrough')" title="删除线" class="toolbar-btn">
-                    <font-awesome-icon icon="strikethrough" />
-                </button>
-            </div>
-
-            <div class="toolbar-separator"></div>
-
-            <div class="toolbar-group">
-                <button type="button" @click="insertMarkdown('h1')" title="标题 1" class="toolbar-btn">
-                    H1
-                </button>
-                <button type="button" @click="insertMarkdown('h2')" title="标题 2" class="toolbar-btn">
-                    H2
-                </button>
-                <button type="button" @click="insertMarkdown('h3')" title="标题 3" class="toolbar-btn">
-                    H3
-                </button>
-            </div>
-
-            <div class="toolbar-separator"></div>
-
-            <div class="toolbar-group">
-                <button type="button" @click="insertMarkdown('ul')" title="无序列表" class="toolbar-btn">
-                    <font-awesome-icon icon="list-ul" />
-                </button>
-                <button type="button" @click="insertMarkdown('ol')" title="有序列表" class="toolbar-btn">
-                    <font-awesome-icon icon="list-ol" />
-                </button>
-                <button type="button" @click="insertMarkdown('quote')" title="引用" class="toolbar-btn">
-                    <font-awesome-icon icon="quote-left" />
-                </button>
-            </div>
-
-            <div class="toolbar-separator"></div>
-
-            <div class="toolbar-group">
-                <button type="button" @click="insertMarkdown('link')" title="插入链接" class="toolbar-btn">
-                    <font-awesome-icon icon="link" />
-                </button>
-                <button type="button" @click="insertMarkdown('code')" title="代码块" class="toolbar-btn">
-                    <font-awesome-icon icon="code" />
-                </button>
-                <button type="button" @click="insertMarkdown('image')" title="插入图片" class="toolbar-btn">
-                    <font-awesome-icon icon="image" />
-                </button>
-            </div>
-
-            <div class="toolbar-separator"></div>
-
-            <div class="toolbar-group">
-                <button type="button" @click="toggleMode"
-                    :title="viewMode === 'edit' ? '预览' : viewMode === 'preview' ? '分屏' : '编辑'"
-                    class="toolbar-btn mode-btn" :class="{ active: viewMode !== 'edit' }">
-                    <font-awesome-icon
-                        :icon="viewMode === 'edit' ? 'eye' : viewMode === 'preview' ? 'columns' : 'edit'" />
-                </button>
-                <button type="button" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'"
-                    class="toolbar-btn" :class="{ active: isFullscreen }">
-                    <font-awesome-icon :icon="isFullscreen ? 'compress' : 'expand'" />
-                </button>
-            </div>
+            </template>
         </div>
 
         <!-- 编辑器内容区 -->
@@ -77,8 +17,9 @@
             <!-- 编辑区 -->
             <div v-show="viewMode === 'edit' || viewMode === 'split'" class="editor-pane">
                 <textarea ref="textarea" v-model="content" @input="handleInput" @keydown="handleKeyDown"
-                    class="markdown-textarea" :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"
-                    placeholder="请输入 Markdown 内容..."></textarea>
+                    @focus="$emit('focus', $event)" @blur="$emit('blur', $event)" class="markdown-textarea"
+                    :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"
+                    :placeholder="placeholder"></textarea>
             </div>
 
             <!-- 预览区 -->
@@ -90,6 +31,9 @@
 
         <!-- 图片插入对话框 -->
         <ImageInsertDialog :show="showImageDialog" @close="showImageDialog = false" @confirm="handleImageInserted" />
+
+        <!-- 表情选择对话框 -->
+        <EmojiPicker :show="showEmojiPicker" @close="showEmojiPicker = false" @select="handleEmojiSelected" />
     </div>
 </template>
 
@@ -113,11 +57,13 @@ import 'prismjs/components/prism-sql'
 import 'prismjs/components/prism-markdown'
 
 import ImageInsertDialog from './ImageInsertDialog.vue'
+import EmojiPicker from './EmojiPicker.vue'
 
 export default {
     name: 'MarkdownEditor',
     components: {
-        ImageInsertDialog
+        ImageInsertDialog,
+        EmojiPicker
     },
     props: {
         modelValue: {
@@ -127,16 +73,26 @@ export default {
         height: {
             type: Number,
             default: 400
+        },
+        toolbars: {
+            type: Array,
+            default: () => []
+        },
+        placeholder: {
+            type: String,
+            default: '请输入 Markdown 内容...'
         }
     },
-    emits: ['update:modelValue'],
+    emits: ['update:modelValue', 'focus', 'blur'],
     data() {
         return {
             content: '',
             viewMode: 'edit', // 'edit', 'preview', 'split'
             isFullscreen: false,
             // 图片对话框相关
-            showImageDialog: false
+            showImageDialog: false,
+            // 表情对话框相关
+            showEmojiPicker: false
         }
     },
     computed: {
@@ -162,6 +118,55 @@ export default {
                 return '<p class="error">Markdown 解析失败</p>'
             }
         },
+        toolbarList() {
+            const list = this.toolbars && this.toolbars.length > 0 ? this.toolbars : [
+                'bold', 'italic', 'strikethrough', '|',
+                'h1', 'h2', 'h3', '|',
+                'ul', 'ol', 'quote', '|',
+                'link', 'code', 'image', 'emoji', '|',
+                'preview', 'fullscreen'
+            ]
+
+            return list.map(item => {
+                if (item === '|' || item === 'separator') {
+                    return { type: 'separator' }
+                }
+
+                switch (item) {
+                    case 'bold': return { type: 'button', icon: 'bold', title: '粗体 (Ctrl+B)', action: 'bold' }
+                    case 'italic': return { type: 'button', icon: 'italic', title: '斜体 (Ctrl+I)', action: 'italic' }
+                    case 'strikethrough': return { type: 'button', icon: 'strikethrough', title: '删除线', action: 'strikethrough' }
+                    case 'h1': return { type: 'button', text: 'H1', title: '标题 1', action: 'h1' }
+                    case 'h2': return { type: 'button', text: 'H2', title: '标题 2', action: 'h2' }
+                    case 'h3': return { type: 'button', text: 'H3', title: '标题 3', action: 'h3' }
+                    case 'ul': return { type: 'button', icon: 'list-ul', title: '无序列表', action: 'ul' }
+                    case 'ol': return { type: 'button', icon: 'list-ol', title: '有序列表', action: 'ol' }
+                    case 'quote': return { type: 'button', icon: 'quote-left', title: '引用', action: 'quote' }
+                    case 'link': return { type: 'button', icon: 'link', title: '插入链接', action: 'link' }
+                    case 'code': return { type: 'button', icon: 'code', title: '代码块', action: 'code' }
+                    case 'image': return { type: 'button', icon: 'image', title: '插入图片', action: 'image' }
+                    case 'emoji': return { type: 'button', icon: 'smile', title: '插入表情', action: 'emoji' }
+                    case 'preview':
+                        return {
+                            type: 'button',
+                            title: this.viewMode === 'edit' ? '预览' : this.viewMode === 'preview' ? '分屏' : '编辑',
+                            icon: this.viewMode === 'edit' ? 'eye' : this.viewMode === 'preview' ? 'columns' : 'edit',
+                            action: 'toggleMode',
+                            class: 'mode-btn',
+                            active: this.viewMode !== 'edit'
+                        }
+                    case 'fullscreen':
+                        return {
+                            type: 'button',
+                            title: this.isFullscreen ? '退出全屏' : '全屏',
+                            icon: this.isFullscreen ? 'compress' : 'expand',
+                            action: 'toggleFullscreen',
+                            active: this.isFullscreen
+                        }
+                    default: return null
+                }
+            }).filter(Boolean)
+        },
     },
     watch: {
         modelValue: {
@@ -174,6 +179,16 @@ export default {
         }
     },
     methods: {
+        handleToolbarClick(item) {
+            if (item.action === 'toggleMode') {
+                this.toggleMode()
+            } else if (item.action === 'toggleFullscreen') {
+                this.toggleFullscreen()
+            } else {
+                this.insertMarkdown(item.action)
+            }
+        },
+
         handleInput() {
             this.$emit('update:modelValue', this.content)
         },
@@ -255,6 +270,10 @@ export default {
                     // 打开图片插入对话框
                     this.openImageDialog()
                     return // 不执行后续的插入逻辑
+                }
+                case 'emoji': {
+                    this.openEmojiPicker()
+                    return
                 }
             }
 
@@ -340,6 +359,15 @@ export default {
                 textarea.focus()
                 textarea.setSelectionRange(newPosition, newPosition)
             })
+        },
+
+        // ========== 表情对话框相关方法 ==========
+        openEmojiPicker() {
+            this.showEmojiPicker = true
+        },
+
+        handleEmojiSelected(emoji) {
+            this.insertText(emoji)
         }
     }
 }
@@ -376,11 +404,6 @@ export default {
     border-bottom: 1px solid var(--border-color);
     background: var(--hover-bg);
     flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.toolbar-group {
-    display: flex;
     gap: 0.25rem;
 }
 
@@ -427,6 +450,7 @@ export default {
     width: 1px;
     height: 24px;
     background: var(--border-color);
+    margin: 0 0.25rem;
 }
 
 /* 编辑器容器 */
@@ -450,9 +474,8 @@ export default {
 }
 
 /* 编辑区 */
-.editor-pane {
+.mode-split .editor-pane {
     border-right: 1px solid var(--border-color);
-    background: var(--card-bg);
 }
 
 .markdown-textarea {

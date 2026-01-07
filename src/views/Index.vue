@@ -488,21 +488,27 @@ export default {
 }
 
 .edit-btn {
-    background-color: rgba(37, 99, 235, 0.1);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(29, 78, 216, 0.1) 100%);
     color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 .edit-btn:hover {
-    background-color: rgba(37, 99, 235, 0.2);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(29, 78, 216, 0.2) 100%);
+    border-color: rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
 }
 
 .delete-btn {
-    background-color: rgba(220, 53, 69, 0.1);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
     color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.2);
 }
 
 .delete-btn:hover {
-    background-color: rgba(220, 53, 69, 0.2);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(185, 28, 28, 0.2) 100%);
+    border-color: rgba(220, 53, 69, 0.3);
+    transform: translateY(-1px);
 }
 
 .page-label {
@@ -557,10 +563,10 @@ export default {
 }
 
 .page-btn.active {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    border-color: transparent;
     color: white;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .page-btn.nav-btn {
@@ -594,11 +600,21 @@ export default {
     font-family: var(--font-serif);
     font-weight: 700;
     font-size: 1.25rem;
-    /* text-xl */
     color: var(--text-color);
     margin-bottom: 1.25rem;
     padding-bottom: 0.8rem;
-    border-bottom: 2px solid var(--text-secondary);
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(90deg, #3B82F6 0%, #8B5CF6 100%);
+        border-radius: 2px;
+    }
 }
 
 .sidebar-title .sidebar-icon {
@@ -631,11 +647,18 @@ export default {
 }
 
 .count-badge {
-    background-color: var(--hover-bg);
+    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
     color: var(--text-color);
     font-size: 0.75rem;
-    padding: 0.125rem 0.5rem;
+    padding: 0.125rem 0.6rem;
     border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+}
+
+:root.dark-theme .count-badge {
+    background: linear-gradient(135deg, #374151 0%, #1F2937 100%);
+    border-color: #4B5563;
 }
 
 /* Ranking List */

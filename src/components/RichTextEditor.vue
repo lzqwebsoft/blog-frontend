@@ -2,103 +2,21 @@
     <div class="rich-text-editor" :class="{ 'fullscreen': isFullscreen }">
         <!-- 工具栏 -->
         <div class="editor-toolbar">
-            <div class="toolbar-group">
-                <button type="button" @click="execCommand('bold')" title="粗体 (Ctrl+B)" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="bold" />
+            <template v-for="(item, index) in toolbarList" :key="index">
+                <div v-if="item.type === 'separator'" class="toolbar-separator"></div>
+                <div v-else-if="item.type === 'mode-group'" class="mode-group-control" :class="item.class">
+                    <button v-for="(subItem, subIndex) in item.items" :key="subIndex" type="button"
+                        @click="setViewMode(subItem.value)" :title="subItem.title" class="mode-group-btn"
+                        :class="{ active: viewMode === subItem.value }">
+                        <font-awesome-icon :icon="subItem.icon" />
+                    </button>
+                </div>
+                <button v-else type="button" @click="handleToolbarClick(item)" :title="item.title" class="toolbar-btn"
+                    :class="[item.class, { active: item.active }]" :disabled="item.disabled">
+                    <font-awesome-icon v-if="item.icon" :icon="item.icon" />
+                    <span v-else>{{ item.text }}</span>
                 </button>
-                <button type="button" @click="execCommand('italic')" title="斜体 (Ctrl+I)" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="italic" />
-                </button>
-                <button type="button" @click="execCommand('underline')" title="下划线" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="underline" />
-                </button>
-                <button type="button" @click="execCommand('strikeThrough')" title="删除线" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="strikethrough" />
-                </button>
-            </div>
-
-            <div class="toolbar-separator"></div>
-
-            <div class="toolbar-group">
-                <button type="button" @click="execCommand('formatBlock', '<h1>')" title="标题 1" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    H1
-                </button>
-                <button type="button" @click="execCommand('formatBlock', '<h2>')" title="标题 2" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    H2
-                </button>
-                <button type="button" @click="execCommand('formatBlock', '<h3>')" title="标题 3" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    H3
-                </button>
-            </div>
-
-            <div class="toolbar-separator"></div>
-
-            <div class="toolbar-group">
-                <button type="button" @click="execCommand('insertUnorderedList')" title="无序列表" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="list-ul" />
-                </button>
-                <button type="button" @click="execCommand('insertOrderedList')" title="有序列表" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="list-ol" />
-                </button>
-                <button type="button" @click="execCommand('formatBlock', '<blockquote>')" title="引用" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="quote-left" />
-                </button>
-            </div>
-
-            <div class="toolbar-separator"></div>
-
-            <div class="toolbar-group">
-                <button type="button" @click="insertLink" title="插入链接" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="link" />
-                </button>
-                <button type="button" @click="execCommand('unlink')" title="移除链接" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="unlink" />
-                </button>
-                <button type="button" @click="insertCodeBlock" title="代码块" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="code" />
-                </button>
-                <button type="button" @click="insertImage" title="插入图片" class="toolbar-btn"
-                    :disabled="viewMode !== 'edit'">
-                    <font-awesome-icon icon="image" />
-                </button>
-            </div>
-
-            <div class="toolbar-separator"></div>
-
-            <div class="toolbar-group mode-selector">
-                <button type="button" @click="setViewMode('edit')" title="可视化编辑" class="toolbar-btn"
-                    :class="{ active: viewMode === 'edit' }">
-                    <font-awesome-icon icon="edit" />
-                </button>
-                <button type="button" @click="setViewMode('code')" title="源代码" class="toolbar-btn"
-                    :class="{ active: viewMode === 'code' }">
-                    <font-awesome-icon icon="file-code" />
-                </button>
-                <button type="button" @click="setViewMode('preview')" title="预览" class="toolbar-btn"
-                    :class="{ active: viewMode === 'preview' }">
-                    <font-awesome-icon icon="eye" />
-                </button>
-            </div>
-
-            <div class="toolbar-group">
-                <button type="button" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'"
-                    class="toolbar-btn" :class="{ active: isFullscreen }">
-                    <font-awesome-icon :icon="isFullscreen ? 'compress' : 'expand'" />
-                </button>
-            </div>
+            </template>
         </div>
 
         <!-- 编辑器内容区 -->
@@ -126,16 +44,21 @@
 
         <!-- 图片插入对话框 -->
         <ImageInsertDialog :show="showImageDialog" @close="showImageDialog = false" @confirm="handleImageInserted" />
+
+        <!-- 表情选择对话框 -->
+        <EmojiPicker :show="showEmojiPicker" @close="showEmojiPicker = false" @select="handleEmojiSelected" />
     </div>
 </template>
 
 <script>
 import ImageInsertDialog from './ImageInsertDialog.vue'
+import EmojiPicker from './EmojiPicker.vue'
 
 export default {
     name: 'RichTextEditor',
     components: {
-        ImageInsertDialog
+        ImageInsertDialog,
+        EmojiPicker
     },
     props: {
         modelValue: {
@@ -145,6 +68,10 @@ export default {
         height: {
             type: Number,
             default: 400
+        },
+        toolbars: {
+            type: Array,
+            default: () => []
         }
     },
     emits: ['update:modelValue'],
@@ -153,7 +80,60 @@ export default {
             internalValue: '',
             viewMode: 'edit', // 'edit', 'code', 'preview'
             isFullscreen: false,
-            showImageDialog: false
+            showImageDialog: false,
+            showEmojiPicker: false
+        }
+    },
+    computed: {
+        toolbarList() {
+            const list = this.toolbars && this.toolbars.length > 0 ? this.toolbars : [
+                'bold', 'italic', 'underline', 'strikeThrough', '|',
+                'h1', 'h2', 'h3', '|',
+                'ul', 'ol', 'quote', '|',
+                'link', 'unlink', 'code', 'image', 'emoji', '|',
+                'mode-group', 'fullscreen'
+            ]
+
+            return list.map(item => {
+                if (item === '|' || item === 'separator') {
+                    return { type: 'separator' }
+                }
+
+                switch (item) {
+                    case 'bold': return { type: 'button', icon: 'bold', title: '粗体 (Ctrl+B)', action: 'execCommand', args: ['bold'], disabled: this.viewMode !== 'edit' }
+                    case 'italic': return { type: 'button', icon: 'italic', title: '斜体 (Ctrl+I)', action: 'execCommand', args: ['italic'], disabled: this.viewMode !== 'edit' }
+                    case 'underline': return { type: 'button', icon: 'underline', title: '下划线', action: 'execCommand', args: ['underline'], disabled: this.viewMode !== 'edit' }
+                    case 'strikeThrough': return { type: 'button', icon: 'strikethrough', title: '删除线', action: 'execCommand', args: ['strikeThrough'], disabled: this.viewMode !== 'edit' }
+
+                    case 'h1': return { type: 'button', text: 'H1', title: '标题 1', action: 'execCommand', args: ['formatBlock', '<h1>'], disabled: this.viewMode !== 'edit' }
+                    case 'h2': return { type: 'button', text: 'H2', title: '标题 2', action: 'execCommand', args: ['formatBlock', '<h2>'], disabled: this.viewMode !== 'edit' }
+                    case 'h3': return { type: 'button', text: 'H3', title: '标题 3', action: 'execCommand', args: ['formatBlock', '<h3>'], disabled: this.viewMode !== 'edit' }
+
+                    case 'ul': return { type: 'button', icon: 'list-ul', title: '无序列表', action: 'execCommand', args: ['insertUnorderedList'], disabled: this.viewMode !== 'edit' }
+                    case 'ol': return { type: 'button', icon: 'list-ol', title: '有序列表', action: 'execCommand', args: ['insertOrderedList'], disabled: this.viewMode !== 'edit' }
+                    case 'quote': return { type: 'button', icon: 'quote-left', title: '引用', action: 'execCommand', args: ['formatBlock', '<blockquote>'], disabled: this.viewMode !== 'edit' }
+
+                    case 'link': return { type: 'button', icon: 'link', title: '插入链接', action: 'insertLink', disabled: this.viewMode !== 'edit' }
+                    case 'unlink': return { type: 'button', icon: 'unlink', title: '移除链接', action: 'execCommand', args: ['unlink'], disabled: this.viewMode !== 'edit' }
+                    case 'code': return { type: 'button', icon: 'code', title: '代码块', action: 'insertCodeBlock', disabled: this.viewMode !== 'edit' }
+                    case 'image': return { type: 'button', icon: 'image', title: '插入图片', action: 'insertImage', disabled: this.viewMode !== 'edit' }
+                    case 'emoji': return { type: 'button', icon: 'smile', title: '插入表情', action: 'openEmojiPicker', disabled: this.viewMode !== 'edit' }
+
+                    case 'mode-group': return {
+                        type: 'mode-group',
+                        class: 'mode-group',
+                        items: [
+                            { icon: 'edit', title: '可视化编辑', value: 'edit' },
+                            { icon: 'file-code', title: '源代码', value: 'code' },
+                            { icon: 'eye', title: '预览', value: 'preview' }
+                        ]
+                    }
+
+                    case 'fullscreen': return { type: 'button', icon: this.isFullscreen ? 'compress' : 'expand', title: this.isFullscreen ? '退出全屏' : '全屏', action: 'toggleFullscreen', active: this.isFullscreen }
+
+                    default: return null
+                }
+            }).filter(Boolean)
         }
     },
     watch: {
@@ -171,6 +151,16 @@ export default {
         this.updateEditorContent()
     },
     methods: {
+        handleToolbarClick(item) {
+            if (item.action === 'execCommand') {
+                this.execCommand(...(item.args || []))
+            } else if (item.action === 'setViewMode') {
+                this.setViewMode(...(item.args || []))
+            } else if (typeof this[item.action] === 'function') {
+                this[item.action]()
+            }
+        },
+
         updateEditorContent() {
             if (this.$refs.editor && this.viewMode === 'edit') {
                 this.$refs.editor.innerHTML = this.internalValue
@@ -520,6 +510,14 @@ export default {
             this.internalValue = ''
             this.$emit('update:modelValue', '')
             this.updateEditorContent()
+        },
+
+        openEmojiPicker() {
+            this.showEmojiPicker = true
+        },
+
+        handleEmojiSelected(emoji) {
+            this.insertText(emoji)
         }
     }
 }
@@ -556,11 +554,6 @@ export default {
     border-bottom: 1px solid var(--border-color);
     background: var(--hover-bg);
     flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.toolbar-group {
-    display: flex;
     gap: 0.25rem;
 }
 
@@ -614,35 +607,54 @@ export default {
     color: var(--text-secondary);
 }
 
-.mode-selector {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 2px;
+.toolbar-btn.mode-btn {
     margin-left: auto;
-}
-
-.mode-selector .toolbar-btn {
-    border: none;
-    border-radius: 4px;
-    height: 30px;
-    min-width: 32px;
-    padding: 0 0.5rem;
-}
-
-.mode-selector .toolbar-btn:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-.mode-selector .toolbar-btn.active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Optional: push to right if desired, though behavior with multiple buttons with this class depends on flex */
 }
 
 .toolbar-separator {
     width: 1px;
     height: 24px;
     background: var(--border-color);
+    margin: 0 0.25rem;
+}
+
+/* Mode Group Control */
+.mode-group-control {
+    display: flex;
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 3px;
+    margin-left: auto;
+    gap: 2px;
+}
+
+.mode-group-btn {
+    background: transparent;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 32px;
+    height: 30px;
+}
+
+.mode-group-btn:hover {
+    color: var(--text-color);
+    background: rgba(128, 128, 128, 0.1);
+}
+
+.mode-group-btn.active {
+    background: var(--card-bg);
+    color: var(--primary-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* 编辑器容器 */

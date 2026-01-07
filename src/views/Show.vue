@@ -45,7 +45,7 @@
                     <div class="article-meta">
                         <span>发表于：{{ formatDateTime(article.release_at) }}，已有{{
                             formatReadCount(article.readed_num)
-                        }}次阅读</span>
+                            }}次阅读</span>
 
                         <div class="article-actions">
                             <button class="action-btn comment-btn" @click="scrollToComments">
@@ -104,6 +104,14 @@
                         <div class="comment-author-info">
                             <img v-if="item.isBlogger" src="@/assets/images/avatar.jpg" class="comment-avatar"
                                 :alt="item.nickname" />
+                            <img v-else-if="item.email" :src="item.avatarUrl" class="comment-avatar"
+                                :alt="item.nickname" />
+                            <div v-else class="comment-avatar placeholder-avatar"
+                                :style="{ background: getAvatarColor(item.nickname) }">
+                                {{ item.nickname.charAt(0).toUpperCase() }}
+                            </div>
+
+
                             <strong class="comment-author" :class="{ 'blogger-badge': item.isBlogger }">
                                 <template v-if="item.isBlogger">
                                     <span class="badge-text">博主</span>
@@ -137,6 +145,13 @@
                                 <div class="comment-author-info">
                                     <img v-if="child.isBlogger" src="@/assets/images/avatar.jpg" class="comment-avatar"
                                         :alt="child.nickname" />
+                                    <img v-else-if="child.email" :src="child.avatarUrl" class="comment-avatar"
+                                        :alt="child.nickname" />
+                                    <div v-else class="comment-avatar placeholder-avatar"
+                                        :style="{ background: getAvatarColor(child.nickname) }">
+                                        {{ child.nickname.charAt(0).toUpperCase() }}
+                                    </div>
+
                                     <strong class="comment-author" :class="{ 'blogger-badge': child.isBlogger }">
                                         <template v-if="child.isBlogger">
                                             <span class="badge-text">博主</span>
@@ -201,6 +216,14 @@
 
                         <div class="input-group">
                             <div class="input-wrapper">
+                                <font-awesome-icon icon="envelope" class="input-icon" />
+                                <input type="email" class="form-control" v-model="email" placeholder="邮箱（不对外显示）"
+                                    required />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-wrapper">
                                 <font-awesome-icon icon="link" class="input-icon" />
                                 <input type="url" class="form-control" v-model="website" placeholder="个人网站 (可选)" />
                             </div>
@@ -208,9 +231,10 @@
                     </div>
 
                     <div class="input-group">
-                        <div class="input-wrapper textarea-wrapper">
-                            <textarea class="form-control" rows="4" v-model="comment" placeholder="说点什么吧..."
-                                @focus="handleCommentFocus" required></textarea>
+                        <div class="input-wrapper textarea-wrapper" style="padding: 0; overflow: hidden;">
+                            <MarkdownEditor v-model="comment" :height="150" placeholder="说点什么吧..." :toolbars="['emoji']"
+                                class="comment-editor" :class="{ focused: isCommentFocused }"
+                                @focus="handleCommentFocus" @blur="handleCommentBlur" />
                         </div>
                     </div>
 
@@ -256,6 +280,7 @@ import 'prismjs/plugins/toolbar/prism-toolbar.css'
 import 'prismjs/plugins/toolbar/prism-toolbar.js'
 import 'prismjs/plugins/show-language/prism-show-language.js'
 import 'prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.js'
+import md5 from 'blueimp-md5'
 
 // PrismJS 语言组件批量导入
 import 'prismjs/components/prism-markup.min.js'
@@ -307,6 +332,7 @@ import { getCaptcha } from '@/api/user'
 import { isAuthenticated } from '@/utils/auth'
 import { formatDate, formatDateTime, formatReadCount, getPatternType, removePathSuffix } from '@/utils/tools'
 import TableOfContents from '../components/TableOfContents.vue'
+import MarkdownEditor from '@/components/MarkdownEditor.vue'
 
 export default {
     components: {
@@ -314,6 +340,7 @@ export default {
         SNSShares,
         ImagePreview,
         TableOfContents,
+        MarkdownEditor
     },
     data() {
         return {
@@ -341,6 +368,7 @@ export default {
             previousArticle: null,
             nextArticle: null,
             nickname: '',
+            email: '',
             website: '',
             comment: '',
             replyTo: null,
@@ -352,6 +380,7 @@ export default {
             showCaptcha: false,
             previewVisible: false,
             previewImage: '',
+            isCommentFocused: false,
         }
     },
     mounted() {
@@ -378,6 +407,28 @@ export default {
         formatReadCount,
         getPatternType,
         removePathSuffix,
+
+        getAvatarColor(nickname) {
+            if (!nickname) return '#ccc'
+            const colors = [
+                'linear-gradient(135deg, #ABDCFF 10%, #0396FF 100%)',
+                'linear-gradient(135deg, #FEB692 10%, #EA5455 100%)',
+                'linear-gradient(135deg, #CE9FFC 10%, #7367F0 100%)',
+                'linear-gradient(135deg, #90F7EC 10%, #32CCBC 100%)',
+                'linear-gradient(135deg, #FFF6B7 10%, #F6416C 100%)',
+                'linear-gradient(135deg, #81FBB8 10%, #28C76F 100%)',
+                'linear-gradient(135deg, #E2B0FF 10%, #9F44D3 100%)',
+                'linear-gradient(135deg, #FDEB71 10%, #F8D800 100%)',
+                'linear-gradient(135deg, #FCCF31 10%, #F55555 100%)',
+                'linear-gradient(135deg, #5EFCE8 10%, #736EFE 100%)'
+            ]
+            let hash = 0
+            for (let i = 0; i < nickname.length; i++) {
+                hash = nickname.charCodeAt(i) + ((hash << 5) - hash)
+            }
+            const index = Math.abs(hash % colors.length)
+            return colors[index]
+        },
 
         checkAuthStatus() {
             this.isAuthenticated = isAuthenticated()
@@ -460,6 +511,8 @@ export default {
                     content: comment.content,
                     info: `来自于：${comment.from_local || '未知'} 发表于：${formatDateTime(comment.created_at)}`,
                     isBlogger: comment.is_blogger,
+                    email: comment.email,
+                    avatarUrl: comment.email ? `https://www.gravatar.com/avatar/${md5(comment.email.trim().toLowerCase())}?d=mp` : '',
                     children: [],
                 }
 
@@ -473,6 +526,8 @@ export default {
                             content: child.content,
                             info: `来自于：${child.from_local || '未知'} 发表于：${formatDateTime(child.created_at)}`,
                             isBlogger: child.is_blogger,
+                            email: child.email,
+                            avatarUrl: child.email ? `https://www.gravatar.com/avatar/${md5(child.email.trim().toLowerCase())}?d=mp` : '',
                         }
 
                         // 将当前子评论添加到children数组
@@ -489,6 +544,8 @@ export default {
                                         content: grandChild.content,
                                         info: `来自于：${grandChild.from_local || '未知'} 发表于：${formatDateTime(grandChild.created_at)}`,
                                         isBlogger: grandChild.is_blogger,
+                                        email: grandChild.email,
+                                        avatarUrl: grandChild.email ? `https://www.gravatar.com/avatar/${md5(grandChild.email.trim().toLowerCase())}?d=mp` : '',
                                     }
                                     processedComment.children.push(processedGrandChild)
 
@@ -643,9 +700,14 @@ export default {
         },
 
         async handleCommentFocus() {
+            this.isCommentFocused = true
             if (!this.isAuthenticated && !this.captchaImage) {
                 await this.loadCaptcha()
             }
+        },
+
+        handleCommentBlur() {
+            this.isCommentFocused = false
         },
 
         async loadCaptcha() {
@@ -670,6 +732,10 @@ export default {
                 alert('请输入昵称')
                 return
             }
+            if (!this.isAuthenticated && !this.email.trim()) {
+                alert('请输入邮箱')
+                return
+            }
             if (!this.comment.trim()) {
                 alert('请输入评论内容')
                 return
@@ -690,6 +756,9 @@ export default {
                     formData.append('reviewer', this.nickname)
                     if (this.website) {
                         formData.append('website', this.website)
+                    }
+                    if (this.email) {
+                        formData.append('email', this.email)
                     }
                     formData.append('captchaCode', this.captchaCode)
                     formData.append('captchaID', this.captchaId)
@@ -724,6 +793,7 @@ export default {
 
                     if (!this.isAuthenticated) {
                         this.nickname = ''
+                        this.email = ''
                         this.website = ''
                         this.showCaptcha = false
                         this.captchaImage = ''
@@ -884,41 +954,53 @@ export default {
 }
 
 .edit-btn {
-    background-color: rgba(37, 99, 235, 0.1);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(29, 78, 216, 0.1) 100%);
     color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 .edit-btn:hover {
-    background-color: rgba(37, 99, 235, 0.2);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(29, 78, 216, 0.2) 100%);
+    border-color: rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
 }
 
 .delete-btn {
-    background-color: rgba(220, 53, 69, 0.1);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
     color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.2);
 }
 
 .delete-btn:hover {
-    background-color: rgba(220, 53, 69, 0.2);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(185, 28, 28, 0.2) 100%);
+    border-color: rgba(220, 53, 69, 0.3);
+    transform: translateY(-1px);
 }
 
 .comment-btn {
-    background-color: rgba(16, 185, 129, 0.1);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
     color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .comment-btn:hover {
-    background-color: rgba(16, 185, 129, 0.2);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+    border-color: rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
 }
 
 .submit-btn {
-    background-color: var(--primary-color);
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
     color: white;
-    padding: 0.5rem 1.5rem;
+    padding: 0.6rem 1.8rem;
     font-weight: 600;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 .submit-btn:hover {
-    background-color: var(--primary-hover);
+    background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+    transform: translateY(-2px);
 }
 </style>
 
@@ -1136,9 +1218,9 @@ export default {
             -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
             sans-serif;
         color: #555;
-        font-size: 1.5rem;
-        line-height: 1.5;
-        font-weight: 500;
+        font-size: 1.1rem;
+        line-height: 1.1;
+        font-weight: bold;
     }
 
     .article-content .photo-card:hover {
@@ -1312,6 +1394,7 @@ export default {
 }
 
 .comment-author {
+    margin-left: 0.5rem;
     font-weight: bold;
     color: var(--text-color);
 }
@@ -1335,12 +1418,15 @@ export default {
 
 .badge-text {
     display: inline-block;
-    background: var(--primary-color);
-    color: white;
-    font-size: 0.75rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
+    background: linear-gradient(135deg, #FDEB71 10%, #F8D800 100%);
+    color: #8B4513;
+    font-size: 0.7rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: 4px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(218, 165, 32, 0.3);
     margin-left: 0.5rem;
+    vertical-align: middle;
 }
 
 .comment-author-info {
@@ -1353,8 +1439,24 @@ export default {
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1px solid var(--border-color);
+    border: 2px solid #fff;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+:root.dark-theme .comment-avatar {
+    border-color: #333;
+}
+
+.placeholder-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .empty-comments {
@@ -1574,10 +1676,10 @@ export default {
 
 .input-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
         grid-template-columns: 1fr;
     }
 }
@@ -2158,8 +2260,12 @@ export default {
     justify-content: center;
 
     &:hover {
-        box-shadow: 0 4px 15px var(--shadow-color);
-        border-color: var(--link-color);
+        box-shadow: 0 8px 25px var(--shadow-color);
+        border-color: transparent;
+        background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
+            linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%) border-box;
+        border: 1px solid transparent;
+        transform: translateY(-3px);
     }
 
     &.prev {
@@ -2218,6 +2324,57 @@ export default {
 @media (max-width: 768px) {
     .comment-actions .action-btn span {
         display: none;
+    }
+}
+
+.comment-editor {
+    width: 100%;
+    border: 1.5px solid var(--border-color) !important;
+    border-radius: 8px;
+    background: var(--bg-color) !important;
+    transition: all 0.3s ease;
+
+    .editor-toolbar {
+        background: transparent !important;
+        border-bottom: 1px dashed var(--border-color);
+        padding: 0.5rem 1rem;
+
+        /* Makes the toolbar items look a bit more subtle */
+        .toolbar-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+
+            &:hover {
+                color: var(--primary-color);
+                background: rgba(var(--primary-rgb), 0.1);
+            }
+        }
+    }
+
+    .editor-container {
+        .markdown-textarea {
+            background: transparent !important;
+            padding: 1rem;
+            min-height: 120px;
+        }
+    }
+
+    &.focused {
+        background: var(--card-bg) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+}
+
+:root.dark-theme {
+    .comment-editor {
+        background: #2d2d2d !important;
+        border-color: #444 !important;
+
+        &:focus {
+            background: #252525 !important;
+        }
     }
 }
 </style>

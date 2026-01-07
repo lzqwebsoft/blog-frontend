@@ -40,36 +40,38 @@ export default {
 
 <style scoped>
 .badge {
-    display: inline-block;
-    padding: 0.25em 0.4em;
-    font-size: 100%;
-    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2em 0.6em;
+    font-size: 0.85rem;
+    font-weight: 600;
     line-height: 1;
     text-align: center;
     white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.25rem;
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
-        border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    vertical-align: middle;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
 .badge-success {
     color: #fff;
-    background-color: #28a745;
+    background: linear-gradient(135deg, #28C76F 0%, #17A05D 100%);
 }
 
 .badge-default {
     color: #fff;
-    background-color: #6c757d;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
 }
 
 .badge-info {
     color: #fff;
-    background-color: #ffc107;
+    background: linear-gradient(135deg, #FF9F43 0%, #FF6B00 100%);
 }
 
 .badge-danger {
     color: #fff;
-    background-color: #dc3545;
+    background: linear-gradient(135deg, #EA5455 0%, #B22222 100%);
 }
 </style>

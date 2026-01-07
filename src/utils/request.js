@@ -52,7 +52,7 @@ async function refreshToken() {
         throw new Error('Refresh token expired')
     }
 
-    const response = await axios.post('/token/refresh', {
+    const response = await axios.post('/api/token/refresh', {
         refresh_token
     }, {
         headers: {
