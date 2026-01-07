@@ -5,7 +5,7 @@
                 Powered by <a href="https://vuejs.org" target="_blank">Vue3</a>, Design by
                 <a href="https://github.com/lzqwebsoft" target="_blank">-ZQLUO-</a>.
             </p>
-            <p>Copyright &copy; 2012 - 2025</p>
+            <p>Copyright &copy; 2012 - {{ currentYear }}</p>
         </div>
     </footer>
 </template>
@@ -13,6 +13,11 @@
 <script>
 export default {
     name: 'AppFooter',
+    computed: {
+        currentYear() {
+            return new Date().getFullYear()
+        },
+    },
 }
 </script>
 

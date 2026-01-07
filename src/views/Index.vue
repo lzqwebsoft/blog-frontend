@@ -176,7 +176,7 @@ import ArticleBadge from '../components/ArticleBadge.vue'
 import { getHomeData, deleteArticle } from '@/api/article'
 import { isAuthenticated } from '@/utils/auth'
 import eventBus from '@/utils/eventBus'
-import { formatDate, formatReadCount, getPatternType } from '@/utils/tools'
+import { formatDate, formatReadCount, getPatternType, removePathSuffix } from '@/utils/tools'
 
 export default {
     components: {
@@ -226,6 +226,7 @@ export default {
         formatDate,
         formatReadCount,
         getPatternType,
+        removePathSuffix,
 
         checkAuthStatus() {
             this.isAuthenticated = isAuthenticated()
@@ -236,7 +237,8 @@ export default {
             try {
                 const categoryId = this.$route.params.categoryId || null
                 const q = this.$route.query.q || null
-                const res = await getHomeData(q, this.currentPage, this.pageSize, categoryId)
+                const typeId = categoryId ? removePathSuffix(categoryId) : null
+                const res = await getHomeData(q, this.currentPage, this.pageSize, typeId)
                 const { articleTypes, page, top10Articles, links } = res.data
 
                 this.categories = (articleTypes || []).filter((type) => type.article_count > 0).map((type) => ({
@@ -374,7 +376,7 @@ export default {
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 1rem;
-    font-size: 1.0rem;
+    font-size: 1rem;
 }
 
 .badge {
@@ -758,24 +760,18 @@ export default {
 }
 
 .skeleton-item::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 255, 255, 0.4),
-            transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     animation: shine 1.5s infinite linear;
 }
 
 :root.dark-theme .skeleton-item::after {
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 255, 255, 0.05),
-            transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
 }
 
 @keyframes shine {

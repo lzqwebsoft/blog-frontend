@@ -44,7 +44,8 @@
 
                     <div class="article-meta">
                         <span>发表于：{{ formatDateTime(article.release_at) }}，已有{{
-                            formatReadCount(article.readed_num) }}次阅读</span>
+                            formatReadCount(article.readed_num)
+                        }}次阅读</span>
 
                         <div class="article-actions">
                             <button class="action-btn comment-btn" @click="scrollToComments">
@@ -173,15 +174,13 @@
             <!-- 评论表单 -->
             <form class="comment-form" @submit.prevent="submitComment">
                 <div class="comment-head">
-                    <h4 class="form-title">
-                        发表评论
-                    </h4>
+                    <h4 class="form-title">发表评论</h4>
 
                     <div class="comment-reply" v-if="replyTo">
                         <div class="reply-info">
                             <font-awesome-icon icon="reply" class="reply-icon" />
-                            <span class="reply-text">回复 <strong class="reply-nickname">@{{ replyTo.nickname
-                                    }}</strong></span>
+                            <span class="reply-text">回复
+                                <strong class="reply-nickname">@{{ replyTo.nickname }}</strong></span>
                         </div>
                         <button type="button" class="btn-cancel-reply" @click="cancelReply">
                             <font-awesome-icon icon="xmark" class="cancel-icon" />
@@ -239,72 +238,82 @@
 
         <!-- 图片预览组件 -->
         <ImagePreview :visible="previewVisible" :image-url="previewImage" @close="previewVisible = false" />
+
+        <!-- 目录组件 -->
+        <TableOfContents v-if="!loading" container-selector=".article-content" :dependency="article.content" />
     </div>
 </template>
 
 <script>
 // PrismJS 代码高亮
-import Prism from 'prismjs';
-import ImagePreview from '@/components/ImagePreview.vue';
-import "prismjs/plugins/line-numbers/prism-line-numbers.css";
-import "prismjs/plugins/line-numbers/prism-line-numbers.js";
-import "prismjs/plugins/autolinker/prism-autolinker.css";
-import "prismjs/plugins/autolinker/prism-autolinker.js";
-import "prismjs/plugins/toolbar/prism-toolbar.css";
-import "prismjs/plugins/toolbar/prism-toolbar.js";
-import "prismjs/plugins/show-language/prism-show-language.js";
-import "prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.js";
+import Prism from 'prismjs'
+import ImagePreview from '@/components/ImagePreview.vue'
+import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
+import 'prismjs/plugins/line-numbers/prism-line-numbers.js'
+import 'prismjs/plugins/autolinker/prism-autolinker.css'
+import 'prismjs/plugins/autolinker/prism-autolinker.js'
+import 'prismjs/plugins/toolbar/prism-toolbar.css'
+import 'prismjs/plugins/toolbar/prism-toolbar.js'
+import 'prismjs/plugins/show-language/prism-show-language.js'
+import 'prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.js'
 
 // PrismJS 语言组件批量导入
-import "prismjs/components/prism-markup.min.js";
-import "prismjs/components/prism-css.min.js";
-import "prismjs/components/prism-clike.min.js";
-import "prismjs/components/prism-javascript.min.js";
-import "prismjs/components/prism-apacheconf.min.js";
-import "prismjs/components/prism-c.min.js";
-import "prismjs/components/prism-csharp.min.js";
-import "prismjs/components/prism-bash.min.js";
-import "prismjs/components/prism-basic.min.js";
-import "prismjs/components/prism-cpp.min.js";
-import "prismjs/components/prism-nasm.min.js";
-import "prismjs/components/prism-ruby.min.js";
-import "prismjs/components/prism-markup-templating.min.js";
-import "prismjs/components/prism-git.min.js";
-import "prismjs/components/prism-go.min.js";
-import "prismjs/components/prism-groovy.min.js";
-import "prismjs/components/prism-http.min.js";
-import "prismjs/components/prism-hsts.min.js";
-import "prismjs/components/prism-ini.min.js";
-import "prismjs/components/prism-java.min.js";
-import "prismjs/components/prism-json.min.js";
-import "prismjs/components/prism-jsonp.min.js";
-import "prismjs/components/prism-markdown.min.js";
-import "prismjs/components/prism-nginx.min.js";
-import "prismjs/components/prism-php.min.js";
-import "prismjs/components/prism-sql.min.js";
-import "prismjs/components/prism-python.min.js";
-import "prismjs/components/prism-sass.min.js";
-import "prismjs/components/prism-scss.min.js";
-import "prismjs/components/prism-scala.min.js";
-import "prismjs/components/prism-scheme.min.js";
-import "prismjs/components/prism-swift.min.js";
-import "prismjs/components/prism-vbnet.min.js";
-import "prismjs/components/prism-vim.min.js";
-import "prismjs/components/prism-visual-basic.min.js";
-import "prismjs/components/prism-yaml.min.js";
+import 'prismjs/components/prism-markup.min.js'
+import 'prismjs/components/prism-css.min.js'
+import 'prismjs/components/prism-clike.min.js'
+import 'prismjs/components/prism-javascript.min.js'
+import 'prismjs/components/prism-apacheconf.min.js'
+import 'prismjs/components/prism-c.min.js'
+import 'prismjs/components/prism-csharp.min.js'
+import 'prismjs/components/prism-bash.min.js'
+import 'prismjs/components/prism-basic.min.js'
+import 'prismjs/components/prism-cpp.min.js'
+import 'prismjs/components/prism-nasm.min.js'
+import 'prismjs/components/prism-ruby.min.js'
+import 'prismjs/components/prism-markup-templating.min.js'
+import 'prismjs/components/prism-git.min.js'
+import 'prismjs/components/prism-go.min.js'
+import 'prismjs/components/prism-groovy.min.js'
+import 'prismjs/components/prism-http.min.js'
+import 'prismjs/components/prism-hsts.min.js'
+import 'prismjs/components/prism-ini.min.js'
+import 'prismjs/components/prism-java.min.js'
+import 'prismjs/components/prism-json.min.js'
+import 'prismjs/components/prism-jsonp.min.js'
+import 'prismjs/components/prism-markdown.min.js'
+import 'prismjs/components/prism-nginx.min.js'
+import 'prismjs/components/prism-php.min.js'
+import 'prismjs/components/prism-sql.min.js'
+import 'prismjs/components/prism-python.min.js'
+import 'prismjs/components/prism-sass.min.js'
+import 'prismjs/components/prism-scss.min.js'
+import 'prismjs/components/prism-scala.min.js'
+import 'prismjs/components/prism-scheme.min.js'
+import 'prismjs/components/prism-swift.min.js'
+import 'prismjs/components/prism-vbnet.min.js'
+import 'prismjs/components/prism-vim.min.js'
+import 'prismjs/components/prism-visual-basic.min.js'
+import 'prismjs/components/prism-yaml.min.js'
 
-import ArticleBadge from '../components/ArticleBadge.vue';
-import SNSShares from '../components/SNSShares.vue';
-import { getArticleDetail, submitComment as submitCommentApi, deleteComment as deleteCommentApi, deleteArticle as deleteArticleApi } from '@/api/article';
-import { getCaptcha } from '@/api/user';
-import { isAuthenticated } from '@/utils/auth';
-import { formatDate, formatDateTime, formatReadCount, getPatternType } from '@/utils/tools';
+import ArticleBadge from '../components/ArticleBadge.vue'
+import SNSShares from '../components/SNSShares.vue'
+import {
+    getArticleDetail,
+    submitComment as submitCommentApi,
+    deleteComment as deleteCommentApi,
+    deleteArticle as deleteArticleApi,
+} from '@/api/article'
+import { getCaptcha } from '@/api/user'
+import { isAuthenticated } from '@/utils/auth'
+import { formatDate, formatDateTime, formatReadCount, getPatternType, removePathSuffix } from '@/utils/tools'
+import TableOfContents from '../components/TableOfContents.vue'
 
 export default {
     components: {
         ArticleBadge,
         SNSShares,
         ImagePreview,
+        TableOfContents,
     },
     data() {
         return {
@@ -346,65 +355,65 @@ export default {
         }
     },
     mounted() {
-        this.checkAuthStatus();
-        this.articleId = this.getArticleIdFromRoute();
-        this.fetchArticleDetail();
+        this.checkAuthStatus()
+        this.articleId = this.getArticleIdFromRoute()
+        this.fetchArticleDetail()
     },
     updated() {
         this.$nextTick(() => {
-            Prism.highlightAll();
-        });
+            Prism.highlightAll()
+        })
     },
     watch: {
         $route(to, from) {
             if (to.params.id !== from.params.id) {
-                this.articleId = this.getArticleIdFromRoute();
-                this.fetchArticleDetail();
+                this.articleId = this.getArticleIdFromRoute()
+                this.fetchArticleDetail()
             }
-        }
+        },
     },
     methods: {
         formatDate,
         formatDateTime,
         formatReadCount,
         getPatternType,
+        removePathSuffix,
 
         checkAuthStatus() {
-            this.isAuthenticated = isAuthenticated();
+            this.isAuthenticated = isAuthenticated()
         },
 
         getArticleIdFromRoute() {
-            const path = this.$route.path;
-            const match = path.match(/\/show\/(\d+)/);
-            return match ? match[1] : '';
+            const path = this.$route.params.id
+            return path ? removePathSuffix(path) : path
         },
 
         async fetchArticleDetail() {
-            if (!this.articleId) return;
+            if (!this.articleId) return
 
-            this.loading = true;
+            this.loading = true
             try {
-                const res = await getArticleDetail(this.articleId);
-                const data = res.data;
+                const res = await getArticleDetail(this.articleId)
+                const data = res.data
 
                 // 保存 viewer_uuid 到本地存储
                 if (data.viewer_uuid) {
-                    localStorage.setItem('viewer_uuid', data.viewer_uuid);
+                    localStorage.setItem('viewer_uuid', data.viewer_uuid)
                 }
 
-                this.article = data.article;
-                this.relatedArticles = (data.associates || []).map(item => ({
+                this.article = data.article
+                this.relatedArticles = (data.associates || []).map((item) => ({
                     title: item.title,
                     url: `/show/${item.id}`,
                     releaseAt: formatDate(item.release_at),
-                    id: item.id
-                }));
+                    id: item.id,
+                }))
 
-                this.previousArticle = data.previous;
-                this.nextArticle = data.next;
+                this.previousArticle = data.previous
+                this.nextArticle = data.next
 
                 // 处理评论
-                this.comments = this.processComments(data.comments || []);
+                this.comments = this.processComments(data.comments || [])
 
                 // 更新面包屑
                 if (data.article.type) {
@@ -412,35 +421,38 @@ export default {
                         text: data.article.type.name,
                         disabled: false,
                         to: `/select/${data.article.type.id}`,
-                    };
+                    }
                 }
 
                 this.$nextTick(() => {
-                    this.initCodeHighlight();
-                    this.initImageProcessing();
-                    this.initSNSShare();
+                    this.initCodeHighlight()
+                    this.initImageProcessing()
+                    this.initSNSShare()
 
                     // 动态设置页面标题
                     if (this.article.title) {
-                        document.title = `${this.article.title} - 飘痕の博客`;
+                        document.title = `${this.article.title} - 飘痕の博客`
                     }
 
                     // 动态设置SEO描述
-                    const descriptionMeta = document.querySelector('meta[name="description"]');
+                    const descriptionMeta = document.querySelector('meta[name="description"]')
                     if (descriptionMeta) {
-                        const desc = this.article.summary || this.article.title || 'zqluo\'s technical blog sharing programming knowledge and experiences.';
-                        descriptionMeta.setAttribute('content', desc);
+                        const desc =
+                            this.article.summary ||
+                            this.article.title ||
+                            "zqluo's technical blog sharing programming knowledge and experiences."
+                        descriptionMeta.setAttribute('content', desc)
                     }
-                });
+                })
             } catch (error) {
-                console.error('获取文章详情失败:', error);
+                console.error('获取文章详情失败:', error)
             } finally {
-                this.loading = false;
+                this.loading = false
             }
         },
 
         processComments(comments) {
-            return comments.map(comment => {
+            return comments.map((comment) => {
                 const processedComment = {
                     id: comment.id,
                     nickname: comment.reviewer,
@@ -448,51 +460,54 @@ export default {
                     content: comment.content,
                     info: `来自于：${comment.from_local || '未知'} 发表于：${formatDateTime(comment.created_at)}`,
                     isBlogger: comment.is_blogger,
-                    children: []
-                };
+                    children: [],
+                }
 
                 // 递归处理子评论，将所有层级的子评论扁平化到一层
                 if (comment.child_comments && comment.child_comments.length > 0) {
-                    comment.child_comments.forEach(child => {
+                    comment.child_comments.forEach((child) => {
                         const processedChild = {
                             id: child.id,
                             nickname: child.reviewer,
                             website: child.website,
                             content: child.content,
                             info: `来自于：${child.from_local || '未知'} 发表于：${formatDateTime(child.created_at)}`,
-                            isBlogger: child.is_blogger
-                        };
+                            isBlogger: child.is_blogger,
+                        }
 
                         // 将当前子评论添加到children数组
-                        processedComment.children.push(processedChild);
+                        processedComment.children.push(processedChild)
 
                         // 如果子评论还有子评论，递归提取并添加到同一层级
                         if (child.child_comments && child.child_comments.length > 0) {
                             const flattenChildren = (childComments) => {
-                                childComments.forEach(grandChild => {
+                                childComments.forEach((grandChild) => {
                                     const processedGrandChild = {
                                         id: grandChild.id,
                                         nickname: grandChild.reviewer,
                                         website: grandChild.website,
                                         content: grandChild.content,
                                         info: `来自于：${grandChild.from_local || '未知'} 发表于：${formatDateTime(grandChild.created_at)}`,
-                                        isBlogger: grandChild.is_blogger
-                                    };
-                                    processedComment.children.push(processedGrandChild);
+                                        isBlogger: grandChild.is_blogger,
+                                    }
+                                    processedComment.children.push(processedGrandChild)
 
                                     // 继续递归处理更深层的子评论
-                                    if (grandChild.child_comments && grandChild.child_comments.length > 0) {
-                                        flattenChildren(grandChild.child_comments);
+                                    if (
+                                        grandChild.child_comments &&
+                                        grandChild.child_comments.length > 0
+                                    ) {
+                                        flattenChildren(grandChild.child_comments)
                                     }
-                                });
-                            };
-                            flattenChildren(child.child_comments);
+                                })
+                            }
+                            flattenChildren(child.child_comments)
                         }
-                    });
+                    })
                 }
 
-                return processedComment;
-            });
+                return processedComment
+            })
         },
 
         scrollToComments() {
@@ -502,98 +517,98 @@ export default {
         },
 
         handleEdit() {
-            this.$router.push(`/edit/${this.articleId}`);
+            this.$router.push(`/edit/${this.articleId}`)
         },
 
         async handleDelete() {
             if (!confirm(`确定要删除文章《${this.article.title}》吗？`)) {
-                return;
+                return
             }
 
             try {
-                await deleteArticleApi(this.articleId);
-                alert('删除成功');
-                this.$router.push('/');
+                await deleteArticleApi(this.articleId)
+                alert('删除成功')
+                this.$router.push('/')
             } catch (error) {
-                console.error('删除文章失败:', error);
-                alert('删除失败，请重试');
+                console.error('删除文章失败:', error)
+                alert('删除失败，请重试')
             }
         },
 
         navigateToArticle(article) {
             if (article && article.id) {
-                this.$router.push(`/show/${article.id}.html`);
+                this.$router.push(`/show/${article.id}.html`)
             }
         },
 
         initCodeHighlight() {
             // prism.js代码高亮显示
-            let docPre = document.querySelectorAll('.article-content pre');
+            let docPre = document.querySelectorAll('.article-content pre')
             if (docPre && docPre.length > 0) {
                 docPre.forEach(function (item) {
-                    let code = item.querySelector("code");
+                    let code = item.querySelector('code')
                     if (code) {
-                        let classVal = code.getAttribute("class");
+                        let classVal = code.getAttribute('class')
                         if (typeof classVal == typeof undefined || !classVal) {
-                            code.setAttribute("class", "language-none line-numbers");
+                            code.setAttribute('class', 'language-none line-numbers')
                         } else {
-                            code.classList.add("line-numbers"); // 开启显示行号
+                            code.classList.add('line-numbers') // 开启显示行号
                         }
                     } else {
-                        let classValue = item.getAttribute("class");
-                        if (classValue && classValue != "") {
-                            let classArr = [];
-                            classArr = classValue.split(";");
-                            classArr = classArr[0].split(":");
-                            var lan = classArr[1].trim();
-                            var lanClass = "language-" + lan;
+                        let classValue = item.getAttribute('class')
+                        if (classValue && classValue != '') {
+                            let classArr = []
+                            classArr = classValue.split(';')
+                            classArr = classArr[0].split(':')
+                            var lan = classArr[1].trim()
+                            var lanClass = 'language-' + lan
                             var preContent =
                                 '<code class="' +
                                 lanClass +
                                 ' line-numbers">' +
                                 item.innerHTML +
-                                "</code>";
-                            item.classList.add("my_pre");
-                            item.innerHTML = preContent;
+                                '</code>'
+                            item.classList.add('my_pre')
+                            item.innerHTML = preContent
                         }
                     }
-                });
+                })
             }
         },
 
         initImageProcessing() {
-            const images = document.querySelectorAll('.article-content img');
-            images.forEach(img => {
-                if (!img.src.includes('/images/show/')) return;
+            const images = document.querySelectorAll('.article-content img')
+            images.forEach((img) => {
+                if (!img.src.includes('/images/show/')) return
                 // 如果已经包裹了就不再处理
-                if (img.parentElement.classList.contains('photo-card')) return;
+                if (img.parentElement.classList.contains('photo-card')) return
 
                 // 创建 figure 包装器
-                const wrapper = document.createElement('figure');
-                wrapper.className = 'photo-card';
+                const wrapper = document.createElement('figure')
+                wrapper.className = 'photo-card'
 
                 // 将 wrapper 插入到 img 前面
-                img.parentNode.insertBefore(wrapper, img);
+                img.parentNode.insertBefore(wrapper, img)
 
                 // 将 img 移动到 wrapper 内部
-                wrapper.appendChild(img);
+                wrapper.appendChild(img)
 
                 // 如果有 alt 或 title 属性，作为 figcaption 显示
-                const captionText = img.getAttribute('alt') || img.getAttribute('title');
+                const captionText = img.getAttribute('alt') || img.getAttribute('title')
                 if (captionText) {
-                    const figcaption = document.createElement('figcaption');
-                    figcaption.textContent = captionText;
-                    wrapper.appendChild(figcaption);
+                    const figcaption = document.createElement('figcaption')
+                    figcaption.textContent = captionText
+                    wrapper.appendChild(figcaption)
                 }
 
                 // 添加点击预览
-                img.style.cursor = 'zoom-in';
+                img.style.cursor = 'zoom-in'
                 img.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.previewImage = img.src;
-                    this.previewVisible = true;
-                });
-            });
+                    e.stopPropagation()
+                    this.previewImage = img.src
+                    this.previewVisible = true
+                })
+            })
         },
 
         initSNSShare() {
@@ -629,140 +644,140 @@ export default {
 
         async handleCommentFocus() {
             if (!this.isAuthenticated && !this.captchaImage) {
-                await this.loadCaptcha();
+                await this.loadCaptcha()
             }
         },
 
         async loadCaptcha() {
             try {
-                const res = await getCaptcha();
-                this.captchaImage = res.data.captcha;
-                this.captchaId = res.data.captcha_id;
-                this.showCaptcha = true;
+                const res = await getCaptcha()
+                this.captchaImage = res.data.captcha
+                this.captchaId = res.data.captcha_id
+                this.showCaptcha = true
             } catch (error) {
-                console.error('获取验证码失败:', error);
+                console.error('获取验证码失败:', error)
             }
         },
 
         async refreshCaptcha() {
-            this.captchaCode = '';
-            await this.loadCaptcha();
+            this.captchaCode = ''
+            await this.loadCaptcha()
         },
 
         async submitComment() {
             // 验证表单
             if (!this.isAuthenticated && !this.nickname.trim()) {
-                alert('请输入昵称');
-                return;
+                alert('请输入昵称')
+                return
             }
             if (!this.comment.trim()) {
-                alert('请输入评论内容');
-                return;
+                alert('请输入评论内容')
+                return
             }
             if (!this.isAuthenticated && this.showCaptcha && !this.captchaCode.trim()) {
-                alert('请输入验证码');
-                return;
+                alert('请输入验证码')
+                return
             }
 
             try {
                 // 构建表单数据
-                const formData = new URLSearchParams();
-                formData.append('article_id', this.articleId);
-                formData.append('content', this.comment);
+                const formData = new URLSearchParams()
+                formData.append('article_id', this.articleId)
+                formData.append('content', this.comment)
 
                 // 非登录用户需要提供昵称和验证码
                 if (!this.isAuthenticated) {
-                    formData.append('reviewer', this.nickname);
+                    formData.append('reviewer', this.nickname)
                     if (this.website) {
-                        formData.append('website', this.website);
+                        formData.append('website', this.website)
                     }
-                    formData.append('captchaCode', this.captchaCode);
-                    formData.append('captchaID', this.captchaId);
+                    formData.append('captchaCode', this.captchaCode)
+                    formData.append('captchaID', this.captchaId)
                 }
 
                 // 处理回复逻辑
                 if (this.replyTo) {
-                    formData.append('parent_comment_id', this.replyTo.id);
+                    formData.append('parent_comment_id', this.replyTo.id)
                     // 如果是回复子评论，需要找到根评论ID
                     // 这里假设顶级评论的parent_comment_id为空或0
                     // 如果replyTo有parent，说明它是子评论，需要找到根评论
-                    formData.append('root_comment_id', this.replyTo.id);
+                    formData.append('root_comment_id', this.replyTo.id)
                 }
 
-                const res = await submitCommentApi(formData);
+                const res = await submitCommentApi(formData)
 
                 if (res.code === 0) {
-                    alert('评论提交成功');
+                    alert('评论提交成功')
 
                     // 更新评论列表
                     if (res.data && res.data.comments) {
-                        this.comments = this.processComments(res.data.comments);
+                        this.comments = this.processComments(res.data.comments)
                     } else {
                         // 如果返回数据中没有评论列表，重新加载文章详情
-                        await this.fetchArticleDetail();
+                        await this.fetchArticleDetail()
                     }
 
                     // 清空表单
-                    this.comment = '';
-                    this.captchaCode = '';
-                    this.replyTo = null;
+                    this.comment = ''
+                    this.captchaCode = ''
+                    this.replyTo = null
 
                     if (!this.isAuthenticated) {
-                        this.nickname = '';
-                        this.website = '';
-                        this.showCaptcha = false;
-                        this.captchaImage = '';
-                        this.captchaId = '';
+                        this.nickname = ''
+                        this.website = ''
+                        this.showCaptcha = false
+                        this.captchaImage = ''
+                        this.captchaId = ''
                     }
                 } else {
-                    alert(res.message || '评论提交失败，请重试');
+                    alert(res.message || '评论提交失败，请重试')
                     // 刷新验证码
                     if (!this.isAuthenticated) {
-                        await this.refreshCaptcha();
+                        await this.refreshCaptcha()
                     }
                 }
             } catch (error) {
-                console.error('提交评论失败:', error);
-                alert(error.response?.data?.message || '评论提交失败，请重试');
+                console.error('提交评论失败:', error)
+                alert(error.response?.data?.message || '评论提交失败，请重试')
                 // 刷新验证码
                 if (!this.isAuthenticated) {
-                    await this.refreshCaptcha();
+                    await this.refreshCaptcha()
                 }
             }
         },
 
         replyComment(comment) {
-            this.replyTo = comment;
-            this.scrollToComments();
+            this.replyTo = comment
+            this.scrollToComments()
         },
 
         cancelReply() {
-            this.replyTo = null;
-            this.comment = '';
+            this.replyTo = null
+            this.comment = ''
         },
 
         async deleteComment(commentId) {
             if (!confirm('确定要删除这条评论吗？')) {
-                return;
+                return
             }
 
             try {
-                const res = await deleteCommentApi(commentId);
+                const res = await deleteCommentApi(commentId)
                 if (res.code == 0) {
-                    alert('删除成功');
+                    alert('删除成功')
                     // 更新评论列表
                     if (res.data && res.data.comments) {
-                        this.comments = this.processComments(res.data.comments);
+                        this.comments = this.processComments(res.data.comments)
                     } else {
                         // 如果返回数据中没有评论列表，重新加载文章详情
-                        await this.fetchArticleDetail();
+                        await this.fetchArticleDetail()
                     }
                 } else {
-                    alert(res.message || '删除失败，请重试');
+                    alert(res.message || '删除失败，请重试')
                 }
             } catch (error) {
-                console.error('删除评论失败:', error);
-                alert('删除失败，请重试');
+                console.error('删除评论失败:', error)
+                alert('删除失败，请重试')
             }
         },
     },
@@ -922,7 +937,7 @@ export default {
 .article-content h3,
 .article-content h4,
 .article-content h5 {
-    font-family: var(--font-serif, "Noto Serif SC", serif);
+    font-family: var(--font-serif, 'Noto Serif SC', serif);
     font-weight: 700;
     line-height: 1.4;
     color: var(--text-color);
@@ -1077,7 +1092,9 @@ export default {
             rgba(0, 0, 0, 0) 0px 0px 0px 0px,
             rgba(0, 0, 0, 0.15) 0px 10px 30px -10px;
         position: relative;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
 
     .article-content .photo-card::before {
@@ -1115,7 +1132,9 @@ export default {
     .article-content .photo-card figcaption {
         display: block;
         margin-top: 15px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-family:
+            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+            sans-serif;
         color: #555;
         font-size: 1.5rem;
         line-height: 1.5;
@@ -1363,24 +1382,18 @@ export default {
 }
 
 .skeleton-item::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 255, 255, 0.4),
-            transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     animation: shine 1.5s infinite linear;
 }
 
 :root.dark-theme .skeleton-item::after {
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 255, 255, 0.05),
-            transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
 }
 
 @keyframes shine {
@@ -1475,7 +1488,9 @@ export default {
     animation: slideDown 0.3s ease-out;
 
     &:hover {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 51, 234, 0.12) 100%);
+        background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.12) 0%,
+                rgba(147, 51, 234, 0.12) 100%);
         border-color: rgba(59, 130, 246, 0.3);
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
     }
@@ -1717,11 +1732,15 @@ export default {
     }
 
     .comment-reply {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(147, 51, 234, 0.12) 100%);
+        background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.12) 0%,
+                rgba(147, 51, 234, 0.12) 100%);
         border-color: rgba(59, 130, 246, 0.3);
 
         &:hover {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(147, 51, 234, 0.18) 100%);
+            background: linear-gradient(135deg,
+                    rgba(59, 130, 246, 0.18) 0%,
+                    rgba(147, 51, 234, 0.18) 100%);
             border-color: rgba(59, 130, 246, 0.4);
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
         }
@@ -1836,8 +1855,8 @@ export default {
 /* PrismJS Styles (for global v-html content) */
 .article-content {
 
-    code[class*="language-"],
-    pre[class*="language-"] {
+    code[class*='language-'],
+    pre[class*='language-'] {
         color: black;
         background: none;
         text-shadow: 0 1px white;
@@ -1860,46 +1879,46 @@ export default {
         hyphens: none;
     }
 
-    pre[class*="language-"]::-moz-selection,
-    pre[class*="language-"] ::-moz-selection,
-    code[class*="language-"]::-moz-selection,
-    code[class*="language-"] ::-moz-selection {
+    pre[class*='language-']::-moz-selection,
+    pre[class*='language-'] ::-moz-selection,
+    code[class*='language-']::-moz-selection,
+    code[class*='language-'] ::-moz-selection {
         text-shadow: none;
         background: #b3d4fc;
     }
 
-    pre[class*="language-"]::selection,
-    pre[class*="language-"] ::selection,
-    code[class*="language-"]::selection,
-    code[class*="language-"] ::selection {
+    pre[class*='language-']::selection,
+    pre[class*='language-'] ::selection,
+    code[class*='language-']::selection,
+    code[class*='language-'] ::selection {
         text-shadow: none;
         background: #b3d4fc;
     }
 
     @media print {
 
-        code[class*="language-"],
-        pre[class*="language-"] {
+        code[class*='language-'],
+        pre[class*='language-'] {
             text-shadow: none;
         }
     }
 
     /* Code blocks */
-    pre[class*="language-"] {
+    pre[class*='language-'] {
         // padding: 1em;
-        margin: .5em 0;
+        margin: 0.5em 0;
         overflow: auto;
     }
 
-    :not(pre)>code[class*="language-"],
-    pre[class*="language-"] {
+    :not(pre)>code[class*='language-'],
+    pre[class*='language-'] {
         background: #f5f2f0;
     }
 
     /* Inline code */
-    :not(pre)>code[class*="language-"] {
-        padding: .1em;
-        border-radius: .3em;
+    :not(pre)>code[class*='language-'] {
+        padding: 0.1em;
+        border-radius: 0.3em;
         white-space: normal;
     }
 
@@ -1922,7 +1941,7 @@ export default {
     }
 
     .token.namespace {
-        opacity: .7;
+        opacity: 0.7;
     }
 
     .token.property,
@@ -1951,7 +1970,7 @@ export default {
     .style .token.string {
         color: #9a6e3a;
         /* This background color was intended by the author of this theme. */
-        background: hsla(0, 0%, 100%, .5);
+        background: hsla(0, 0%, 100%, 0.5);
     }
 
     .token.atrule,
@@ -1962,7 +1981,7 @@ export default {
 
     .token.function,
     .token.class-name {
-        color: #DD4A68;
+        color: #dd4a68;
     }
 
     .token.regex,
@@ -1988,8 +2007,8 @@ export default {
 /* Dark theme */
 :root.dark-theme .article-content {
 
-    code[class*="language-"],
-    pre[class*="language-"] {
+    code[class*='language-'],
+    pre[class*='language-'] {
         color: #ccc;
         background: none;
         text-shadow: none;
@@ -2010,25 +2029,24 @@ export default {
         -moz-hyphens: none;
         -ms-hyphens: none;
         hyphens: none;
-
     }
 
     /* Code blocks */
-    pre[class*="language-"] {
+    pre[class*='language-'] {
         // padding: 1em;
-        margin: .5em 0;
+        margin: 0.5em 0;
         overflow: auto;
     }
 
-    :not(pre)>code[class*="language-"],
-    pre[class*="language-"] {
+    :not(pre)>code[class*='language-'],
+    pre[class*='language-'] {
         background: #1a1a1a;
     }
 
     /* Inline code */
-    :not(pre)>code[class*="language-"] {
-        padding: .1em;
-        border-radius: .3em;
+    :not(pre)>code[class*='language-'] {
+        padding: 0.1em;
+        border-radius: 0.3em;
         white-space: normal;
     }
 

@@ -58,3 +58,12 @@ export function getPatternType(patternTypeId) {
     }
     return typeMap[patternTypeId] || 'original'
 }
+
+/**
+ * 去除路径后缀
+ * @param {string} path - 路径字符串
+ * @returns {string} 去除后缀后的路径字符串
+ */
+export function removePathSuffix(path) {
+    return path.replace(/\.[^/.]+$/, '')
+}
