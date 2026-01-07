@@ -603,18 +603,7 @@ export default {
     color: var(--text-color);
     margin-bottom: 1.25rem;
     padding-bottom: 0.8rem;
-    position: relative;
-
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 40px;
-        height: 3px;
-        background: linear-gradient(90deg, #3B82F6 0%, #8B5CF6 100%);
-        border-radius: 2px;
-    }
+    border-bottom: 2px solid var(--text-secondary);
 }
 
 .sidebar-title .sidebar-icon {
