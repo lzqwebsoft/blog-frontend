@@ -10,7 +10,7 @@ import {
     isTokenExpired,
     isRefreshTokenExpired,
     saveAuthData,
-    clearAuthData
+    clearAuthData,
 } from './auth'
 import router from '@/router'
 
@@ -19,8 +19,8 @@ const request = axios.create({
     baseURL: '/api',
     timeout: 15000,
     headers: {
-        'Content-Type': 'application/json'
-    }
+        'Content-Type': 'application/json',
+    },
 })
 
 // 是否正在刷新 token
@@ -52,17 +52,18 @@ async function refreshToken() {
         throw new Error('Refresh token expired')
     }
 
-    const response = await axios.post('/api/token/refresh', {
-        refresh_token
-    }, {
+    const formData = new URLSearchParams()
+    formData.append('refresh_token', refresh_token)
+
+    const response = await request.post('/token/refresh', formData, {
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
     })
 
-    if (response.data.code === 0) {
-        saveAuthData(response.data.data)
-        return response.data.data.token
+    if (response.code === 0) {
+        saveAuthData(response.data)
+        return response.data.token
     }
     throw new Error('Refresh token failed')
 }
@@ -120,7 +121,7 @@ request.interceptors.request.use(
     },
     (error) => {
         return Promise.reject(error)
-    }
+    },
 )
 
 // 响应拦截器
@@ -151,7 +152,7 @@ request.interceptors.response.use(
             }
         }
         return Promise.reject(error)
-    }
+    },
 )
 
 export default request

@@ -14,7 +14,7 @@
             <div class="header-search">
                 <font-awesome-icon icon="magnifying-glass" class="search-icon" />
                 <input type="text" class="search-input" placeholder="搜索博客内容..." v-model="searchText"
-                    @keyup.enter="handleSearch">
+                    @keyup.enter="handleSearch" />
             </div>
 
             <div class="nav-menu">
@@ -35,7 +35,7 @@
                 <!-- 已登录：显示下拉菜单 -->
                 <div v-if="isAuthenticated" class="dropdown" ref="dropdownRef">
                     <button class="nav-item" @click="showMenu = !showMenu">
-                        <img src="@/assets/images/avatar.jpg" alt="头像" class="avatar">
+                        <img src="@/assets/images/avatar.jpg" alt="头像" class="avatar" />
                         <font-awesome-icon icon="angle-down" class="menu" />
                     </button>
                     <div class="dropdown-content" v-show="showMenu">
@@ -68,9 +68,7 @@
                 <font-awesome-icon icon="magnifying-glass" class="dialog-search-icon" />
                 <input id="search-input" type="text" v-model="searchText" class="dialog-search-input"
                     placeholder="搜索博客内容..." @keyup.enter="handleSearch" ref="searchInput" />
-                <button class="dialog-search-button" @click="handleSearch">
-                    搜索
-                </button>
+                <button class="dialog-search-button" @click="handleSearch">搜索</button>
             </div>
         </div>
     </div>
@@ -80,6 +78,7 @@
 import { signOut } from '@/api/user'
 import { isAuthenticated, clearAuthData } from '@/utils/auth'
 import eventBus from '@/utils/eventBus'
+import { initializeTheme as detectTheme, applyTheme } from '@/utils/theme'
 
 export default {
     name: 'AppHeader',
@@ -111,17 +110,17 @@ export default {
     unmounted() {
         window.removeEventListener('scroll', this.handleScroll)
         document.removeEventListener('click', this.handleClickOutside)
-        document.body.style.overflow = '';
+        document.body.style.overflow = ''
     },
     watch: {
         showSearchDialog(newVal) {
             if (newVal) {
-                document.body.style.overflow = 'hidden';
+                document.body.style.overflow = 'hidden'
                 this.$nextTick(() => {
-                    this.$refs.searchInput?.focus();
-                });
+                    this.$refs.searchInput?.focus()
+                })
             } else {
-                document.body.style.overflow = '';
+                document.body.style.overflow = ''
             }
         },
         $route(to) {
@@ -129,11 +128,11 @@ export default {
             this.checkAuthStatus()
             // 同步搜索关键词
             if (to.query.q !== undefined) {
-                this.searchText = to.query.q || '';
+                this.searchText = to.query.q || ''
             } else {
-                this.searchText = '';
+                this.searchText = ''
             }
-        }
+        },
     },
     methods: {
         handleScroll() {
@@ -162,22 +161,12 @@ export default {
         },
         toggleTheme() {
             this.isDark = !this.isDark
-            this.applyTheme()
-            localStorage.setItem('theme', this.isDark ? 'dark' : 'light')
+            applyTheme(this.isDark)
         },
         initializeTheme() {
-            const savedTheme = localStorage.getItem('theme')
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-
-            this.isDark = savedTheme ? savedTheme === 'dark' : prefersDark
-            this.applyTheme()
-        },
-        applyTheme() {
-            if (this.isDark) {
-                document.documentElement.classList.add('dark-theme')
-            } else {
-                document.documentElement.classList.remove('dark-theme')
-            }
+            // 使用智能主题检测工具，跨平台适配
+            this.isDark = detectTheme()
+            applyTheme(this.isDark)
         },
         handleClickOutside(event) {
             const dropdown = this.$refs.dropdownRef
@@ -187,8 +176,8 @@ export default {
         },
         handleSearch() {
             if (this.searchText.trim()) {
-                this.$router.push({ path: '/', query: { q: this.searchText.trim() } });
-                this.showSearchDialog = false;
+                this.$router.push({ path: '/', query: { q: this.searchText.trim() } })
+                this.showSearchDialog = false
             }
         },
         checkAuthStatus() {

@@ -1,5 +1,5 @@
 <template>
-    <div class="rich-text-editor" :class="{ 'fullscreen': isFullscreen }">
+    <div class="rich-text-editor" :class="{ fullscreen: isFullscreen }">
         <!-- 工具栏 -->
         <div class="editor-toolbar">
             <template v-for="(item, index) in toolbarList" :key="index">
@@ -22,7 +22,7 @@
         <!-- 编辑器内容区 -->
         <div class="editor-container">
             <!-- 编辑区 -->
-            <div v-show="viewMode === 'edit'" class="editor-pane">
+            <div v-show="viewMode === 'edit'" class="editor-pane" @click="handleEditorPaneClick">
                 <div ref="editor" class="editor-content" contenteditable="true" @input="handleInput"
                     @paste="handlePaste" @keydown="handleKeyDown"
                     :style="{ height: isFullscreen ? 'calc(100vh - 60px)' : height + 'px' }"></div>
@@ -58,21 +58,21 @@ export default {
     name: 'RichTextEditor',
     components: {
         ImageInsertDialog,
-        EmojiPicker
+        EmojiPicker,
     },
     props: {
         modelValue: {
             type: String,
-            default: ''
+            default: '',
         },
         height: {
             type: Number,
-            default: 400
+            default: 400,
         },
         toolbars: {
             type: Array,
-            default: () => []
-        }
+            default: () => [],
+        },
     },
     emits: ['update:modelValue'],
     data() {
@@ -81,60 +81,206 @@ export default {
             viewMode: 'edit', // 'edit', 'code', 'preview'
             isFullscreen: false,
             showImageDialog: false,
-            showEmojiPicker: false
+            showEmojiPicker: false,
         }
     },
     computed: {
         toolbarList() {
-            const list = this.toolbars && this.toolbars.length > 0 ? this.toolbars : [
-                'bold', 'italic', 'underline', 'strikeThrough', '|',
-                'h1', 'h2', 'h3', '|',
-                'ul', 'ol', 'quote', '|',
-                'link', 'unlink', 'code', 'image', 'emoji', '|',
-                'mode-group', 'fullscreen'
-            ]
+            const list =
+                this.toolbars && this.toolbars.length > 0
+                    ? this.toolbars
+                    : [
+                        'bold',
+                        'italic',
+                        'underline',
+                        'strikeThrough',
+                        '|',
+                        'h1',
+                        'h2',
+                        'h3',
+                        '|',
+                        'ul',
+                        'ol',
+                        'quote',
+                        '|',
+                        'link',
+                        'unlink',
+                        'code',
+                        'image',
+                        'emoji',
+                        '|',
+                        'mode-group',
+                        'fullscreen',
+                    ]
 
-            return list.map(item => {
-                if (item === '|' || item === 'separator') {
-                    return { type: 'separator' }
-                }
-
-                switch (item) {
-                    case 'bold': return { type: 'button', icon: 'bold', title: '粗体 (Ctrl+B)', action: 'execCommand', args: ['bold'], disabled: this.viewMode !== 'edit' }
-                    case 'italic': return { type: 'button', icon: 'italic', title: '斜体 (Ctrl+I)', action: 'execCommand', args: ['italic'], disabled: this.viewMode !== 'edit' }
-                    case 'underline': return { type: 'button', icon: 'underline', title: '下划线', action: 'execCommand', args: ['underline'], disabled: this.viewMode !== 'edit' }
-                    case 'strikeThrough': return { type: 'button', icon: 'strikethrough', title: '删除线', action: 'execCommand', args: ['strikeThrough'], disabled: this.viewMode !== 'edit' }
-
-                    case 'h1': return { type: 'button', text: 'H1', title: '标题 1', action: 'execCommand', args: ['formatBlock', '<h1>'], disabled: this.viewMode !== 'edit' }
-                    case 'h2': return { type: 'button', text: 'H2', title: '标题 2', action: 'execCommand', args: ['formatBlock', '<h2>'], disabled: this.viewMode !== 'edit' }
-                    case 'h3': return { type: 'button', text: 'H3', title: '标题 3', action: 'execCommand', args: ['formatBlock', '<h3>'], disabled: this.viewMode !== 'edit' }
-
-                    case 'ul': return { type: 'button', icon: 'list-ul', title: '无序列表', action: 'execCommand', args: ['insertUnorderedList'], disabled: this.viewMode !== 'edit' }
-                    case 'ol': return { type: 'button', icon: 'list-ol', title: '有序列表', action: 'execCommand', args: ['insertOrderedList'], disabled: this.viewMode !== 'edit' }
-                    case 'quote': return { type: 'button', icon: 'quote-left', title: '引用', action: 'execCommand', args: ['formatBlock', '<blockquote>'], disabled: this.viewMode !== 'edit' }
-
-                    case 'link': return { type: 'button', icon: 'link', title: '插入链接', action: 'insertLink', disabled: this.viewMode !== 'edit' }
-                    case 'unlink': return { type: 'button', icon: 'unlink', title: '移除链接', action: 'execCommand', args: ['unlink'], disabled: this.viewMode !== 'edit' }
-                    case 'code': return { type: 'button', icon: 'code', title: '代码块', action: 'insertCodeBlock', disabled: this.viewMode !== 'edit' }
-                    case 'image': return { type: 'button', icon: 'image', title: '插入图片', action: 'insertImage', disabled: this.viewMode !== 'edit' }
-                    case 'emoji': return { type: 'button', icon: 'smile', title: '插入表情', action: 'openEmojiPicker', disabled: this.viewMode !== 'edit' }
-
-                    case 'mode-group': return {
-                        type: 'mode-group',
-                        class: 'mode-group',
-                        items: [
-                            { icon: 'edit', title: '可视化编辑', value: 'edit' },
-                            { icon: 'file-code', title: '源代码', value: 'code' },
-                            { icon: 'eye', title: '预览', value: 'preview' }
-                        ]
+            return list
+                .map((item) => {
+                    if (item === '|' || item === 'separator') {
+                        return { type: 'separator' }
                     }
 
-                    case 'fullscreen': return { type: 'button', icon: this.isFullscreen ? 'compress' : 'expand', title: this.isFullscreen ? '退出全屏' : '全屏', action: 'toggleFullscreen', active: this.isFullscreen }
+                    switch (item) {
+                        case 'bold':
+                            return {
+                                type: 'button',
+                                icon: 'bold',
+                                title: '粗体 (Ctrl+B)',
+                                action: 'execCommand',
+                                args: ['bold'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'italic':
+                            return {
+                                type: 'button',
+                                icon: 'italic',
+                                title: '斜体 (Ctrl+I)',
+                                action: 'execCommand',
+                                args: ['italic'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'underline':
+                            return {
+                                type: 'button',
+                                icon: 'underline',
+                                title: '下划线',
+                                action: 'execCommand',
+                                args: ['underline'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'strikeThrough':
+                            return {
+                                type: 'button',
+                                icon: 'strikethrough',
+                                title: '删除线',
+                                action: 'execCommand',
+                                args: ['strikeThrough'],
+                                disabled: this.viewMode !== 'edit',
+                            }
 
-                    default: return null
-                }
-            }).filter(Boolean)
-        }
+                        case 'h1':
+                            return {
+                                type: 'button',
+                                text: 'H1',
+                                title: '标题 1',
+                                action: 'execCommand',
+                                args: ['formatBlock', '<h1>'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'h2':
+                            return {
+                                type: 'button',
+                                text: 'H2',
+                                title: '标题 2',
+                                action: 'execCommand',
+                                args: ['formatBlock', '<h2>'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'h3':
+                            return {
+                                type: 'button',
+                                text: 'H3',
+                                title: '标题 3',
+                                action: 'execCommand',
+                                args: ['formatBlock', '<h3>'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+
+                        case 'ul':
+                            return {
+                                type: 'button',
+                                icon: 'list-ul',
+                                title: '无序列表',
+                                action: 'execCommand',
+                                args: ['insertUnorderedList'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'ol':
+                            return {
+                                type: 'button',
+                                icon: 'list-ol',
+                                title: '有序列表',
+                                action: 'execCommand',
+                                args: ['insertOrderedList'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'quote':
+                            return {
+                                type: 'button',
+                                icon: 'quote-left',
+                                title: '引用',
+                                action: 'execCommand',
+                                args: ['formatBlock', '<blockquote>'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+
+                        case 'link':
+                            return {
+                                type: 'button',
+                                icon: 'link',
+                                title: '插入链接',
+                                action: 'insertLink',
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'unlink':
+                            return {
+                                type: 'button',
+                                icon: 'unlink',
+                                title: '移除链接',
+                                action: 'execCommand',
+                                args: ['unlink'],
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'code':
+                            return {
+                                type: 'button',
+                                icon: 'code',
+                                title: '代码块',
+                                action: 'insertCodeBlock',
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'image':
+                            return {
+                                type: 'button',
+                                icon: 'image',
+                                title: '插入图片',
+                                action: 'insertImage',
+                                disabled: this.viewMode !== 'edit',
+                            }
+                        case 'emoji':
+                            return {
+                                type: 'button',
+                                icon: 'smile',
+                                title: '插入表情',
+                                action: 'openEmojiPicker',
+                                disabled: this.viewMode !== 'edit',
+                            }
+
+                        case 'mode-group':
+                            return {
+                                type: 'mode-group',
+                                class: 'mode-group',
+                                items: [
+                                    { icon: 'edit', title: '可视化编辑', value: 'edit' },
+                                    { icon: 'file-code', title: '源代码', value: 'code' },
+                                    { icon: 'eye', title: '预览', value: 'preview' },
+                                ],
+                            }
+
+                        case 'fullscreen':
+                            return {
+                                type: 'button',
+                                icon: this.isFullscreen ? 'compress' : 'expand',
+                                title: this.isFullscreen ? '退出全屏' : '全屏',
+                                action: 'toggleFullscreen',
+                                active: this.isFullscreen,
+                            }
+
+                        default:
+                            return null
+                    }
+                })
+                .filter(Boolean)
+        },
     },
     watch: {
         modelValue: {
@@ -144,8 +290,8 @@ export default {
                     this.internalValue = newVal
                     this.updateEditorContent()
                 }
-            }
-        }
+            },
+        },
     },
     mounted() {
         this.updateEditorContent()
@@ -318,7 +464,12 @@ export default {
 
             // 找到块级父元素
             while (node && node !== this.$refs.editor) {
-                if (node.nodeType === 1 && ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(node.tagName)) {
+                if (
+                    node.nodeType === 1 &&
+                    ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(
+                        node.tagName,
+                    )
+                ) {
                     const newElement = document.createElement(tagName)
                     newElement.innerHTML = node.innerHTML
                     node.parentNode.replaceChild(newElement, node)
@@ -456,7 +607,8 @@ export default {
         },
 
         insertCodeBlock() {
-            const codeBlock = '<pre><code class="language-javascript">// 在这里输入代码\n</code></pre><p><br></p>'
+            const codeBlock =
+                '<pre><code class="language-javascript">// 在这里输入代码\n</code></pre><p><br></p>'
             this.insertHTML(codeBlock)
         },
 
@@ -518,8 +670,15 @@ export default {
 
         handleEmojiSelected(emoji) {
             this.insertText(emoji)
-        }
-    }
+        },
+
+        handleEditorPaneClick(event) {
+            // 确保点击editor-pane时，焦点聚焦到editor-content
+            if (this.$refs.editor && event.target === this.$refs.editor.parentNode) {
+                this.$refs.editor.focus()
+            }
+        },
+    },
 }
 </script>
 

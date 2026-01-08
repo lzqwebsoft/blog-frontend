@@ -15,7 +15,9 @@
                         <div class="message-content">
                             <template v-if="errorMessageList.length">
                                 <ul class="message-list">
-                                    <li v-for="(msg, idx) in errorMessageList" :key="idx">{{ msg }}</li>
+                                    <li v-for="(msg, idx) in errorMessageList" :key="idx">
+                                        {{ msg }}
+                                    </li>
                                 </ul>
                             </template>
                             <template v-else>
@@ -114,8 +116,11 @@
                         </div>
 
                         <!-- 评论设置 -->
-                        <div class="setting-item"
-                            style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
+                        <div class="setting-item" style="
+                                margin-top: 1.5rem;
+                                padding-top: 1.25rem;
+                                border-top: 1px dashed var(--border-color);
+                            ">
                             <div class="toggle-item">
                                 <span class="toggle-label">允许评论</span>
                                 <label class="toggle-switch">
@@ -137,13 +142,14 @@ import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import EditHeader from '@/components/EditHeader.vue'
 import { getArticleTypes, saveArticle, getArticleDetail } from '@/api/article'
 import { formatDateTime } from '@/utils/tools'
+import { initializeTheme as detectTheme, applyTheme } from '@/utils/theme'
 
 export default {
     name: 'EditArticle',
     components: {
         RichTextEditor,
         MarkdownEditor,
-        EditHeader
+        EditHeader,
     },
     data() {
         return {
@@ -172,19 +178,19 @@ export default {
                 allowComment: true,
                 isTop: false,
                 readedNum: 0,
-                contentType: 1
+                contentType: 1,
             },
             patterns: [
                 { id: 1, name: '原创' },
                 { id: 2, name: '转载' },
-                { id: 3, name: '翻译' }
+                { id: 3, name: '翻译' },
             ],
             articleTypes: [],
             codeThemes: [
                 { id: 'default', name: '默认主题' },
                 { id: 'dark', name: '暗黑主题' },
-                { id: 'github', name: 'GitHub主题' }
-            ]
+                { id: 'github', name: 'GitHub主题' },
+            ],
         }
     },
     computed: {
@@ -192,18 +198,22 @@ export default {
             if (!this.errorMessage) return []
             const parts = String(this.errorMessage)
                 .split(':')
-                .map(s => s.trim())
-                .filter(s => s)
+                .map((s) => s.trim())
+                .filter((s) => s)
             return parts.length > 1 ? parts : []
         },
         statusLabel() {
             switch (this.autoSaveStatus) {
-                case 'saving': return '保存中...'
-                case 'success': return '已自动保存'
-                case 'error': return '保存失败'
-                default: return ''
+                case 'saving':
+                    return '保存中...'
+                case 'success':
+                    return '已自动保存'
+                case 'error':
+                    return '保存失败'
+                default:
+                    return ''
             }
-        }
+        },
     },
     watch: {
         form: {
@@ -212,8 +222,8 @@ export default {
                     this.autoSaveStatus = null
                 }
             },
-            deep: true
-        }
+            deep: true,
+        },
     },
     mounted() {
         this.initializeTheme()
@@ -283,7 +293,9 @@ export default {
         async loadArticleTypes() {
             try {
                 const res = await getArticleTypes()
-                this.articleTypes = (res.data || []).filter((item) => !item.disable).map((item) => ({ id: String(item.id), name: item.name }))
+                this.articleTypes = (res.data || [])
+                    .filter((item) => !item.disable)
+                    .map((item) => ({ id: String(item.id), name: item.name }))
             } catch (error) {
                 console.error('加载文章分类失败:', error)
                 this.errorMessage = '加载文章分类失败'
@@ -313,17 +325,17 @@ export default {
                 if (!art) return
                 this.form.id = String(art.id || articleId)
                 this.form.title = art.title || ''
-                const ct = (art.content_type ?? art.contentType ?? (art.contentMD ? 1 : 0))
+                const ct = art.content_type ?? art.contentType ?? (art.contentMD ? 1 : 0)
                 this.form.contentType = Number(ct)
                 this.useMarkdown = this.form.contentType === 1
                 this.form.contentMD = art.content_md ?? art.contentMD ?? ''
                 this.form.content = art.content ?? ''
                 this.form.patternTypeId = Number(art.pattern_type_id ?? art.patternTypeId ?? 1)
-                this.form.typeId = String((art.type && art.type.id) ? art.type.id : '0')
+                this.form.typeId = String(art.type && art.type.id ? art.type.id : '0')
 
                 // 动态设置页面标题
                 if (this.form.title) {
-                    document.title = `${this.form.title} - 飘痕の博客`;
+                    document.title = `${this.form.title} - 飘痕の博客`
                 }
             } catch (error) {
                 console.error('加载文章失败:', error)
@@ -340,9 +352,8 @@ export default {
 
         async autoSaveDraft() {
             const hasTitle = this.form.title.trim()
-            const hasContent = this.form.contentType === 1
-                ? this.form.contentMD.trim()
-                : this.form.content.trim()
+            const hasContent =
+                this.form.contentType === 1 ? this.form.contentMD.trim() : this.form.content.trim()
             if (!hasTitle && !hasContent) return
 
             this.autoSaveStatus = 'saving'
@@ -474,33 +485,30 @@ export default {
         // Theme methods
         toggleTheme() {
             this.isDark = !this.isDark
-            this.applyTheme()
-            localStorage.setItem('theme', this.isDark ? 'dark' : 'light')
+            applyTheme(this.isDark)
         },
         initializeTheme() {
-            const savedTheme = localStorage.getItem('theme')
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-            this.isDark = savedTheme ? savedTheme === 'dark' : prefersDark
-            this.applyTheme()
-        },
-        applyTheme() {
-            if (this.isDark) {
-                document.documentElement.classList.add('dark-theme')
-            } else {
-                document.documentElement.classList.remove('dark-theme')
-            }
+            // 使用智能主题检测工具，跨平台适配
+            this.isDark = detectTheme()
+            applyTheme(this.isDark)
         },
         handlePreview() {
             const targetId = this.form.id
+
+            // Check if article is saved (has an ID)
+            if (!targetId || targetId.trim() === '') {
+                this.errorMessage = '文件未保存，暂时不支持预览'
+                return
+            }
+
+            // If saved, proceed with preview
             setTimeout(() => {
                 if (targetId) {
                     this.$router.push(`/show/${targetId}`)
-                } else {
-                    this.$router.push('/')
                 }
             }, 1000)
-        }
-    }
+        },
+    },
 }
 </script>
 
@@ -736,7 +744,6 @@ export default {
     background: var(--card-bg) !important;
 }
 
-
 /* 侧边栏卡片 */
 .settings-card {
     background: var(--card-bg);
@@ -864,19 +871,19 @@ export default {
     bottom: 0;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    transition: .4s;
+    transition: 0.4s;
     border-radius: 24px;
 }
 
 .toggle-slider:before {
     position: absolute;
-    content: "";
+    content: '';
     height: 18px;
     width: 18px;
     left: 2px;
     bottom: 2px;
     background-color: white;
-    transition: .4s;
+    transition: 0.4s;
     border-radius: 50%;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
@@ -1034,6 +1041,7 @@ input:checked+.toggle-slider:before {
 @media (max-width: 1024px) {
     .editor-layout {
         flex-direction: column;
+        gap: 1rem;
     }
 
     .editor-sidebar {
