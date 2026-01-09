@@ -491,7 +491,7 @@ export default {
                         const desc =
                             this.article.summary ||
                             this.article.title ||
-                            "zqluo's technical blog sharing programming knowledge and experiences."
+                            "ZQLUO 的技术博客，自由自在的学习编程艺术；分享编程知识和经验。在这个信息爆炸的时代，我希望构建一个安静的角落。这里没有算法推荐，没有繁杂的广告，只有纯粹的文字与代码。"
                         descriptionMeta.setAttribute('content', desc)
                     }
                 })
