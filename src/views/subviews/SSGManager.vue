@@ -273,7 +273,36 @@ export default {
 
             try {
                 const res = await validateSSG(type, id)
-                this.preview.html = typeof res === 'string' ? res : (res.data || '')
+                let html = typeof res === 'string' ? res : (res.data || '')
+
+                // 探测当前是否处于黑暗模式
+                const isDark = document.documentElement.classList.contains('dark-theme')
+                if (isDark) {
+                    // 为 iframe 内容注入黑暗模式样式
+                    const darkStyle = `
+                    <style>
+                        :root { color-scheme: dark; }
+                        body {
+                            background-color: #171717 !important;
+                            color: #FFFFFF !important;
+                            font-family: -apple-system, "Microsoft Yahei", "微软雅黑", sans-serif;
+                        }
+                        a { color: #66b3ff !important; }
+                        pre, code { background: #262626 !important; border: 1px solid #404040; border-radius: 4px; padding: 2px 4px; }
+                        blockquote { border-left: 4px solid #404040 !important; color: #adb5bd !important; padding-left: 1rem; margin: 1rem 0; }
+                        table { border-collapse: collapse; width: 100%; }
+                        th, td { border: 1px solid #404040 !important; padding: 8px; }
+                        img { max-width: 100%; height: auto; border-radius: 8px; }
+                    </style>
+                    `
+                    if (html.includes('</head>')) {
+                        html = html.replace('</head>', darkStyle + '</head>')
+                    } else {
+                        html = darkStyle + html
+                    }
+                }
+
+                this.preview.html = html
             } catch (err) {
                 console.error('预览加载失败:', err)
                 this.showToast('预览加载失败', 'error')
@@ -687,13 +716,14 @@ export default {
 
 .preview-content {
     flex: 1;
-    background: #f8fafc;
+    background: var(--bg-color);
 }
 
 .preview-iframe {
     width: 100%;
     height: 100%;
     border: none;
+    background: transparent;
 }
 
 .preview-loading {
@@ -756,7 +786,27 @@ export default {
 }
 
 :root.dark-theme .preview-content {
-    background: #1e293b;
+    background: var(--bg-color);
+}
+
+:root.dark-theme .preview-iframe {
+    color-scheme: dark;
+}
+
+:root.dark-theme .action-btn.delete {
+    background: #451a1a;
+    border-color: #7f1d1d;
+    color: #f87171;
+}
+
+:root.dark-theme .action-btn.delete:hover:not(:disabled) {
+    background: #7f1d1d;
+}
+
+:root.dark-theme .btn-icon.delete:hover,
+:root.dark-theme .close-btn:hover {
+    background: #451a1a;
+    color: #f87171;
 }
 
 @media (max-width: 768px) {

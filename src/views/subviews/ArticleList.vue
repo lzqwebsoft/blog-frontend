@@ -10,13 +10,8 @@
                     </option>
                 </select>
                 <div class="search-input-wrapper">
-                    <input
-                        v-model="searchForm.title"
-                        type="text"
-                        placeholder="搜索标题..."
-                        class="form-input"
-                        @input="handleSearch"
-                    />
+                    <input v-model="searchForm.title" type="text" placeholder="搜索标题..." class="form-input"
+                        @input="handleSearch" />
                     <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
                 </div>
             </div>
@@ -37,12 +32,8 @@
                     <tr v-for="article in articles" :key="article.id" class="hover-row">
                         <td class="pl-4 max-w-title">
                             <span v-if="article.is_top" class="badge-top">置顶</span>
-                            <a
-                                :href="`/show/${article.id}.html`"
-                                target="_blank"
-                                class="article-link"
-                                >{{ article.title }}</a
-                            >
+                            <a :href="`/show/${article.id}.html`" target="_blank" class="article-link">{{ article.title
+                                }}</a>
                         </td>
                         <td class="text-gray">
                             <div class="data-col">
@@ -52,36 +43,21 @@
                         </td>
                         <td class="text-gray">{{ getTypeName(article.type_id) }}</td>
                         <td>
-                            <button
-                                class="perm-btn"
-                                :class="article.allow_comment ? 'perm-allow' : 'perm-deny'"
+                            <button class="perm-btn" :class="article.allow_comment ? 'perm-allow' : 'perm-deny'"
                                 @click="handleAllowCommentChange(article)"
-                                :title="article.allow_comment ? '点击禁止评论' : '点击允许评论'"
-                            >
+                                :title="article.allow_comment ? '点击禁止评论' : '点击允许评论'">
                                 {{ article.allow_comment ? '允许评论' : '禁止评论' }}
                             </button>
                         </td>
                         <td class="text-right pr-4 action-col">
-                            <button
-                                class="action-btn edit"
-                                title="编辑"
-                                @click="goEdit(article.id)"
-                            >
+                            <button class="action-btn edit" title="编辑" @click="goEdit(article.id)">
                                 <font-awesome-icon :icon="['fas', 'pen-to-square']" />
                             </button>
-                            <button
-                                class="action-btn top"
-                                :class="{ active: article.is_top }"
-                                :title="article.is_top ? '取消置顶' : '置顶'"
-                                @click="handleToggleTop(article)"
-                            >
+                            <button class="action-btn top" :class="{ active: article.is_top }"
+                                :title="article.is_top ? '取消置顶' : '置顶'" @click="handleToggleTop(article)">
                                 <font-awesome-icon :icon="['fas', 'arrow-up']" />
                             </button>
-                            <button
-                                class="action-btn delete"
-                                title="删除"
-                                @click="handleDeleteArticle(article)"
-                            >
+                            <button class="action-btn delete" title="删除" @click="handleDeleteArticle(article)">
                                 <font-awesome-icon :icon="['fas', 'trash']" />
                             </button>
                         </td>
@@ -91,12 +67,8 @@
         </div>
 
         <!-- Pagination -->
-        <Pagination
-            :current-page="pagination.currentPage"
-            :total-pages="totalPages"
-            :total-items="pagination.total"
-            @page-change="handlePageChange"
-        />
+        <AppPagination :current-page="pagination.currentPage" :total-pages="totalPages" :total-items="pagination.total"
+            @page-change="handlePageChange" />
     </div>
 </template>
 
@@ -108,12 +80,12 @@ import {
     toggleAllowComment,
     toggleTop,
 } from '@/api/article'
-import Pagination from '@/components/Pagination.vue'
+import AppPagination from '@/components/AppPagination.vue'
 
 export default {
     name: 'ArticleList',
     components: {
-        Pagination,
+        AppPagination,
     },
     data() {
         return {

@@ -5,11 +5,7 @@
         <div class="image-grid" v-if="images.length > 0">
             <div class="image-card" v-for="image in images" :key="image.id">
                 <div class="img-wrapper" @click="openLightbox(getImageUrl(image.id))">
-                    <img
-                        :src="getImageUrl(image.id)"
-                        :alt="image.descriptions || 'Image'"
-                        class="grid-img"
-                    />
+                    <img :src="getImageUrl(image.id)" :alt="image.descriptions || 'Image'" class="grid-img" />
 
                     <div class="overlay">
                         <p class="overlay-text">{{ image.descriptions || image.filename }}</p>
@@ -21,14 +17,8 @@
             </div>
         </div>
 
-        <Pagination
-            v-if="images.length > 0"
-            :current-page="currentPage"
-            :total-pages="totalPageCount"
-            :total-items="totalCount"
-            :disabled="loading"
-            @page-change="handlePageChange"
-        />
+        <AppPagination v-if="images.length > 0" :current-page="currentPage" :total-pages="totalPageCount"
+            :total-items="totalCount" :disabled="loading" @page-change="handlePageChange" />
 
         <div v-else-if="images.length === 0 && !loading" class="empty-state">
             <font-awesome-icon icon="image" class="empty-icon" />
@@ -43,13 +33,13 @@
 <script>
 import { getImageList, deleteImage } from '@/api/image'
 import ImagePreview from '@/components/ImagePreview.vue'
-import Pagination from '@/components/Pagination.vue'
+import AppPagination from '@/components/AppPagination.vue'
 
 export default {
     name: 'ImageList',
     components: {
         ImagePreview,
-        Pagination,
+        AppPagination,
     },
     data() {
         return {

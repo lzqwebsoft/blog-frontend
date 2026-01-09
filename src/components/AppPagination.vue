@@ -7,33 +7,20 @@
         </div>
 
         <div class="pagination-controls">
-            <button
-                class="page-nav-btn"
-                :disabled="currentPage === 1 || disabled"
-                @click="handlePageChange(currentPage - 1)"
-                title="上一页"
-            >
+            <button class="page-nav-btn" :disabled="currentPage === 1 || disabled"
+                @click="handlePageChange(currentPage - 1)" title="上一页">
                 <font-awesome-icon :icon="['fas', 'chevron-left']" />
             </button>
 
             <div class="page-numbers" v-if="showPageNumbers">
-                <button
-                    v-for="page in visiblePages"
-                    :key="page"
-                    class="page-num-btn"
-                    :class="{ active: currentPage === page }"
-                    @click="handlePageChange(page)"
-                >
+                <button v-for="page in visiblePages" :key="page" class="page-num-btn"
+                    :class="{ active: currentPage === page }" @click="handlePageChange(page)">
                     {{ page }}
                 </button>
             </div>
 
-            <button
-                class="page-nav-btn"
-                :disabled="currentPage === totalPages || disabled"
-                @click="handlePageChange(currentPage + 1)"
-                title="下一页"
-            >
+            <button class="page-nav-btn" :disabled="currentPage === totalPages || disabled"
+                @click="handlePageChange(currentPage + 1)" title="下一页">
                 <font-awesome-icon :icon="['fas', 'chevron-right']" />
             </button>
         </div>
@@ -42,7 +29,7 @@
 
 <script>
 export default {
-    name: 'Pagination',
+    name: 'AppPagination',
     props: {
         currentPage: {
             type: Number,

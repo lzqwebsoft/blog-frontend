@@ -15,9 +15,7 @@
                 <tbody>
                     <tr v-for="draft in drafts" :key="draft.id" class="hover-row">
                         <td class="pl-4 font-medium">
-                            <span class="icon-draft"
-                                ><font-awesome-icon :icon="['fas', 'pen-to-square']"
-                            /></span>
+                            <span class="icon-draft"><font-awesome-icon :icon="['fas', 'pen-to-square']" /></span>
                             {{ draft.title || '无标题草稿' }}
                         </td>
                         <td class="text-gray">
@@ -31,11 +29,7 @@
                             <button class="btn-black-small" @click="goEdit(draft.id)">
                                 继续编辑
                             </button>
-                            <button
-                                class="action-btn delete"
-                                title="删除"
-                                @click="handleDeleteDraft(draft)"
-                            >
+                            <button class="action-btn delete" title="删除" @click="handleDeleteDraft(draft)">
                                 <font-awesome-icon :icon="['fas', 'trash']" />
                             </button>
                         </td>
@@ -44,25 +38,20 @@
             </table>
         </div>
 
-        <Pagination
-            v-if="drafts.length > 0"
-            :current-page="pagination.currentPage"
-            :total-pages="totalPages"
-            :total-items="pagination.total"
-            @page-change="handlePageChange"
-        />
+        <AppPagination v-if="drafts.length > 0" :current-page="pagination.currentPage" :total-pages="totalPages"
+            :total-items="pagination.total" @page-change="handlePageChange" />
     </div>
 </template>
 
 <script>
 import { getDrafts, deleteArticle } from '@/api/article'
 import { formatDateTime } from '@/utils/tools'
-import Pagination from '@/components/Pagination.vue'
+import AppPagination from '@/components/AppPagination.vue'
 
 export default {
     name: 'DraftList',
     components: {
-        Pagination,
+        AppPagination,
     },
     data() {
         return {
