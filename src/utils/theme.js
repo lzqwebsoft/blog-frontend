@@ -3,6 +3,47 @@
  * 支持跨平台、智能主题检测和切换
  */
 
+const THEME_STORAGE_KEY = 'blog_theme_preference'
+const THEME_EXPIRY_DAYS = 1
+
+/**
+ * 带有有效期的 localStorage 存储
+ * @param {string} key
+ * @param {any} value
+ * @param {number} days
+ */
+function setWithExpiry(key, value, days) {
+    const now = new Date()
+    const item = {
+        value: value,
+        expiry: now.getTime() + days * 24 * 60 * 60 * 1000
+    }
+    localStorage.setItem(key, JSON.stringify(item))
+}
+
+/**
+ * 带有有效期的 localStorage 获取
+ * @param {string} key
+ * @returns {any|null}
+ */
+function getWithExpiry(key) {
+    const itemStr = localStorage.getItem(key)
+    if (!itemStr) return null
+
+    try {
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+        if (now.getTime() > item.expiry) {
+            localStorage.removeItem(key)
+            return null
+        }
+        return item.value
+    } catch (e) {
+        return null
+    }
+}
+
+
 /**
  * 检测操作系统
  * @returns {string} 操作系统名称: 'windows' | 'macos' | 'linux' | 'android' | 'ios' | 'unknown'
@@ -75,14 +116,20 @@ export function getSystemThemePreference() {
  * @returns {boolean} true 为深色模式, false 为浅色模式
  */
 export function initializeTheme() {
-    // 1. 检测操作系统和当前时段
+    // 1. 首先从 localStorage 中获取
+    const storedTheme = getWithExpiry(THEME_STORAGE_KEY)
+    if (storedTheme !== null) {
+        return storedTheme
+    }
+
+    // 2. 检测操作系统和当前时段
     const os = detectOS()
     const timePeriod = getTimePeriod()
 
-    // 2. 获取操作系统特定偏好
+    // 3. 获取操作系统特定偏好
     const osPreference = getOSPreferredTheme(os, timePeriod)
 
-    // 3. 回退到系统偏好
+    // 4. 回退到系统偏好
     const systemPrefersDark = getSystemThemePreference()
 
     // 返回操作系统偏好或系统偏好
@@ -99,4 +146,6 @@ export function applyTheme(isDark) {
     } else {
         document.documentElement.classList.remove('dark-theme')
     }
+    // 保存到 localStorage
+    setWithExpiry(THEME_STORAGE_KEY, isDark, THEME_EXPIRY_DAYS)
 }
