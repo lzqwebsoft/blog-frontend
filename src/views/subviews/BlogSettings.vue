@@ -45,7 +45,7 @@ import RichTextEditor from '@/components/RichTextEditor.vue'
 export default {
     name: 'BlogSettings',
     components: {
-        RichTextEditor
+        RichTextEditor,
     },
     data() {
         return {
@@ -54,9 +54,9 @@ export default {
                 head: '',
                 descriptions: '',
                 email: '',
-                about: ''
+                about: '',
             },
-            saving: false
+            saving: false,
         }
     },
     created() {
@@ -67,8 +67,8 @@ export default {
             handler() {
                 this.initFormData()
             },
-            deep: true
-        }
+            deep: true,
+        },
     },
     methods: {
         initFormData() {
@@ -78,7 +78,7 @@ export default {
                     head: this.blogInfo.head || '',
                     descriptions: this.blogInfo.descriptions || '',
                     email: this.blogInfo.email || '',
-                    about: this.blogInfo.about || ''
+                    about: this.blogInfo.about || '',
                 }
             }
         },
@@ -101,8 +101,8 @@ export default {
             } finally {
                 this.saving = false
             }
-        }
-    }
+        },
+    },
 }
 </script>
 
@@ -120,7 +120,7 @@ export default {
     /* max-w-2xl */
 }
 
-.space-y-6>*+* {
+.space-y-6 > * + * {
     margin-top: 1.5rem;
 }
 
@@ -139,17 +139,24 @@ export default {
 
 .form-input {
     width: 100%;
-    background-color: var(--bg-color);
+    background-color: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     color: var(--text-color);
     outline: none;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .form-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+    background-color: var(--bg-color);
+}
+
+.form-input:hover {
     border-color: var(--text-secondary);
 }
 
@@ -162,16 +169,30 @@ export default {
     background-color: #111827;
     color: white;
     padding: 0.625rem 1.5rem;
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-black:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-black:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-black:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 :root.dark-theme .btn-black {

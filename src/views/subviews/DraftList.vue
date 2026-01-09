@@ -15,7 +15,9 @@
                 <tbody>
                     <tr v-for="draft in drafts" :key="draft.id" class="hover-row">
                         <td class="pl-4 font-medium">
-                            <span class="icon-draft"><font-awesome-icon :icon="['fas', 'pen-to-square']" /></span>
+                            <span class="icon-draft"
+                                ><font-awesome-icon :icon="['fas', 'pen-to-square']"
+                            /></span>
                             {{ draft.title || '无标题草稿' }}
                         </td>
                         <td class="text-gray">
@@ -26,8 +28,14 @@
                         </td>
                         <td class="text-xs text-gray">{{ formatDateTime(draft.update_at) }}</td>
                         <td class="text-right pr-4 action-col">
-                            <button class="btn-black-small" @click="goEdit(draft.id)">继续编辑</button>
-                            <button class="action-btn delete" title="删除" @click="handleDeleteDraft(draft)">
+                            <button class="btn-black-small" @click="goEdit(draft.id)">
+                                继续编辑
+                            </button>
+                            <button
+                                class="action-btn delete"
+                                title="删除"
+                                @click="handleDeleteDraft(draft)"
+                            >
                                 <font-awesome-icon :icon="['fas', 'trash']" />
                             </button>
                         </td>
@@ -36,39 +44,40 @@
             </table>
         </div>
 
-        <div class="pagination-bar" v-if="drafts.length > 0">
-            <span class="page-info">共 {{ pagination.total }} 篇草稿，当前 {{ pagination.currentPage }}/{{ totalPages }}
-                页</span>
-            <div class="page-btns">
-                <button class="page-btn" :disabled="pagination.currentPage === 1"
-                    @click="handlePageChange(pagination.currentPage - 1)">上一页</button>
-                <button class="page-btn" :disabled="pagination.currentPage === totalPages"
-                    @click="handlePageChange(pagination.currentPage + 1)">下一页</button>
-            </div>
-        </div>
+        <Pagination
+            v-if="drafts.length > 0"
+            :current-page="pagination.currentPage"
+            :total-pages="totalPages"
+            :total-items="pagination.total"
+            @page-change="handlePageChange"
+        />
     </div>
 </template>
 
 <script>
 import { getDrafts, deleteArticle } from '@/api/article'
-import { formatDateTime } from '@/utils/tools';
+import { formatDateTime } from '@/utils/tools'
+import Pagination from '@/components/Pagination.vue'
 
 export default {
     name: 'DraftList',
+    components: {
+        Pagination,
+    },
     data() {
         return {
             drafts: [],
             pagination: {
                 currentPage: 1,
                 pageSize: 15,
-                total: 0
-            }
+                total: 0,
+            },
         }
     },
     computed: {
         totalPages() {
             return Math.ceil(this.pagination.total / this.pagination.pageSize) || 1
-        }
+        },
     },
     mounted() {
         this.loadDrafts()
@@ -104,8 +113,8 @@ export default {
                     alert('删除失败: ' + (err.message || '未知错误'))
                 }
             }
-        }
-    }
+        },
+    },
 }
 </script>
 
@@ -120,6 +129,9 @@ export default {
 
 .table-container {
     overflow-x: auto;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .data-table {
@@ -128,33 +140,38 @@ export default {
     font-size: 0.875rem;
 }
 
+.data-table thead {
+    background-color: var(--hover-bg);
+}
+
 .data-table th {
     text-align: left;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    font-weight: 500;
+    padding: 0.875rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-color);
+    font-weight: 600;
     text-transform: uppercase;
     font-size: 0.75rem;
+    letter-spacing: 0.05em;
 }
 
 .data-table td {
-    padding: 0.75rem 0;
+    padding: 0.875rem 1rem;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
     color: var(--text-color);
 }
 
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
 .hover-row:hover {
     background-color: var(--hover-bg);
-}
-
-.pl-4 {
-    padding-left: 1rem;
-}
-
-.pr-4 {
-    padding-right: 1rem;
 }
 
 .text-right {
@@ -182,16 +199,20 @@ export default {
 .btn-black-small {
     background-color: #111827;
     color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    border: none;
+    padding: 0.375rem 0.875rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid transparent;
     cursor: pointer;
     margin-right: 0.5rem;
+    transition: all 0.2s ease;
 }
 
 .btn-black-small:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 :root.dark-theme .btn-black-small {
@@ -201,15 +222,19 @@ export default {
 
 .action-btn {
     background: none;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     color: var(--text-secondary);
-    padding: 4px;
-    transition: color 0.2s;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
 }
 
 .action-btn:hover {
     color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
 }
 
 .data-col {
@@ -217,44 +242,5 @@ export default {
     flex-direction: column;
     font-size: 0.75rem;
     gap: 2px;
-}
-
-.pagination-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.page-info {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-}
-
-.page-btns {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.page-btn {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    border-radius: 0.25rem;
-    cursor: pointer;
-    color: var(--text-color);
-    transition: all 0.2s;
-}
-
-.page-btn:hover:not(:disabled) {
-    background-color: var(--hover-bg);
-}
-
-.page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 </style>

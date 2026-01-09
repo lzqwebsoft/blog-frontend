@@ -4,24 +4,39 @@
 
         <!-- Add Category Form -->
         <div class="add-category-wrapper">
-            <input v-model="newType.name" type="text" placeholder="输入新分类名称..." class="form-input"
-                @keyup.enter="handleAddType">
+            <input
+                v-model="newType.name"
+                type="text"
+                placeholder="输入新分类名称..."
+                class="form-input"
+                @keyup.enter="handleAddType"
+            />
             <button @click="handleAddType" class="btn-black">添加分类</button>
         </div>
 
         <!-- Categories Grid -->
         <div class="categories-grid">
-            <div v-for="row in articleTypes" :key="row.id" class="category-card"
-                :class="{ 'disabled-card': row.disable }">
+            <div
+                v-for="row in articleTypes"
+                :key="row.id"
+                class="category-card"
+                :class="{ 'disabled-card': row.disable }"
+            >
                 <div class="card-content">
                     <div v-if="!row.editing">
-                        <h4 class="category-name">{{ row.name }} <span v-if="row.disable" class="text-xs">(隐藏)</span>
+                        <h4 class="category-name">
+                            {{ row.name }} <span v-if="row.disable" class="text-xs">(隐藏)</span>
                         </h4>
                         <span class="category-count">{{ row.article_count || 0 }} 篇文章</span>
                     </div>
                     <div v-else class="edit-mode">
-                        <input v-model="row.editName" ref="editInput" class="edit-input"
-                            @keyup.enter="handleSaveEdit(row)" @blur="handleSaveEdit(row)">
+                        <input
+                            v-model="row.editName"
+                            ref="editInput"
+                            class="edit-input"
+                            @keyup.enter="handleSaveEdit(row)"
+                            @blur="handleSaveEdit(row)"
+                        />
                     </div>
                 </div>
 
@@ -29,9 +44,15 @@
                     <button class="action-icon" title="编辑" @click="handleEdit(row)">
                         <font-awesome-icon :icon="['fas', 'pen-to-square']" />
                     </button>
-                    <button class="action-icon" :class="row.disable ? 'text-green' : 'text-gray'"
-                        :title="row.disable ? '点击显示' : '点击隐藏'" @click="handleToggleDisable(row)">
-                        <font-awesome-icon :icon="row.disable ? ['fas', 'eye-slash'] : ['fas', 'eye']" />
+                    <button
+                        class="action-icon"
+                        :class="row.disable ? 'text-green' : 'text-gray'"
+                        :title="row.disable ? '点击显示' : '点击隐藏'"
+                        @click="handleToggleDisable(row)"
+                    >
+                        <font-awesome-icon
+                            :icon="row.disable ? ['fas', 'eye-slash'] : ['fas', 'eye']"
+                        />
                     </button>
                     <button class="action-icon delete" title="删除" @click="handleDeleteType(row)">
                         <font-awesome-icon :icon="['fas', 'trash']" />
@@ -50,7 +71,13 @@
 </template>
 
 <script>
-import { getArticleTypes, addArticleType, deleteArticleType, toggleArticleTypeDisable, updateArticleType } from '@/api/article'
+import {
+    getArticleTypes,
+    addArticleType,
+    deleteArticleType,
+    toggleArticleTypeDisable,
+    updateArticleType,
+} from '@/api/article'
 
 export default {
     name: 'ArticleTypeList',
@@ -58,7 +85,7 @@ export default {
         return {
             articleTypes: [],
             newType: { name: '' },
-            errorInfo: ''
+            errorInfo: '',
         }
     },
     mounted() {
@@ -68,10 +95,10 @@ export default {
         async loadArticleTypes() {
             try {
                 const res = await getArticleTypes()
-                this.articleTypes = (res.data || []).map(item => ({
+                this.articleTypes = (res.data || []).map((item) => ({
                     ...item,
                     editing: false,
-                    editName: item.name
+                    editName: item.name,
                 }))
             } catch (err) {
                 console.error('加载分类失败:', err)
@@ -81,9 +108,7 @@ export default {
         handleEdit(row) {
             row.editing = true
             row.editName = row.name
-            this.$nextTick(() => {
-
-            })
+            this.$nextTick(() => {})
         },
         async handleSaveEdit(row) {
             if (!row.editing) return
@@ -173,8 +198,8 @@ export default {
                     }
                 }, 3000)
             }
-        }
-    }
+        },
+    },
 }
 </script>
 
@@ -206,31 +231,47 @@ export default {
     flex-grow: 1;
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 0.25rem;
-    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     color: var(--text-color);
     outline: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .form-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+    background-color: var(--bg-color);
+}
+
+.form-input:hover {
     border-color: var(--text-secondary);
 }
 
 .btn-black {
     background-color: #111827;
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-black:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-black:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 :root.dark-theme .btn-black {
@@ -300,20 +341,31 @@ export default {
 
 .action-icon {
     background: none;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     color: var(--text-secondary);
     font-size: 0.875rem;
-    padding: 0.25rem;
-    transition: color 0.2s;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
 }
 
 .action-icon:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--border-color);
     color: var(--link-color);
 }
 
 .action-icon.delete:hover {
     color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-icon.text-green:hover {
+    color: #16a34a;
+    background-color: rgba(22, 163, 74, 0.1);
+    border-color: rgba(22, 163, 74, 0.2);
 }
 
 .text-green {
@@ -343,7 +395,9 @@ export default {
     color: #dc2626;
     padding: 0.75rem 1.5rem;
     border-radius: 9999px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
     display: flex;
     align-items: center;
     gap: 0.75rem;

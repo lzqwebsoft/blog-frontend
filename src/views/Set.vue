@@ -4,8 +4,12 @@
             <!-- Sidebar Navigation -->
             <aside class="sidebar">
                 <nav class="sidebar-nav">
-                    <button v-for="tab in tabs" :key="tab.name" @click="handleTabClick(tab.name)"
-                        :class="['nav-item', { active: activeTab === tab.name }]">
+                    <button
+                        v-for="tab in tabs"
+                        :key="tab.name"
+                        @click="handleTabClick(tab.name)"
+                        :class="['nav-item', { active: activeTab === tab.name }]"
+                    >
                         <font-awesome-icon :icon="tab.icon" class="nav-icon" />
                         <span class="nav-label">{{ tab.label }}</span>
                         <span v-if="tab.count" class="badge">{{ tab.count }}</span>
@@ -32,6 +36,7 @@ import DraftList from './subviews/DraftList.vue'
 import LinkList from './subviews/LinkList.vue'
 import ImageList from './subviews/ImageList.vue'
 import BlogSettings from './subviews/BlogSettings.vue'
+import SSGManager from './subviews/SSGManager.vue'
 
 export default {
     name: 'SettingsView',
@@ -41,7 +46,8 @@ export default {
         DraftList,
         LinkList,
         ImageList,
-        BlogSettings
+        BlogSettings,
+        SSGManager,
     },
     data() {
         return {
@@ -52,39 +58,41 @@ export default {
                 { name: 'drafts', label: '草稿箱', icon: ['fas', 'pen-to-square'] },
                 { name: 'links', label: '友情链接', icon: ['fas', 'link'] },
                 { name: 'images', label: '博客用图', icon: ['fas', 'images'] },
-                { name: 'settings', label: '信息设置', icon: ['fas', 'sliders'] }
-            ]
+                { name: 'ssg', label: 'SSG管理', icon: ['fas', 'server'] },
+                { name: 'settings', label: '信息设置', icon: ['fas', 'sliders'] },
+            ],
         }
     },
     created() {
         // Initialize active tab from URL query
         const queryTab = this.$route.query.tab
-        if (queryTab && this.tabs.some(tab => tab.name === queryTab)) {
+        if (queryTab && this.tabs.some((tab) => tab.name === queryTab)) {
             this.activeTab = queryTab
         }
     },
     watch: {
         // Sync active tab when URL changes (e.g., browser back/forward)
         '$route.query.tab'(newTab) {
-            if (newTab && this.tabs.some(tab => tab.name === newTab)) {
+            if (newTab && this.tabs.some((tab) => tab.name === newTab)) {
                 this.activeTab = newTab
             } else if (!newTab) {
                 this.activeTab = 'articles'
             }
-        }
+        },
     },
     computed: {
         currentTabComponent() {
             const map = {
-                'articles': 'ArticleList',
-                'types': 'ArticleTypeList',
-                'drafts': 'DraftList',
-                'links': 'LinkList',
-                'images': 'ImageList',
-                'settings': 'BlogSettings'
+                articles: 'ArticleList',
+                types: 'ArticleTypeList',
+                drafts: 'DraftList',
+                links: 'LinkList',
+                images: 'ImageList',
+                ssg: 'SSGManager',
+                settings: 'BlogSettings',
             }
             return map[this.activeTab]
-        }
+        },
     },
 
     methods: {
@@ -92,10 +100,10 @@ export default {
             if (this.activeTab === tabName) return
             this.activeTab = tabName
             this.$router.push({
-                query: { ...this.$route.query, tab: tabName }
+                query: { ...this.$route.query, tab: tabName },
             })
-        }
-    }
+        },
+    },
 }
 </script>
 
@@ -189,7 +197,9 @@ export default {
 .panel-container {
     background: var(--card-bg);
     border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border-color);
     padding: 1.5rem;
     /* Reduced from 2rem for better mobile fit */

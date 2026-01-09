@@ -5,7 +5,11 @@
         <div class="image-grid" v-if="images.length > 0">
             <div class="image-card" v-for="image in images" :key="image.id">
                 <div class="img-wrapper" @click="openLightbox(getImageUrl(image.id))">
-                    <img :src="getImageUrl(image.id)" :alt="image.descriptions || 'Image'" class="grid-img" />
+                    <img
+                        :src="getImageUrl(image.id)"
+                        :alt="image.descriptions || 'Image'"
+                        class="grid-img"
+                    />
 
                     <div class="overlay">
                         <p class="overlay-text">{{ image.descriptions || image.filename }}</p>
@@ -17,29 +21,14 @@
             </div>
         </div>
 
-        <div class="pagination-bar" v-if="images.length > 0">
-            <div class="pagination-info">
-                共 {{ totalPageCount }} 页
-            </div>
-            <div class="pagination-controls">
-                <button class="page-nav-btn" :disabled="currentPage === 1 || loading"
-                    @click="handlePageChange(currentPage - 1)">
-                    <font-awesome-icon icon="chevron-left" />
-                </button>
-
-                <div class="page-numbers">
-                    <button v-for="page in visiblePages" :key="page" class="page-num-btn"
-                        :class="{ active: currentPage === page }" @click="handlePageChange(page)">
-                        {{ page }}
-                    </button>
-                </div>
-
-                <button class="page-nav-btn" :disabled="currentPage === totalPageCount || loading"
-                    @click="handlePageChange(currentPage + 1)">
-                    <font-awesome-icon icon="chevron-right" />
-                </button>
-            </div>
-        </div>
+        <Pagination
+            v-if="images.length > 0"
+            :current-page="currentPage"
+            :total-pages="totalPageCount"
+            :total-items="totalCount"
+            :disabled="loading"
+            @page-change="handlePageChange"
+        />
 
         <div v-else-if="images.length === 0 && !loading" class="empty-state">
             <font-awesome-icon icon="image" class="empty-icon" />
@@ -54,11 +43,13 @@
 <script>
 import { getImageList, deleteImage } from '@/api/image'
 import ImagePreview from '@/components/ImagePreview.vue'
+import Pagination from '@/components/Pagination.vue'
 
 export default {
     name: 'ImageList',
     components: {
-        ImagePreview
+        ImagePreview,
+        Pagination,
     },
     data() {
         return {
@@ -69,24 +60,7 @@ export default {
             totalPageCount: 0,
             totalCount: 0,
             lightboxVisible: false,
-            lightboxSrc: ''
-        }
-    },
-    computed: {
-        visiblePages() {
-            const pages = []
-            const maxVisible = 5
-            let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2))
-            let end = Math.min(this.totalPageCount, start + maxVisible - 1)
-
-            if (end - start + 1 < maxVisible) {
-                start = Math.max(1, end - maxVisible + 1)
-            }
-
-            for (let i = start; i <= end; i++) {
-                pages.push(i)
-            }
-            return pages
+            lightboxSrc: '',
         }
     },
     mounted() {
@@ -127,12 +101,12 @@ export default {
             return `/images/show/${id}.jpg`
         },
         openLightbox(src) {
-            this.lightboxSrc = src;
-            this.lightboxVisible = true;
+            this.lightboxSrc = src
+            this.lightboxVisible = true
         },
         closeLightbox() {
-            this.lightboxVisible = false;
-            this.lightboxSrc = '';
+            this.lightboxVisible = false
+            this.lightboxSrc = ''
         },
         async handleDeleteImage(image) {
             if (!confirm('确定要删除这张图片吗？')) return
@@ -152,8 +126,8 @@ export default {
                 console.error('删除图片失败:', error)
                 alert('删除图片失败，请稍后重试')
             }
-        }
-    }
+        },
+    },
 }
 </script>
 
@@ -234,84 +208,26 @@ export default {
 .btn-delete-sm {
     background-color: #ef4444;
     color: white;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    border: none;
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid transparent;
     cursor: pointer;
     align-self: flex-start;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
 }
 
 .btn-delete-sm:hover {
     background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
 }
 
-.pagination-bar {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-@media (min-width: 640px) {
-    .pagination-bar {
-        flex-direction: row;
-        justify-content: space-between;
-    }
-}
-
-.pagination-info {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-.pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.page-numbers {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.page-num-btn,
-.page-nav-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2.25rem;
-    height: 2.25rem;
-    padding: 0 0.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    color: var(--text-color);
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.page-num-btn:hover:not(.active),
-.page-nav-btn:hover:not(:disabled) {
-    background-color: var(--hover-bg);
-    border-color: var(--text-secondary);
-}
-
-.page-num-btn.active {
-    background-color: var(--text-color);
-    color: var(--bg-color);
-    border-color: var(--text-color);
-    font-weight: 600;
-}
-
-.page-nav-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+.btn-delete-sm:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
 }
 
 .empty-state {

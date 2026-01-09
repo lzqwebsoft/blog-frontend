@@ -26,10 +26,18 @@
                         </td>
                         <td class="text-xs text-gray-light">{{ formatDate(link.created_at) }}</td>
                         <td class="text-right pr-4 action-col">
-                            <button class="action-btn edit" title="编辑" @click="handleEditLink(link)">
+                            <button
+                                class="action-btn edit"
+                                title="编辑"
+                                @click="handleEditLink(link)"
+                            >
                                 <font-awesome-icon :icon="['fas', 'pen-to-square']" />
                             </button>
-                            <button class="action-btn delete" title="删除" @click="handleDeleteLink(link)">
+                            <button
+                                class="action-btn delete"
+                                title="删除"
+                                @click="handleDeleteLink(link)"
+                            >
                                 <font-awesome-icon :icon="['fas', 'trash']" />
                             </button>
                         </td>
@@ -39,12 +47,17 @@
         </div>
 
         <div class="pagination-bar" v-if="links.length > 0">
-            <span class="page-info">共 {{ pagination.total }} 个相关链接</span>
+            <span class="pagination-info">共 {{ pagination.total }} 个相关链接</span>
         </div>
 
         <!-- Link Edit Dialog -->
-        <link-edit-dialog v-if="linkDialogVisible" :visible="linkDialogVisible" :link-data="currentLink"
-            @save="handleSaveLink" @close="linkDialogVisible = false" />
+        <link-edit-dialog
+            v-if="linkDialogVisible"
+            :visible="linkDialogVisible"
+            :link-data="currentLink"
+            @save="handleSaveLink"
+            @close="linkDialogVisible = false"
+        />
     </div>
 </template>
 
@@ -56,7 +69,7 @@ import { formatDate } from '@/utils/tools'
 export default {
     name: 'LinkList',
     components: {
-        LinkEditDialog
+        LinkEditDialog,
     },
     data() {
         return {
@@ -66,8 +79,8 @@ export default {
             pagination: {
                 total: 0,
                 pageNo: 1,
-                pageSize: 10
-            }
+                pageSize: 10,
+            },
         }
     },
     mounted() {
@@ -124,8 +137,8 @@ export default {
                 console.error('保存链接失败:', error)
                 alert(error.message || '保存失败')
             }
-        }
-    }
+        },
+    },
 }
 </script>
 
@@ -147,19 +160,28 @@ export default {
 .btn-black {
     background-color: #111827;
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-black:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-black:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 :root.dark-theme .btn-black {
@@ -169,6 +191,9 @@ export default {
 
 .table-container {
     overflow-x: auto;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .data-table {
@@ -177,33 +202,38 @@ export default {
     font-size: 0.875rem;
 }
 
+.data-table thead {
+    background-color: var(--hover-bg);
+}
+
 .data-table th {
     text-align: left;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    font-weight: 500;
+    padding: 0.875rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-color);
+    font-weight: 600;
     text-transform: uppercase;
     font-size: 0.75rem;
+    letter-spacing: 0.05em;
 }
 
 .data-table td {
-    padding: 0.75rem 0;
+    padding: 0.875rem 1rem;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
     color: var(--text-color);
 }
 
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
 .hover-row:hover {
     background-color: var(--hover-bg);
-}
-
-.pl-4 {
-    padding-left: 1rem;
-}
-
-.pr-4 {
-    padding-right: 1rem;
 }
 
 .text-right {
@@ -233,25 +263,41 @@ export default {
 
 .action-btn {
     background: none;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     color: var(--text-secondary);
-    padding: 4px;
-    margin-left: 4px;
-    transition: color 0.2s;
+    padding: 0.5rem;
+    margin-left: 0.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
 }
 
 .action-btn:hover {
-    color: var(--link-color);
+    background-color: var(--hover-bg);
+    border-color: var(--border-color);
+}
+
+.action-btn.edit:hover {
+    color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.1);
 }
 
 .action-btn.delete:hover {
     color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
 }
 
 .pagination-bar {
-    margin-top: 1rem;
-    font-size: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.pagination-info {
+    font-size: 0.875rem;
     color: var(--text-secondary);
+    font-weight: 500;
 }
 </style>

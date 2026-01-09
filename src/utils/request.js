@@ -129,8 +129,14 @@ request.interceptors.response.use(
     (response) => {
         const res = response.data
 
+        // 如果是二进制或者文本等非标准 JSON 响应，直接返回
+        if (typeof res !== 'object' || res === null) {
+            return res
+        }
+
         // 业务错误处理
-        if (res.code !== 0) {
+        // 注意：有些接口可能没有 code 字段，如果是这种情况也认为成功或者根据需要处理
+        if (res.code !== undefined && res.code !== 0) {
             // 可以在这里统一处理业务错误
             return Promise.reject(new Error(res.message || '请求失败'))
         }

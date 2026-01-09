@@ -10,8 +10,13 @@
                     </option>
                 </select>
                 <div class="search-input-wrapper">
-                    <input v-model="searchForm.title" type="text" placeholder="搜索标题..." class="form-input"
-                        @input="handleSearch" />
+                    <input
+                        v-model="searchForm.title"
+                        type="text"
+                        placeholder="搜索标题..."
+                        class="form-input"
+                        @input="handleSearch"
+                    />
                     <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="search-icon" />
                 </div>
             </div>
@@ -32,8 +37,12 @@
                     <tr v-for="article in articles" :key="article.id" class="hover-row">
                         <td class="pl-4 max-w-title">
                             <span v-if="article.is_top" class="badge-top">置顶</span>
-                            <a :href="`/show/${article.id}.html`" target="_blank" class="article-link">{{ article.title
-                                }}</a>
+                            <a
+                                :href="`/show/${article.id}.html`"
+                                target="_blank"
+                                class="article-link"
+                                >{{ article.title }}</a
+                            >
                         </td>
                         <td class="text-gray">
                             <div class="data-col">
@@ -43,21 +52,36 @@
                         </td>
                         <td class="text-gray">{{ getTypeName(article.type_id) }}</td>
                         <td>
-                            <button class="perm-btn" :class="article.allow_comment ? 'perm-allow' : 'perm-deny'"
+                            <button
+                                class="perm-btn"
+                                :class="article.allow_comment ? 'perm-allow' : 'perm-deny'"
                                 @click="handleAllowCommentChange(article)"
-                                :title="article.allow_comment ? '点击禁止评论' : '点击允许评论'">
+                                :title="article.allow_comment ? '点击禁止评论' : '点击允许评论'"
+                            >
                                 {{ article.allow_comment ? '允许评论' : '禁止评论' }}
                             </button>
                         </td>
                         <td class="text-right pr-4 action-col">
-                            <button class="action-btn edit" title="编辑" @click="goEdit(article.id)">
+                            <button
+                                class="action-btn edit"
+                                title="编辑"
+                                @click="goEdit(article.id)"
+                            >
                                 <font-awesome-icon :icon="['fas', 'pen-to-square']" />
                             </button>
-                            <button class="action-btn top" :class="{ 'active': article.is_top }"
-                                :title="article.is_top ? '取消置顶' : '置顶'" @click="handleToggleTop(article)">
+                            <button
+                                class="action-btn top"
+                                :class="{ active: article.is_top }"
+                                :title="article.is_top ? '取消置顶' : '置顶'"
+                                @click="handleToggleTop(article)"
+                            >
                                 <font-awesome-icon :icon="['fas', 'arrow-up']" />
                             </button>
-                            <button class="action-btn delete" title="删除" @click="handleDeleteArticle(article)">
+                            <button
+                                class="action-btn delete"
+                                title="删除"
+                                @click="handleDeleteArticle(article)"
+                            >
                                 <font-awesome-icon :icon="['fas', 'trash']" />
                             </button>
                         </td>
@@ -67,43 +91,49 @@
         </div>
 
         <!-- Pagination -->
-        <div class="pagination-bar">
-            <span class="page-info">共 {{ pagination.total }} 篇文章，当前 {{ pagination.currentPage }}/{{ totalPages }}
-                页</span>
-            <div class="page-btns">
-                <button class="page-btn" :disabled="pagination.currentPage === 1"
-                    @click="handlePageChange(pagination.currentPage - 1)">上一页</button>
-                <button class="page-btn" :disabled="pagination.currentPage === totalPages"
-                    @click="handlePageChange(pagination.currentPage + 1)">下一页</button>
-            </div>
-        </div>
+        <Pagination
+            :current-page="pagination.currentPage"
+            :total-pages="totalPages"
+            :total-items="pagination.total"
+            @page-change="handlePageChange"
+        />
     </div>
 </template>
 
 <script>
-import { selectArticles, getArticleTypes, deleteArticle, toggleAllowComment, toggleTop } from '@/api/article'
+import {
+    selectArticles,
+    getArticleTypes,
+    deleteArticle,
+    toggleAllowComment,
+    toggleTop,
+} from '@/api/article'
+import Pagination from '@/components/Pagination.vue'
 
 export default {
     name: 'ArticleList',
+    components: {
+        Pagination,
+    },
     data() {
         return {
             searchForm: {
                 articleType: '0',
-                title: ''
+                title: '',
             },
             articles: [],
             articleTypes: [],
             pagination: {
                 currentPage: 1,
                 pageSize: 10,
-                total: 0
-            }
+                total: 0,
+            },
         }
     },
     computed: {
         totalPages() {
             return Math.ceil(this.pagination.total / this.pagination.pageSize) || 1
-        }
+        },
     },
     mounted() {
         this.loadArticleTypes() // Load types first
@@ -111,18 +141,18 @@ export default {
     },
     methods: {
         getTypeName(id) {
-            const type = this.articleTypes.find(t => t.id === id);
-            return type ? type.name : '未分类';
+            const type = this.articleTypes.find((t) => t.id === id)
+            return type ? type.name : '未分类'
         },
         goEdit(id) {
-            this.$router.push(`/edit/${id}`);
+            this.$router.push(`/edit/${id}`)
         },
         async loadArticles() {
             try {
                 const params = {
                     pageNo: this.pagination.currentPage,
                     pageSize: this.pagination.pageSize,
-                    title: this.searchForm.title || undefined
+                    title: this.searchForm.title || undefined,
                 }
 
                 if (this.searchForm.articleType && this.searchForm.articleType !== '0') {
@@ -184,8 +214,8 @@ export default {
                     alert('删除失败: ' + (err.message || '未知错误'))
                 }
             }
-        }
-    }
+        },
+    },
 }
 </script>
 
@@ -226,21 +256,27 @@ export default {
 
 .form-select,
 .form-input {
-    background-color: var(--bg-color);
-    /* Light gray/bg */
+    background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     color: var(--text-color);
     outline: none;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .form-select:focus,
 .form-input:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+    background-color: var(--bg-color);
+}
+
+.form-select:hover,
+.form-input:hover {
+    border-color: var(--text-secondary);
 }
 
 .search-input-wrapper {
@@ -265,6 +301,9 @@ export default {
 /* Table */
 .table-container {
     overflow-x: auto;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .data-table {
@@ -273,37 +312,38 @@ export default {
     font-size: 0.875rem;
 }
 
+.data-table thead {
+    background-color: var(--hover-bg);
+}
+
 .data-table th {
     text-align: left;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    font-weight: 500;
+    padding: 0.875rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-color);
+    font-weight: 600;
     text-transform: uppercase;
     font-size: 0.75rem;
+    letter-spacing: 0.05em;
 }
 
 .data-table td {
-    padding: 0.75rem 0;
+    padding: 0.875rem 1rem;
     border-bottom: 1px solid var(--border-color);
-    /* Separator */
     vertical-align: middle;
+    color: var(--text-color);
 }
 
-.data-table tr:last-child td {
+.data-table tbody tr:last-child td {
     border-bottom: none;
+}
+
+.data-table tbody tr {
+    transition: background-color 0.2s ease;
 }
 
 .hover-row:hover {
     background-color: var(--hover-bg);
-}
-
-.pl-4 {
-    padding-left: 1rem;
-}
-
-.pr-4 {
-    padding-right: 1rem;
 }
 
 .text-right {
@@ -353,21 +393,32 @@ export default {
 
 .perm-btn {
     font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid transparent;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
 .perm-allow {
     background-color: #dcfce7;
     color: #15803d;
+    border-color: #bbf7d0;
+}
+
+.perm-allow:hover {
+    background-color: #bbf7d0;
 }
 
 .perm-deny {
     background-color: #fee2e2;
     color: #dc2626;
+    border-color: #fecaca;
+}
+
+.perm-deny:hover {
+    background-color: #fecaca;
 }
 
 .action-col {
@@ -376,70 +427,41 @@ export default {
 
 .action-btn {
     background: none;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     color: var(--text-secondary);
-    padding: 4px;
-    margin-left: 4px;
-    transition: color 0.2s;
+    padding: 0.5rem;
+    margin-left: 0.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
 }
 
 .action-btn:hover {
-    color: var(--link-color);
+    background-color: var(--hover-bg);
+    border-color: var(--border-color);
 }
 
 .action-btn.edit:hover {
-    color: var(--link-color);
+    color: var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb), 0.1);
 }
 
 .action-btn.delete:hover {
     color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
 }
 
 .action-btn.top:hover {
     color: #eab308;
+    background-color: rgba(234, 179, 8, 0.1);
+    border-color: rgba(234, 179, 8, 0.2);
 }
 
 .action-btn.top.active {
     color: #ef4444;
-}
-
-/* Pagination */
-.pagination-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.page-info {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-}
-
-.page-btns {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.page-btn {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    border-radius: 0.25rem;
-    cursor: pointer;
-    color: var(--text-color);
-}
-
-.page-btn:hover:not(:disabled) {
-    background-color: var(--hover-bg);
-}
-
-.page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
 }
 </style>
