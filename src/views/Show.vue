@@ -1103,8 +1103,8 @@ export default {
 .article-content blockquote {
     margin: 2.5rem 0;
     padding: 1.5rem 2rem 1.5rem 3rem;
-    background: rgba(var(--primary-rgb, 59, 130, 246), 0.03);
-    border-left: 6px solid var(--primary-color);
+    background: rgba(0, 0, 0, 0.02);
+    border-left: 6px solid #d1d5db;
     border-radius: 4px 12px 12px 4px;
     position: relative;
     font-family: var(--font-serif);
@@ -1119,7 +1119,7 @@ export default {
         top: 0.5rem;
         left: 0.8rem;
         font-size: 4rem;
-        color: var(--primary-color);
+        color: #d1d5db;
         opacity: 0.2;
         font-family: Georgia, serif;
         line-height: 1;
@@ -1149,8 +1149,8 @@ export default {
 
 :root.dark-theme .article-content blockquote,
 :root.dark-theme .comment-content blockquote {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #4b5563;
 
     &::before {
         opacity: 0.3;
