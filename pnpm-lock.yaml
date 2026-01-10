@@ -11,15 +11,15 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.2.8
         version: 5.2.8
-      '@fontsource/jetbrains-mono':
+      '@fontsource-variable/jetbrains-mono':
         specifier: ^5.2.8
         version: 5.2.8
-      '@fontsource/noto-sans-sc':
-        specifier: ^5.2.8
-        version: 5.2.8
-      '@fontsource/noto-serif-sc':
-        specifier: ^5.2.8
-        version: 5.2.8
+      '@fontsource-variable/noto-sans-sc':
+        specifier: ^5.2.9
+        version: 5.2.9
+      '@fontsource-variable/noto-serif-sc':
+        specifier: ^5.2.9
+        version: 5.2.9
       '@fortawesome/fontawesome-svg-core':
         specifier: ^7.0.0
         version: 7.0.0
@@ -434,14 +434,14 @@ packages:
   '@fontsource-variable/inter@5.2.8':
     resolution: {integrity: sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ==}
 
-  '@fontsource/jetbrains-mono@5.2.8':
-    resolution: {integrity: sha512-6w8/SG4kqvIMu7xd7wt6x3idn1Qux3p9N62s6G3rfldOUYHpWcc2FKrqf+Vo44jRvqWj2oAtTHrZXEP23oSKwQ==}
+  '@fontsource-variable/jetbrains-mono@5.2.8':
+    resolution: {integrity: sha512-WBA9elru6Jdp5df2mES55wuOO0WIrn3kpXnI4+W2ek5u3ZgLS9XS4gmIlcQhiZOWEKl95meYdvK7xI+ETLCq/Q==}
 
-  '@fontsource/noto-sans-sc@5.2.8':
-    resolution: {integrity: sha512-8T8HxIS3uAMCfaQawKRH/6yYZ1oRnJZB/CrGwfxGgJa+zAOBgx2lqZMiTY/WbQpLGlPRqX4zHXJYI09CI2q6tA==}
+  '@fontsource-variable/noto-sans-sc@5.2.9':
+    resolution: {integrity: sha512-ZEEpZlxjYEIVdg85K38mqaoeBcorrN3Z6MaIkwK5w5Dqn/e9v5uVIYr0ukoLsFxaVyEXSi/c3caOeMHjbOMtfA==}
 
-  '@fontsource/noto-serif-sc@5.2.8':
-    resolution: {integrity: sha512-C7fAr+d1GjOAw1qIbntsnqbA3l5dkdzcmNNgeCXLC8QZ7VNubL7MTrX8UcYKHceX4mI//z8gGtXbOeeQrB6P7g==}
+  '@fontsource-variable/noto-serif-sc@5.2.9':
+    resolution: {integrity: sha512-7zfvfNQSlcgzuln7ycuyz25ng+DFMhSg7kkjxQeG/smJjRcy0skFvaEbwUsDxLXxWodMmHjO5efJ6bx5Up81CA==}
 
   '@fortawesome/fontawesome-common-types@7.0.0':
     resolution: {integrity: sha512-PGMrIYXLGA5K8RWy8zwBkd4vFi4z7ubxtet6Yn13Plf6krRTwPbdlCwlcfmoX0R7B4Z643QvrtHmdQ5fNtfFCg==}
@@ -2134,11 +2134,11 @@ snapshots:
 
   '@fontsource-variable/inter@5.2.8': {}
 
-  '@fontsource/jetbrains-mono@5.2.8': {}
+  '@fontsource-variable/jetbrains-mono@5.2.8': {}
 
-  '@fontsource/noto-sans-sc@5.2.8': {}
+  '@fontsource-variable/noto-sans-sc@5.2.9': {}
 
-  '@fontsource/noto-serif-sc@5.2.8': {}
+  '@fontsource-variable/noto-serif-sc@5.2.9': {}
 
   '@fortawesome/fontawesome-common-types@7.0.0': {}
 

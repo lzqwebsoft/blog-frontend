@@ -1,15 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Index from '../views/Index.vue'
-import Show from '../views/Show.vue'
-import About from '../views/About.vue'
-import Login from '@/views/Login.vue'
-import EditArticle from '../views/EditArticle.vue'
-import Set from '@/views/Set.vue'
-import ChangePassword from '@/views/ChangePassword.vue'
-import ForgotPassword from '@/views/ForgotPassword.vue'
-import FoundPassword from '@/views/FoundPassword.vue'
-import ResetPassword from '@/views/ResetPassword.vue'
-import NotFound from '../views/NotFound.vue'
+const Index = () => import('../views/Index.vue')
+const Show = () => import('../views/Show.vue')
+const About = () => import('../views/About.vue')
+const Login = () => import('@/views/Login.vue')
+const EditArticle = () => import('../views/EditArticle.vue')
+const Set = () => import('@/views/Set.vue')
+const ChangePassword = () => import('@/views/ChangePassword.vue')
+const ForgotPassword = () => import('@/views/ForgotPassword.vue')
+const FoundPassword = () => import('@/views/FoundPassword.vue')
+const ResetPassword = () => import('@/views/ResetPassword.vue')
+const NotFound = () => import('../views/NotFound.vue')
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),

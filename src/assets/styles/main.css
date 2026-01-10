@@ -27,15 +27,18 @@
     --primary-hover: #004494;
     --text-on-primary: #ffffff;
 
-    --font-serif: 'Noto Serif SC', serif;
-    --font-sans: 'Inter Variable', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-
+    --font-serif: 'Noto Serif SC Variable', 'Noto Serif SC', serif;
+    --font-sans:
+        'Inter Variable', 'Noto Sans SC Variable', 'Noto Sans SC', -apple-system,
+        BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono:
+        'JetBrains Mono Variable', 'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas',
+        monospace;
 }
 
 :root.dark-theme {
     --bg-color: #0a0a0a;
-    --text-color: #FFFFFF;
+    --text-color: #ffffff;
     --text-secondary: #adb5bd;
     --header-bg: rgba(23, 23, 23, 0.8);
     --border-color: #1f2937;
@@ -56,11 +59,27 @@
 }
 
 body {
-    font-family: -apple-system, "Microsoft Yahei", "微软雅黑", "STHeiti Light", "华文细黑", SimSun, "宋体", Arial, sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue';
+    font-family:
+        -apple-system,
+        'Microsoft Yahei',
+        '微软雅黑',
+        'STHeiti Light',
+        '华文细黑',
+        SimSun,
+        '宋体',
+        Arial,
+        sans-serif,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        'Helvetica Neue';
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--bg-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
 }
 
 a {

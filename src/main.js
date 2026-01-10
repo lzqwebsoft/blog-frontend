@@ -1,10 +1,6 @@
-import '@fontsource/noto-serif-sc/400.css'
-import '@fontsource/noto-serif-sc/700.css'
-import '@fontsource/noto-sans-sc/400.css'
-import '@fontsource/noto-sans-sc/700.css'
-import '@fontsource-variable/inter'
-import '@fontsource/jetbrains-mono'
 import './assets/styles/main.css'
+// 异步加载字体，避免阻塞首屏渲染
+import('./utils/fonts.js')
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
