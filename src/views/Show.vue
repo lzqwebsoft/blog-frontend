@@ -45,7 +45,7 @@
                     <div class="article-meta">
                         <span>发表于：{{ formatDateTime(article.release_at) }}，已有{{
                             formatReadCount(article.readed_num)
-                            }}次阅读</span>
+                        }}次阅读</span>
 
                         <div class="article-actions">
                             <button class="action-btn comment-btn" @click="scrollToComments">
@@ -1110,7 +1110,6 @@ export default {
     font-family: var(--font-serif);
     font-style: italic;
     color: var(--text-color);
-    box-shadow: 0 4px 12px var(--shadow-color);
     transition: all 0.3s ease;
 
     &::before {
@@ -1177,7 +1176,7 @@ export default {
     background: #f8f9fa;
     padding: 0.2rem 0.4rem;
     border-radius: 3px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-family: var(--font-mono);
     word-break: break-all;
 }
 

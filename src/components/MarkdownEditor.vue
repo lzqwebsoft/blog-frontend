@@ -485,7 +485,7 @@ export default {
     outline: none;
     background: transparent;
     color: var(--text-color);
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 0.9375rem;
     line-height: 1.8;
     resize: none;
@@ -576,7 +576,7 @@ export default {
 }
 
 .markdown-preview code {
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-family: var(--font-mono);
     font-size: 0.875rem;
 }
 
