@@ -1100,6 +1100,63 @@ export default {
     margin-bottom: 1rem;
 }
 
+.article-content blockquote {
+    margin: 2.5rem 0;
+    padding: 1.5rem 2rem 1.5rem 3rem;
+    background: rgba(var(--primary-rgb, 59, 130, 246), 0.03);
+    border-left: 6px solid var(--primary-color);
+    border-radius: 4px 12px 12px 4px;
+    position: relative;
+    font-family: var(--font-serif);
+    font-style: italic;
+    color: var(--text-color);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: all 0.3s ease;
+
+    &::before {
+        content: '“';
+        position: absolute;
+        top: 0.5rem;
+        left: 0.8rem;
+        font-size: 4rem;
+        color: var(--primary-color);
+        opacity: 0.2;
+        font-family: Georgia, serif;
+        line-height: 1;
+    }
+
+    p {
+        margin-bottom: 0;
+        line-height: 2;
+        position: relative;
+        z-index: 1;
+        font-size: 1.15rem;
+    }
+
+    footer {
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        font-style: normal;
+        color: var(--text-secondary);
+        text-align: right;
+        font-family: -apple-system, sans-serif;
+
+        &::before {
+            content: "— ";
+        }
+    }
+}
+
+:root.dark-theme .article-content blockquote,
+:root.dark-theme .comment-content blockquote {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--primary-color);
+
+    &::before {
+        opacity: 0.3;
+    }
+}
+
 .article-content,
 .article-content a,
 .article-content strong,
@@ -1258,8 +1315,137 @@ export default {
 
 .article-content ul,
 .article-content ol {
-    margin-left: 2rem;
+    margin: 1.5rem 0 1.5rem 2.5rem;
+    padding-left: 0;
+
+    li {
+        margin-bottom: 0.75rem;
+        padding-left: 0.5rem;
+        line-height: 1.8;
+        position: relative;
+        list-style-type: none;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        // 嵌套列表
+        ul,
+        ol {
+            margin: 0.75rem 0 0.75rem 1rem;
+        }
+
+        p {
+            margin-bottom: 0.5rem;
+        }
+    }
 }
+
+/* 无序列表自定义圆点 */
+.article-content ul>li::before {
+    content: "";
+    position: absolute;
+    left: -1.25rem;
+    top: 0.7em;
+    width: 6px;
+    height: 6px;
+    background-color: #333;
+    /* 浅色模式用深灰色/黑色 */
+    border-radius: 50%;
+    opacity: 0.5;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+:root.dark-theme .article-content ul>li::before {
+    background-color: #eee;
+    /* 深色模式用浅灰色/白色 */
+}
+
+.article-content ul>li:hover::before {
+    opacity: 1;
+    transform: scale(1.5);
+    background-color: #000;
+}
+
+:root.dark-theme .article-content ul>li:hover::before {
+    background-color: #fff;
+}
+
+/* 有序列表自定义数字标签 */
+.article-content ol {
+    counter-reset: custom-counter;
+}
+
+.article-content ol>li {
+    counter-increment: custom-counter;
+}
+
+.article-content ol>li::before {
+    content: counter(custom-counter);
+    position: absolute;
+    left: -2rem;
+    top: 0.15em;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 4px;
+    background: rgba(0, 0, 0, 0.06);
+    /* 浅色系背景 */
+    color: #444;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: var(--font-sans, system-ui, -apple-system);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.article-content ol>li:hover::before {
+    background: #000;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 二级嵌套列表符号变化 */
+.article-content ul ul>li::before {
+    background-color: transparent !important;
+    border: 1.5px solid #333;
+}
+
+:root.dark-theme .article-content ul ul>li::before {
+    border-color: #eee;
+}
+
+
+/* 任务列表优化 (Gfm style) */
+.article-content .task-list-item {
+    padding-left: 0;
+
+    &::before {
+        display: none;
+    }
+
+    input[type="checkbox"] {
+        margin: 0 0.5rem 0.2rem -1.25rem;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+}
+
+:root.dark-theme .article-content ol>li::before {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+}
+
+:root.dark-theme .article-content ol>li:hover::before {
+    background: #fff;
+    color: #000;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+
 
 .article-content table {
     width: 100%;
