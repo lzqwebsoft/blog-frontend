@@ -34,6 +34,25 @@
                 </div>
             </div>
 
+            <div v-else-if="error" class="error-detail">
+                <div class="error-inner">
+                    <div class="error-visual">
+                        <img src="@/assets/images/error500.svg" alt="error" class="error-img" />
+                    </div>
+                    <h2 class="error-title">页面加载出现了小差</h2>
+                    <p class="error-message">可能是网络波动或服务器暂时繁忙，请尝试刷新页面</p>
+                    <button class="retry-btn" @click="fetchArticleDetail">
+                        <font-awesome-icon icon="rotate-right" />
+                        <span>重新加载</span>
+                    </button>
+                    <!-- 返回首页链接 -->
+                    <RouterLink to="/" class="back-home-link">
+                        <font-awesome-icon icon="house" />
+                        返回首页
+                    </RouterLink>
+                </div>
+            </div>
+
             <template v-else>
                 <header class="article-header">
                     <h1 class="article-title">
@@ -45,7 +64,7 @@
                     <div class="article-meta">
                         <span>发表于：{{ formatDateTime(article.release_at) }}，已有{{
                             formatReadCount(article.readed_num)
-                        }}次阅读</span>
+                            }}次阅读</span>
 
                         <div class="article-actions">
                             <button class="action-btn comment-btn" @click="scrollToComments">
@@ -68,7 +87,7 @@
             </template>
 
             <!-- 文章分页 -->
-            <nav class="article-pager" v-if="!loading && (previousArticle || nextArticle)">
+            <nav class="article-pager" v-if="!loading && !error && (previousArticle || nextArticle)">
                 <div v-if="previousArticle" class="pager-item prev" @click="navigateToArticle(previousArticle)">
                     <span class="pager-label">上一篇</span>
                     <span class="pager-title">{{ previousArticle.title }}</span>
@@ -84,7 +103,7 @@
         </article>
 
         <!-- 相关文章 -->
-        <section class="related-articles" v-if="!loading && relatedArticles.length > 0">
+        <section class="related-articles" v-if="!loading && !error && relatedArticles.length > 0">
             <h3>相关文章</h3>
             <div class="related-articles-list">
                 <div class="related-article-item" v-for="rltArticle in relatedArticles" :key="rltArticle.id">
@@ -95,7 +114,7 @@
         </section>
 
         <!-- 评论区域 -->
-        <section class="comments" v-if="!loading">
+        <section class="comments" v-if="!loading && !error">
             <h3 class="comment-list-title">网友评论 ({{ article.comment_count || 0 }})</h3>
 
             <div class="comments-list" v-if="comments.length > 0">
@@ -264,7 +283,8 @@
         <ImagePreview :visible="previewVisible" :image-url="previewImage" @close="previewVisible = false" />
 
         <!-- 目录组件 -->
-        <TableOfContents v-if="!loading" container-selector=".article-content" :dependency="article.content" />
+        <TableOfContents v-if="!loading && !error" container-selector=".article-content"
+            :dependency="article.content" />
     </div>
 </template>
 
@@ -381,6 +401,7 @@ export default {
             previewVisible: false,
             previewImage: '',
             isCommentFocused: false,
+            error: false,
         }
     },
     mounted() {
@@ -443,6 +464,7 @@ export default {
             if (!this.articleId) return
 
             this.loading = true
+            this.error = false
             try {
                 const res = await getArticleDetail(this.articleId)
                 const data = res.data
@@ -497,6 +519,7 @@ export default {
                 })
             } catch (error) {
                 console.error('获取文章详情失败:', error)
+                this.error = true
             } finally {
                 this.loading = false
             }
@@ -2560,6 +2583,143 @@ export default {
         &:focus {
             background: #252525 !important;
         }
+    }
+}
+
+/* Error State */
+.error-detail {
+    padding: 4rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+.error-inner {
+    text-align: center;
+    max-width: 400px;
+}
+
+.error-visual {
+    position: relative;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+.error-img {
+    width: 280px;
+    height: auto;
+    border-radius: 12px;
+    opacity: 0.9;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.1));
+    animation: floating 3s infinite ease-in-out;
+}
+
+@keyframes floating {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.error-title {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.error-message {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+.retry-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 auto;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+
+    &:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    }
+
+    &:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    svg {
+        font-size: 1.1rem;
+    }
+}
+
+.back-home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 1.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+
+    &:hover {
+        color: var(--primary-color);
+    }
+}
+
+:root.dark-theme {
+    .error-detail {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .error-icon {
+        color: #f87171;
+    }
+
+    .retry-btn {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+}
+
+@media (max-width: 768px) {
+    .error-detail {
+        padding: 3rem 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .error-img {
+        width: 200px;
+    }
+
+    .error-title {
+        font-size: 1.25rem;
     }
 }
 </style>
