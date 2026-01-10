@@ -64,7 +64,7 @@
                     <div class="article-meta">
                         <span>发表于：{{ formatDateTime(article.release_at) }}，已有{{
                             formatReadCount(article.readed_num)
-                            }}次阅读</span>
+                        }}次阅读</span>
 
                         <div class="article-actions">
                             <button class="action-btn comment-btn" @click="scrollToComments">
@@ -2593,8 +2593,6 @@ export default {
     justify-content: center;
     align-items: center;
     min-height: 400px;
-    background: var(--card-bg);
-    border-radius: 12px;
     margin: 2rem 0;
 }
 
@@ -2694,11 +2692,6 @@ export default {
 }
 
 :root.dark-theme {
-    .error-detail {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
     .error-icon {
         color: #f87171;
     }
