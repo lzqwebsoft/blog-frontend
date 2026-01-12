@@ -66,8 +66,8 @@ export function isTokenExpired() {
 
     const expiresTime = new Date(expiresAt).getTime()
     const now = Date.now()
-    // 提前 30 秒判断过期，避免边界情况
-    return now >= expiresTime - 30000
+    // 提前 5 分钟判断过期，避免边界情况
+    return now >= expiresTime - 5 * 60 * 1000
 }
 
 /**
@@ -80,7 +80,8 @@ export function isRefreshTokenExpired() {
 
     const expiresTime = new Date(expiresAt).getTime()
     const now = Date.now()
-    return now >= expiresTime
+    // 提前 5 分钟判断过期，避免边界情况
+    return now >= expiresTime - 5 * 60 * 1000
 }
 
 /**
