@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 访问被拒绝 - 飘痕の博客</title>
+    <meta name="description" content="抱歉，您没有权限访问此页面。这可能是因为该资源是私密的或目录访问受限。">
+    <meta name="robots" content="noindex, follow">
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --accent: #000000;
+        }
+
+        .dark-theme {
+            --bg: #000000;
+            --text: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #262626;
+            --accent: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            overflow: hidden;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 32px 32px;
+            opacity: 0.4;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
+
+        main {
+            width: 90%;
+            margin: 0 auto;
+            text-align: center;
+            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-code-wrapper {
+            position: relative;
+            display: block;
+            margin-bottom: 2rem;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .error-code {
+            font-size: clamp(6rem, 20vw, 10rem);
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.05em;
+            color: var(--text);
+            opacity: 0.05;
+            user-select: none;
+        }
+
+        .error-code-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        h1 svg {
+            width: 28px;
+            height: 28px;
+            stroke-width: 2.5;
+        }
+
+        p {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            max-width: 480px; /* Restored to prevent lines from being too long for readability */
+            margin: 0 auto 2.5rem;
+        }
+
+        .error-path-info {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875rem;
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 3rem;
+            color: var(--text-muted);
+            display: block;
+            width: 100%;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--bg);
+            border: 1px solid var(--accent);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px var(--text);
+        }
+
+        .btn-link {
+            color: var(--text);
+            border: 1px solid var(--border);
+            background: transparent;
+        }
+
+        .btn-link:hover {
+            border-color: var(--text);
+            background-color: var(--border);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--text);
+            transform: scale(1.05);
+        }
+
+        footer {
+            position: fixed;
+            bottom: 2rem;
+            width: 100%;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.75rem; }
+            p { font-size: 1rem; }
+            .actions { flex-direction: column; width: 100%; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-overlay"></div>
+
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+    </button>
+
+    <main>
+        <div class="error-code-wrapper">
+            <div class="error-code">403</div>
+            <div class="error-code-overlay">
+                <h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    访问被拒绝
+                </h1>
+            </div>
+        </div>
+
+        <p id="errorMsg">抱歉，您没有权限查看此资源。这可能是因为目录索引被禁用，或者该资源被设置为私密受限。</p>
+
+        <div class="error-path-info">
+            ACCESS_DENIED: <span id="currentPath"></span>
+        </div>
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">
+                返回首页
+            </a>
+            <a href="javascript:history.back()" class="btn btn-link">
+                返回上一页
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        &copy; <span id="year"></span> 飘痕の博客
+    </footer>
+
+    <script>
+        const THEME_STORAGE_KEY = 'blog_theme_preference';
+        const THEME_EXPIRY_DAYS = 1;
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+        const currentPath = window.location.pathname;
+        document.getElementById('currentPath').textContent = currentPath;
+
+        if (currentPath.includes('/assets')) {
+            document.getElementById('errorMsg').innerHTML = '系统提示：出于安全考虑，静态资产目录禁止直接列表访问。请通过正确链接引用资源。';
+        }
+
+        function setWithExpiry(key, value, days) {
+            const now = new Date();
+            const item = { value: value, expiry: now.getTime() + days * 24 * 60 * 60 * 1000 };
+            localStorage.setItem(key, JSON.stringify(item));
+        }
+
+        function getWithExpiry(key) {
+            const itemStr = localStorage.getItem(key);
+            if (!itemStr) return null;
+            try {
+                const item = JSON.parse(itemStr);
+                const now = new Date();
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key);
+                    return null;
+                }
+                return item.value;
+            } catch { return null; }
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const sunIcon = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+        const moonIcon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+        function setTheme(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark-theme');
+                themeIcon.innerHTML = sunIcon;
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                themeIcon.innerHTML = moonIcon;
+            }
+            setWithExpiry(THEME_STORAGE_KEY, isDark, THEME_EXPIRY_DAYS);
+        }
+
+        const storedTheme = getWithExpiry(THEME_STORAGE_KEY);
+        if (storedTheme !== null) {
+            setTheme(storedTheme);
+        } else {
+            setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            setTheme(!isDark);
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!getWithExpiry(THEME_STORAGE_KEY)) setTheme(e.matches);
+        });
+    </script>
+</body>
+</html>
