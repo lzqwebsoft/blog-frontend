@@ -5,6 +5,8 @@ Allow: /$
 Allow: /show/
 Allow: /about
 Allow: /select/
+Allow: /sitemap.xml
+Allow: /feed.xml
 
 # Disallow everything else
 Disallow: /
