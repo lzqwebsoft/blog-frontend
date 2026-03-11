@@ -5,7 +5,10 @@
                 Powered by <a href="https://vuejs.org" target="_blank">Vue3</a>, Design by
                 <a href="https://github.com/lzqwebsoft" target="_blank">-ZQLUO-</a>.
             </p>
-            <p>Copyright &copy; 2012 - {{ currentYear }}</p>
+            <p>
+                <a href="https://beian.miit.gov.cn/" target="_blank">沪ICP备2025128934号-2</a> &nbsp;&nbsp;
+                Copyright &copy;2012 - {{ currentYear }}
+            </p>
         </div>
     </footer>
 </template>
