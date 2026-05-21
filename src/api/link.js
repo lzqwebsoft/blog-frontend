@@ -6,13 +6,13 @@ import request from '@/utils/request'
 
 /**
  * 获取友情链接列表
- * @param {number} pageNo - 页码，默认 1
+ * @param {number} page - 页码，默认 1
  * @param {number} pageSize - 每页数量，默认 10
  */
-export function getLinkList(pageNo = 1, pageSize = 10) {
+export function getLinkList(page = 1, pageSize = 10) {
     return request.get('/link/list', {
         params: {
-            pageNo,
+            page,
             pageSize
         }
     })

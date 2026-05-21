@@ -122,7 +122,7 @@ export default {
         async loadArticles() {
             try {
                 const params = {
-                    pageNo: this.pagination.currentPage,
+                    page: this.pagination.currentPage,
                     pageSize: this.pagination.pageSize,
                     title: this.searchForm.title || undefined,
                 }

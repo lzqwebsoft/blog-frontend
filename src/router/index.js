@@ -9,7 +9,6 @@ const ChangePassword = () => import('@/views/ChangePassword.vue')
 const ForgotPassword = () => import('@/views/ForgotPassword.vue')
 const FoundPassword = () => import('@/views/FoundPassword.vue')
 const ResetPassword = () => import('@/views/ResetPassword.vue')
-const NotFound = () => import('../views/NotFound.vue')
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -121,16 +120,7 @@ const router = createRouter({
                 title: '设置',
                 description: '管理博客设置.',
             },
-        },
-        {
-            path: '/:pathMatch(.*)*',
-            name: 'notfound',
-            component: NotFound,
-            meta: {
-                title: '404 Not Found',
-                description: 'The page you are looking for does not exist.',
-            },
-        },
+        }
     ],
 })
 

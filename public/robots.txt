@@ -2,6 +2,7 @@ User-agent: *
 
 # Allow specific routes
 Allow: /$
+Allow: /?
 Allow: /show/
 Allow: /about
 Allow: /select/

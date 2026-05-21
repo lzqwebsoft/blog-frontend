@@ -7,13 +7,13 @@ import request from '@/utils/request'
 /**
  * 获取首页数据
  * @param {string} q - 搜索关键字
- * @param {number} pageNo - 页码
+ * @param {number} page - 页码
  * @param {number} pageSize - 每页数量
  * @param {string} categoryId - 分类ID（可选）
  */
-export function getHomeData(q = null, pageNo = 1, pageSize = 15, categoryId = null) {
+export function getHomeData(q = null, page = 1, pageSize = 15, categoryId = null) {
     const params = {
-        pageNo,
+        page,
         pageSize
     }
 
@@ -167,7 +167,7 @@ export function saveArticle(data) {
  * @param {Object} params - 查询参数
  * @param {number} [params.articleTypeId] - 文章类型 ID
  * @param {string} [params.title] - 标题关键字
- * @param {number} [params.pageNo] - 页码，默认 1
+ * @param {number} [params.page] - 页码，默认 1
  * @param {number} [params.pageSize] - 每页条数，默认 15
  */
 export function selectArticles(params) {
@@ -208,13 +208,13 @@ export function toggleTop(id, top) {
 
 /**
  * 获取草稿列表
- * @param {number} pageNo - 页码
+ * @param {number} page - 页码
  * @param {number} pageSize - 每页数量
  */
-export function getDrafts(pageNo = 1, pageSize = 15) {
+export function getDrafts(page = 1, pageSize = 15) {
     return request.get('/article/drafts', {
         params: {
-            pageNo,
+            page,
             pageSize
         }
     })
