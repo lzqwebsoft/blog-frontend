@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 页面未找到 - 飘痕の博客</title>
+    <meta name="description" content="抱歉，您请求的资源不存在。它可能已被删除、重命名或暂时不可用。">
+    <meta name="robots" content="noindex, follow">
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --accent: #000000;
+        }
+
+        .dark-theme {
+            --bg: #000000;
+            --text: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #262626;
+            --accent: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 32px 32px;
+            opacity: 0.4;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
+
+        main {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 0 2rem;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .illustration {
+            width: clamp(160px, 22vw, 200px);
+            height: auto;
+            margin: 0 auto 1.5rem;
+            display: block;
+            fill: var(--text);
+            transition: fill 0.4s ease;
+            opacity: 0.9;
+            animation: float 5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .error-code-wrapper {
+            position: relative;
+            display: block;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .error-code {
+            font-size: clamp(4rem, 15vw, 7rem);
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.05em;
+            color: var(--text);
+            opacity: 0.05;
+            user-select: none;
+        }
+
+        .error-code-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        p {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            max-width: 480px;
+            margin: 0 auto 2rem;
+        }
+
+        .error-path-info {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875rem;
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2.5rem;
+            color: var(--text-muted);
+            display: block;
+            width: 100%;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--bg);
+            border: 1px solid var(--accent);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px var(--text);
+        }
+
+        .btn-link {
+            color: var(--text);
+            border: 1px solid var(--border);
+            background: transparent;
+        }
+
+        .btn-link:hover {
+            border-color: var(--text);
+            background-color: var(--border);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--text);
+            transform: scale(1.05);
+        }
+
+        footer {
+            width: 100%;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.75rem; }
+            p { font-size: 1rem; }
+            .actions { flex-direction: column; width: 100%; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-overlay"></div>
+
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+    </button>
+
+    <main>
+        <svg class="illustration" width="280" height="340" viewBox="0 0 231 280">
+            <g>
+                <path
+                    d="M230.9,123.8l-5.1-13.4c0,0,0-0.1-0.1-0.1c-0.1-0.4-0.5-0.8-0.9-0.8h-53.4l-54.2-96.7V4.2h-0.1 C117,1.8,115,0,112.6,0c-2.4,0-4.4,1.8-4.7,4.2h-0.1v0.6c0,0,0,0,0,0s0,0,0,0V13l-54.1,96.6H1c-0.5,0-1,0.4-1,1v163.2 c0,0.4,0.3,0.8,0.7,0.9c0,0,0.1,0.1,0.1,0.1l12.7,5.2c0.1,0,0.2,0.1,0.4,0.1H230c0.5,0,1-0.4,1-1V124.2 C231,124.1,231,123.9,230.9,123.8z M109.8,4.8c0-1.6,1.3-2.8,2.8-2.8c1.6,0,2.8,1.3,2.8,2.8c0,1.6-1.3,2.8-2.8,2.8 C111,7.6,109.8,6.4,109.8,4.8L109.8,4.8z M109.8,8.6c0.8,0.6,1.8,1,2.8,1c1.1,0,2-0.4,2.8-1v9.1c0,1.2-1,2.3-2.3,2.3H112 c-1.2,0-2.3-1-2.3-2.3V8.6z M107.8,16.9v0.8c0,2.3,1.9,4.2,4.2,4.2h1.1c2.3,0,4.2-1.9,4.2-4.2v-0.9l51.9,92.8H55.9L107.8,16.9z  M1.9,111.5h50.7l-2.3,4.1c-0.4-0.1-0.7-0.2-1.1-0.2c-2.4,0-4.4,2-4.4,4.4s2,4.4,4.4,4.4c2.4,0,4.4-2,4.4-4.4 c0-1.4-0.6-2.6-1.6-3.4l2.8-5h115.5l2.9,5.1c-0.9,0.8-1.5,2-1.5,3.3c0,2.4,2,4.4,4.4,4.4c2.4,0,4.4-2,4.4-4.4s-2-4.4-4.4-4.4 c-0.4,0-0.9,0.1-1.3,0.2l-2.3-4.2h51.3V138H1.9V111.5z M48.7,120.5c0.2,0.1,0.3,0.1,0.5,0.1c0.3,0,0.7-0.2,0.8-0.5l1-1.8 c0.4,0.4,0.6,1,0.6,1.6c0,1.4-1.1,2.5-2.5,2.5c-1.4,0-2.5-1.1-2.5-2.5c0-1.4,1.1-2.5,2.5-2.5c0,0,0.1,0,0.1,0l-1,1.7 C48.1,119.6,48.3,120.2,48.7,120.5z M176.9,119.1l-1-1.7c0.1,0,0.2,0,0.3,0c1.4,0,2.5,1.1,2.5,2.5c0,1.4-1.1,2.5-2.5,2.5 s-2.5-1.1-2.5-2.5c0-0.6,0.2-1.1,0.5-1.5l0.9,1.7c0.2,0.3,0.5,0.5,0.8,0.5c0.2,0,0.3,0,0.5-0.1C177,120.2,177.1,119.6,176.9,119.1z  M140.1,207.9l-0.4-6.3l20.9-33h10v31.2h5.7v8h-5.7v10.8h-9.9v-10.8H140.1z M129.1,188.8v9.2c0,6.9-1.4,12.2-4.3,15.9 c-2.9,3.7-7.1,5.5-12.6,5.5c-5.5,0-9.6-1.8-12.5-5.4c-2.9-3.6-4.4-8.8-4.4-15.5v-9.2c0-7,1.5-12.3,4.4-15.9 c2.9-3.6,7.1-5.4,12.5-5.4c5.5,0,9.6,1.8,12.5,5.4C127.6,176.9,129.1,182,129.1,188.8z M48.6,207.9l-0.4-6.3l20.9-33h10v31.2h5.7v8 h-5.7v10.8h-9.9v-10.8H48.6z M1.9,248.9h221.9v23.9H1.9V248.9z M229.1,278.1h-215l-8.2-3.3h219c0.5,0,1-0.4,1-1v-24.3l3.2,6.2 V278.1z M229.1,144.3l-3.2-5.8v-22.6l3.2,8.5V144.3z" />
+                <polygon points="160.6,182.2 159.9,183.3 149.5,199.8 160.6,199.8" />
+                <polygon points="69.2,182.2 68.5,183.3 58.1,199.8 69.2,199.8" />
+                <path
+                    d="M112.2,175.9c-2.3,0-4.1,0.9-5.2,2.7s-1.7,4.6-1.8,8.5v12.2c0,4.1,0.6,7.1,1.7,9.1c1.1,2,2.9,3,5.3,3 c2.4,0,4.2-1,5.3-2.9s1.6-4.8,1.7-8.7v-11.9c0-4.2-0.6-7.2-1.7-9.1C116.3,176.9,114.6,175.9,112.2,175.9z" />
+                <path
+                    d="M212.4,121.2c-2,0-3.6,1.6-3.6,3.6c0,2,1.6,3.6,3.6,3.6s3.6-1.6,3.6-3.6C216,122.8,214.4,121.2,212.4,121.2z  M212.4,126.4c-0.9,0-1.6-0.7-1.6-1.6s0.7-1.6,1.6-1.6s1.6,0.7,1.6,1.6S213.3,126.4,212.4,126.4z" />
+                <path
+                    d="M201.4,121.2c-2,0-3.6,1.6-3.6,3.6c0,2,1.6,3.6,3.6,3.6s3.6-1.6,3.6-3.6C205,122.8,203.4,121.2,201.4,121.2z  M201.4,126.4c-0.9,0-1.6-0.7-1.6-1.6s0.7-1.6,1.6-1.6s1.6,0.7,1.6,1.6S202.3,126.4,201.4,126.4z" />
+                <path
+                    d="M20.3,119.9h-9.7c-0.5,0-1,0.4-1,1c0,0.5,0.4,1,1,1h9.7c0.5,0,1-0.4,1-1C21.2,120.3,20.8,119.9,20.3,119.9z" />
+                <path
+                    d="M20.3,123.8h-9.7c-0.5,0-1,0.4-1,1c0,0.5,0.4,1,1,1h9.7c0.5,0,1-0.4,1-1C21.2,124.2,20.8,123.8,20.3,123.8z" />
+                <path d="M20.3,127.7h-9.7c-0.5,0-1,0.4-1,1s0.4,1,1,1h9.7c0.5,0,1-0.4,1-1S20.8,127.7,20.3,127.7z" />
+            </g>
+        </svg>
+
+        <div class="error-code-wrapper">
+            <div class="error-code">404</div>
+            <div class="error-code-overlay">
+                <h1>页面未找到</h1>
+            </div>
+        </div>
+
+        <p>很抱歉，找不到您请求的资源。请检查您键入的网址是否拼写正确，或者当前页面已被移除或永久迁移。</p>
+
+        <div class="error-path-info">
+            NOT_FOUND: <span id="currentPath"></span>
+        </div>
+
+        <div class="actions">
+            <a href="/" class="btn btn-primary">
+                返回首页
+            </a>
+            <a href="javascript:history.back()" class="btn btn-link">
+                返回上一页
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        &copy; <span id="year"></span> 飘痕の博客
+    </footer>
+
+    <script>
+        const THEME_STORAGE_KEY = 'blog_theme_preference';
+        const THEME_EXPIRY_DAYS = 1;
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('currentPath').textContent = window.location.pathname;
+
+        function setWithExpiry(key, value, days) {
+            const now = new Date();
+            const item = { value: value, expiry: now.getTime() + days * 24 * 60 * 60 * 1000 };
+            localStorage.setItem(key, JSON.stringify(item));
+        }
+
+        function getWithExpiry(key) {
+            const itemStr = localStorage.getItem(key);
+            if (!itemStr) return null;
+            try {
+                const item = JSON.parse(itemStr);
+                const now = new Date();
+                if (now.getTime() > item.expiry) {
+                    localStorage.removeItem(key);
+                    return null;
+                }
+                return item.value;
+            } catch { return null; }
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const sunIcon = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+        const moonIcon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+        function setTheme(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark-theme');
+                themeIcon.innerHTML = sunIcon;
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                themeIcon.innerHTML = moonIcon;
+            }
+            setWithExpiry(THEME_STORAGE_KEY, isDark, THEME_EXPIRY_DAYS);
+        }
+
+        const storedTheme = getWithExpiry(THEME_STORAGE_KEY);
+        if (storedTheme !== null) {
+            setTheme(storedTheme);
+        } else {
+            setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            setTheme(!isDark);
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!getWithExpiry(THEME_STORAGE_KEY)) setTheme(e.matches);
+        });
+    </script>
+</body>
+</html>
