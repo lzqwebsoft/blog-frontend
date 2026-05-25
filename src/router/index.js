@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 const Index = () => import('../views/Index.vue')
 const Show = () => import('../views/Show.vue')
 const About = () => import('../views/About.vue')
+const Shuoshuo = () => import('../views/Shuoshuo.vue')
 const Login = () => import('@/views/Login.vue')
 const EditArticle = () => import('../views/EditArticle.vue')
 const Set = () => import('@/views/Set.vue')
@@ -38,6 +39,15 @@ const router = createRouter({
             meta: {
                 title: '关于本站',
                 description: '了解更多关于-ZQLUO-的博客信息',
+            },
+        },
+        {
+            path: '/shuoshuo',
+            name: 'shuoshuo',
+            component: Shuoshuo,
+            meta: {
+                title: '说说',
+                description: '碎碎念 - 记录生活与随想',
             },
         },
         {

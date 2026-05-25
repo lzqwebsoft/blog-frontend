@@ -6,6 +6,7 @@ Allow: /?
 Allow: /show/
 Allow: /about
 Allow: /select/
+Allow: /shuoshuo
 Allow: /sitemap.xml
 Allow: /feed.xml
 

@@ -26,7 +26,12 @@
                     <font-awesome-icon icon="square-rss" />
                 </a>
 
-                <RouterLink class="nav-item about-link" to="/about">关于</RouterLink>
+                <RouterLink class="nav-item about-link" to="/shuoshuo" title="说说">
+                    <font-awesome-icon icon="comment-dots" />
+                </RouterLink>
+                <RouterLink class="nav-item about-link" to="/about" title="关于">
+                    <font-awesome-icon icon="circle-info" />
+                </RouterLink>
 
                 <button class="nav-item theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
                     <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
@@ -51,12 +56,6 @@
                 <button v-else @click="$router.push('/login')" class="nav-item" title="博主登录">
                     <font-awesome-icon icon="right-to-bracket" />
                 </button>
-
-                <!-- 小屏时显示右侧菜单(仅在首页显示) -->
-                <button v-if="['index', 'category'].includes($route.name)" id="mobile-menu-btn" class="nav-item"
-                    @click="toggleSidebar">
-                    <font-awesome-icon icon="bars" />
-                </button>
             </div>
         </nav>
     </header>
@@ -77,7 +76,6 @@
 <script>
 import { signOut } from '@/api/user'
 import { isAuthenticated, clearAuthData } from '@/utils/auth'
-import eventBus from '@/utils/eventBus'
 import { initializeTheme as detectTheme, applyTheme } from '@/utils/theme'
 
 export default {
@@ -199,9 +197,6 @@ export default {
                 this.showMenu = false
                 this.$router.push('/login')
             }
-        },
-        toggleSidebar() {
-            eventBus.emit('toggle-sidebar')
         },
     },
 }

@@ -109,9 +109,12 @@
 
         <!-- Right: Sidebar -->
         <aside class="sidebar-column" :class="{ 'mobile-open': sidebarOpen }">
+            <!-- Mobile Vertical Sidebar Toggle Button -->
+            <button class="mobile-sidebar-toggle-btn" :class="{ 'sidebar-open': sidebarOpen }" @click="toggleSidebar">
+                <span>分类&链接</span>
+            </button>
 
             <div class="sidebar-content">
-
                 <!-- Categories -->
                 <div class="sidebar-card" v-if="categories.length > 0">
                     <h3 class="sidebar-title"><font-awesome-icon icon="folder" class="sidebar-icon" />分类目录</h3>
@@ -954,6 +957,10 @@ export default {
     }
 }
 
+.mobile-sidebar-toggle-btn {
+    display: none;
+}
+
 /* Mobile Sidebar Drawer */
 @media (max-width: 768px) {
     .page-container {
@@ -983,9 +990,11 @@ export default {
         z-index: 50;
         transform: translateX(100%);
         transition: transform 0.3s ease-in-out;
-        overflow-y: auto;
+        overflow: visible;
         box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
         padding: 80px 0 0;
+        display: flex;
+        flex-direction: column;
     }
 
     .mobile-open {
@@ -994,6 +1003,8 @@ export default {
 
     .sidebar-content {
         padding: 1.5rem;
+        overflow-y: auto;
+        flex: 1;
     }
 
     .sidebar-overlay {
@@ -1012,6 +1023,32 @@ export default {
     .sidebar-overlay.visible {
         opacity: 1;
         visibility: visible;
+    }
+
+    .mobile-sidebar-toggle-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: absolute;
+        left: 1px; /* 1px overlap to ensure pixel-perfect seamless connection with no subpixel gap */
+        top: 30%;
+        transform: translate(-100%, -50%);
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        border-right: none;
+        padding: 0.85rem 0.55rem;
+        border-radius: 0.75rem 0 0 0.75rem;
+        cursor: pointer;
+        z-index: 51;
+        box-shadow: -4px 0 15px rgba(0, 0, 0, 0.08);
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+        line-height: 1.4;
     }
 }
 
