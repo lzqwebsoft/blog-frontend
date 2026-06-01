@@ -19,22 +19,22 @@
 
             <div class="nav-menu">
                 <button class="nav-item search-button" @click="showSearchDialog = true">
-                    <font-awesome-icon icon="magnifying-glass" />
+                    <font-awesome-icon icon="magnifying-glass" fixed-width />
                 </button>
 
                 <a class="nav-item rss-button" href="/feed.xml" target="_blank" title="RSS 订阅">
-                    <font-awesome-icon icon="square-rss" />
+                    <font-awesome-icon icon="square-rss" fixed-width />
                 </a>
 
                 <RouterLink class="nav-item about-link" to="/shuoshuo" title="说说">
-                    <font-awesome-icon icon="comment-dots" />
+                    <font-awesome-icon icon="comment-dots" fixed-width />
                 </RouterLink>
                 <RouterLink class="nav-item about-link" to="/about" title="关于">
-                    <font-awesome-icon icon="circle-info" />
+                    <font-awesome-icon icon="circle-info" fixed-width />
                 </RouterLink>
 
                 <button class="nav-item theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
-                    <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
+                    <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" fixed-width />
                 </button>
 
                 <!-- 已登录：显示下拉菜单 -->
@@ -54,7 +54,7 @@
 
                 <!-- 未登录：显示登录按钮 -->
                 <button v-else @click="$router.push('/login')" class="nav-item" title="博主登录">
-                    <font-awesome-icon icon="right-to-bracket" />
+                    <font-awesome-icon icon="right-to-bracket" fixed-width />
                 </button>
             </div>
         </nav>
@@ -326,6 +326,8 @@ export default {
     justify-content: center;
     align-items: center;
     gap: 0.25rem;
+    width: auto;
+    height: 2.2rem;
 }
 
 .avatar {
@@ -394,6 +396,17 @@ export default {
     padding: 0.5rem;
     border-radius: 4px;
     transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    box-sizing: border-box;
+}
+
+.nav-item :deep(svg:not(.menu)) {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
 }
 
 .nav-item:hover {
@@ -411,7 +424,6 @@ export default {
 }
 
 .about-link {
-    font-size: 1rem;
     font-weight: 500;
 }
 

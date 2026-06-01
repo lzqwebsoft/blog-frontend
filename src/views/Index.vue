@@ -114,58 +114,60 @@
                 <span>分类&链接</span>
             </button>
 
-            <div class="sidebar-content">
-                <!-- Categories -->
-                <div class="sidebar-card" v-if="categories.length > 0">
-                    <h3 class="sidebar-title"><font-awesome-icon icon="folder" class="sidebar-icon" />分类目录</h3>
-                    <ul class="sidebar-list">
-                        <li v-for="category in categories" :key="category.id" class="sidebar-item group">
-                            <RouterLink :to="category.url" class="sidebar-link">
-                                {{ category.name }}
-                            </RouterLink>
-                            <span class="count-badge">{{ category.num }}</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Top 10 -->
-                <div class="sidebar-card" v-if="top10.length > 0">
-                    <h3 class="sidebar-title"><font-awesome-icon icon="fire" class="sidebar-icon" />点击排行</h3>
-                    <ul class="ranking-list">
-                        <li v-for="(article, index) in top10" :key="article.id" class="ranking-item">
-                            <span class="rank-number">{{ String(index + 1).padStart(2, '0') }}</span>
-                            <RouterLink :to="article.url" class="rank-link line-clamp-2">
-                                <div>{{ article.title }}</div>
-                                <small>{{ article.read }}次阅读</small>
-                            </RouterLink>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Links -->
-                <div class="sidebar-card">
-                    <h3 class="sidebar-title"><font-awesome-icon icon="link" class="sidebar-icon" />友情链接</h3>
-                    <div class="tags-cloud">
-                        <a v-for="(link, index) in links" :key="index" :href="link.path" target="_blank"
-                            class="tag-link">
-                            {{ link.name }}
-                        </a>
+            <div class="sidebar-scroll-wrapper">
+                <div class="sidebar-content">
+                    <!-- Categories -->
+                    <div class="sidebar-card" v-if="categories.length > 0">
+                        <h3 class="sidebar-title"><font-awesome-icon icon="folder" class="sidebar-icon" />分类目录</h3>
+                        <ul class="sidebar-list">
+                            <li v-for="category in categories" :key="category.id" class="sidebar-item group">
+                                <RouterLink :to="category.url" class="sidebar-link">
+                                    {{ category.name }}
+                                </RouterLink>
+                                <span class="count-badge">{{ category.num }}</span>
+                            </li>
+                        </ul>
                     </div>
-                </div>
 
-                <!-- Contact -->
-                <div class="sidebar-card">
-                    <h3 class="sidebar-title"><font-awesome-icon icon="address-card" class="sidebar-icon" />联系我</h3>
-                    <div class="social-links">
-                        <a href="https://github.com/lzqwebsoft" target="_blank" class="social-icon"><font-awesome-icon
-                                :icon="['fab', 'github']" /></a>
-                        <a href="https://twitter.com/lzqwebsoft" target="_blank" class="social-icon"><font-awesome-icon
-                                :icon="['fab', 'x-twitter']" /></a>
-                        <a :href="'mailto:' + blogInfo.email" class="social-icon"><font-awesome-icon
-                                icon="envelope" /></a>
+                    <!-- Top 10 -->
+                    <div class="sidebar-card" v-if="top10.length > 0">
+                        <h3 class="sidebar-title"><font-awesome-icon icon="fire" class="sidebar-icon" />点击排行</h3>
+                        <ul class="ranking-list">
+                            <li v-for="(article, index) in top10" :key="article.id" class="ranking-item">
+                                <span class="rank-number">{{ String(index + 1).padStart(2, '0') }}</span>
+                                <RouterLink :to="article.url" class="rank-link line-clamp-2">
+                                    <div>{{ article.title }}</div>
+                                    <small>{{ article.read }}次阅读</small>
+                                </RouterLink>
+                            </li>
+                        </ul>
                     </div>
-                </div>
 
+                    <!-- Links -->
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-title"><font-awesome-icon icon="link" class="sidebar-icon" />友情链接</h3>
+                        <div class="tags-cloud">
+                            <a v-for="(link, index) in links" :key="index" :href="link.path" target="_blank"
+                                class="tag-link">
+                                {{ link.name }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Contact -->
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-title"><font-awesome-icon icon="address-card" class="sidebar-icon" />联系我</h3>
+                        <div class="social-links">
+                            <a href="https://github.com/lzqwebsoft" target="_blank"
+                                class="social-icon"><font-awesome-icon :icon="['fab', 'github']" /></a>
+                            <a href="https://twitter.com/lzqwebsoft" target="_blank"
+                                class="social-icon"><font-awesome-icon :icon="['fab', 'x-twitter']" /></a>
+                            <a :href="'mailto:' + blogInfo.email" class="social-icon"><font-awesome-icon
+                                    icon="envelope" /></a>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </aside>
 
@@ -586,6 +588,10 @@ export default {
 }
 
 /* Sidebar Styling */
+.sidebar-scroll-wrapper {
+    width: 100%;
+}
+
 .sidebar-card {
     background-color: var(--card-bg);
     border-radius: 0.75rem;
@@ -992,7 +998,7 @@ export default {
         transition: transform 0.3s ease-in-out;
         overflow: visible;
         box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-        padding: 80px 0 0;
+        padding: 0;
         display: flex;
         flex-direction: column;
     }
@@ -1001,10 +1007,19 @@ export default {
         transform: translateX(0);
     }
 
+    .sidebar-scroll-wrapper {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        padding-top: 80px;
+        display: flex;
+        flex-direction: column;
+    }
+
     .sidebar-content {
         padding: 1.5rem;
-        overflow-y: auto;
-        flex: 1;
+        overflow-y: visible;
+        flex: none;
     }
 
     .sidebar-overlay {
@@ -1030,7 +1045,8 @@ export default {
         flex-direction: column;
         align-items: center;
         position: absolute;
-        left: 1px; /* 1px overlap to ensure pixel-perfect seamless connection with no subpixel gap */
+        left: 1px;
+        /* 1px overlap to ensure pixel-perfect seamless connection with no subpixel gap */
         top: 30%;
         transform: translate(-100%, -50%);
         background-color: var(--bg-color);
@@ -1041,7 +1057,7 @@ export default {
         border-radius: 0.75rem 0 0 0.75rem;
         cursor: pointer;
         z-index: 51;
-        box-shadow: -4px 0 15px rgba(0, 0, 0, 0.08);
+        box-shadow: -6px 0 10px -4px rgba(0, 0, 0, 0.08), 0 -4px 8px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -4px rgba(0, 0, 0, 0.08);
         transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         font-size: 0.85rem;
         font-weight: 600;

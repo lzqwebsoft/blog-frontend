@@ -82,10 +82,12 @@
         </div>
 
         <div v-else class="talk-list-timeline">
-            <div v-for="talk in talks" :key="talk.id" class="talk-timeline-item">
+            <div v-for="(talk, index) in talks" :key="talk.id" class="talk-timeline-item">
                 <!-- 时间轴左侧时间标识 -->
                 <div class="timeline-date-col">
-                    <span class="timeline-year"><strong>{{ getYearStr(talk.release_at) }}</strong></span>
+                    <span v-if="index === 0 || getYearStr(talk.release_at) !== getYearStr(talks[index - 1].release_at)" class="timeline-year">
+                        <strong>{{ getYearStr(talk.release_at) }}</strong>
+                    </span>
                     <span class="timeline-month-day">{{ getMonthDayStr(talk.release_at) }}</span>
                 </div>
 
