@@ -280,7 +280,8 @@
         </section>
 
         <!-- 图片预览组件 -->
-        <ImagePreview :visible="previewVisible" :image-url="previewImage" @close="previewVisible = false" />
+        <ImagePreview :visible="previewVisible" :image-url="previewImage" :custom-class="previewCustomClass"
+            @close="closePreview" />
 
         <!-- 目录组件 -->
         <TableOfContents v-if="!loading && !error" container-selector=".article-content"
@@ -353,6 +354,7 @@ import { isAuthenticated } from '@/utils/auth'
 import { formatDate, formatDateTime, formatReadCount, getPatternType, removePathSuffix } from '@/utils/tools'
 import TableOfContents from '../components/TableOfContents.vue'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
+import { renderMermaidBlocks, reRenderMermaidTheme, isMermaidElement } from '@/utils/mermaid'
 
 export default {
     components: {
@@ -400,14 +402,23 @@ export default {
             showCaptcha: false,
             previewVisible: false,
             previewImage: '',
+            previewCustomClass: '',
             isCommentFocused: false,
             error: false,
+            themeObserver: null,
         }
     },
     mounted() {
         this.checkAuthStatus()
         this.articleId = this.getArticleIdFromRoute()
         this.fetchArticleDetail()
+        this.setupThemeObserver()
+    },
+    beforeUnmount() {
+        if (this.themeObserver) {
+            this.themeObserver.disconnect()
+            this.themeObserver = null
+        }
     },
     updated() {
         this.$nextTick(() => {
@@ -497,10 +508,12 @@ export default {
                     }
                 }
 
-                this.$nextTick(() => {
+                this.$nextTick(async () => {
+                    await this.initMermaidRendering()
                     this.initCodeHighlight()
                     this.initImageProcessing()
                     this.initSNSShare()
+                    Prism.highlightAll()
 
                     // 动态设置页面标题
                     if (this.article.title) {
@@ -625,7 +638,11 @@ export default {
             // prism.js代码高亮显示
             let docPre = document.querySelectorAll('.article-content pre')
             if (docPre && docPre.length > 0) {
-                docPre.forEach(function (item) {
+                docPre.forEach((item) => {
+                    if (isMermaidElement(item)) {
+                        return
+                    }
+
                     let code = item.querySelector('code')
                     if (code) {
                         let classVal = code.getAttribute('class')
@@ -637,21 +654,76 @@ export default {
                     } else {
                         let classValue = item.getAttribute('class')
                         if (classValue && classValue != '') {
-                            let classArr = []
-                            classArr = classValue.split(';')
-                            classArr = classArr[0].split(':')
-                            var lan = classArr[1].trim()
-                            var lanClass = 'language-' + lan
-                            var preContent =
-                                '<code class="' +
-                                lanClass +
-                                ' line-numbers">' +
-                                item.innerHTML +
-                                '</code>'
-                            item.classList.add('my_pre')
-                            item.innerHTML = preContent
+                            let lanClass = ''
+                            if (classValue.includes(':')) {
+                                let classArr = classValue.split(';')[0].split(':')
+                                if (classArr[1]) {
+                                    lanClass = 'language-' + classArr[1].trim()
+                                }
+                            } else if (classValue.startsWith('language-')) {
+                                lanClass = classValue.trim()
+                            } else {
+                                lanClass = 'language-' + classValue.trim()
+                            }
+
+                            if (lanClass) {
+                                var preContent =
+                                    '<code class="' +
+                                    lanClass +
+                                    ' line-numbers">' +
+                                    item.innerHTML +
+                                    '</code>'
+                                item.classList.add('my_pre')
+                                item.innerHTML = preContent
+                            }
                         }
                     }
+                })
+            }
+        },
+
+        async initMermaidRendering() {
+            await renderMermaidBlocks('.article-content', {
+                onPreviewImage: (url, meta) => {
+                    this.previewImage = url
+                    if (typeof meta === 'string') {
+                        this.previewCustomClass = meta
+                    } else if (meta && meta.className) {
+                        this.previewCustomClass = meta.className
+                    } else {
+                        const isDark = document.documentElement.classList.contains('dark-theme')
+                        this.previewCustomClass = isDark ? 'mermaid-preview-dark' : 'mermaid-preview-light'
+                    }
+                    this.previewVisible = true
+                },
+            })
+
+            // 彻底清理包裹在 mermaid-container 外部可能残留的 code-toolbar 和 prism toolbar
+            document.querySelectorAll('.article-content .code-toolbar').forEach((tb) => {
+                const mermaidContainer = tb.querySelector('.mermaid-container')
+                if (mermaidContainer) {
+                    const prismTb = tb.querySelector('.toolbar')
+                    if (prismTb) prismTb.remove()
+                    if (tb.parentNode) {
+                        tb.parentNode.replaceChild(mermaidContainer, tb)
+                    }
+                }
+            })
+        },
+
+        setupThemeObserver() {
+            if (typeof MutationObserver !== 'undefined') {
+                this.themeObserver = new MutationObserver((mutations) => {
+                    for (const mutation of mutations) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            reRenderMermaidTheme('.article-content')
+                            break
+                        }
+                    }
+                })
+                this.themeObserver.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['class'],
                 })
             }
         },
@@ -686,9 +758,15 @@ export default {
                 img.addEventListener('click', (e) => {
                     e.stopPropagation()
                     this.previewImage = img.src
+                    this.previewCustomClass = ''
                     this.previewVisible = true
                 })
             })
+        },
+
+        closePreview() {
+            this.previewVisible = false
+            this.previewCustomClass = ''
         },
 
         initSNSShare() {
@@ -1214,6 +1292,185 @@ export default {
 :root.dark-theme .article-content code {
     background: #1a1a1a;
     color: #e6e6e6;
+}
+
+/* Mermaid 流程图容器 */
+.article-content .mermaid-container {
+    margin: 1.75rem 0;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.article-content .mermaid-container:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    border-color: #cbd5e1;
+}
+
+.article-content .mermaid-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.625rem 1rem;
+    background: rgba(241, 245, 249, 0.85);
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.8125rem;
+    backdrop-filter: blur(8px);
+}
+
+.article-content .mermaid-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #475569;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+.article-content .mermaid-badge svg {
+    color: #3b82f6;
+}
+
+.article-content .mermaid-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.article-content .mermaid-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.article-content .mermaid-action-btn:hover {
+    background: #f8fafc;
+    color: #1e293b;
+    border-color: #94a3b8;
+    transform: translateY(-1px);
+}
+
+.article-content .mermaid-action-btn.copied {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+}
+
+.article-content .mermaid-chart {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    overflow-x: auto;
+    background: transparent;
+}
+
+.article-content .mermaid-chart svg {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.02));
+}
+
+/* 深色模式下的 Mermaid */
+:root.dark-theme .article-content .mermaid-container {
+    background: #181825;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:root.dark-theme .article-content .mermaid-container:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+:root.dark-theme .article-content .mermaid-toolbar {
+    background: rgba(30, 30, 46, 0.85);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+:root.dark-theme .article-content .mermaid-badge {
+    color: #cbd5e1;
+}
+
+:root.dark-theme .article-content .mermaid-badge svg {
+    color: #60a5fa;
+}
+
+:root.dark-theme .article-content .mermaid-action-btn {
+    background: #232336;
+    color: #cbd5e1;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+:root.dark-theme .article-content .mermaid-action-btn:hover {
+    background: #2e2e46;
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+:root.dark-theme .article-content .mermaid-action-btn.copied {
+    background: #064e3b;
+    color: #6ee7b7;
+    border-color: #059669;
+}
+
+/* 深色模式下 Mermaid 流程图与时序图高亮适配（解决 rect 亮色高对比覆盖文字的问题） */
+:root.dark-theme .article-content .mermaid-chart svg {
+    .rect, rect.rect {
+        fill-opacity: 0.18 !important;
+        stroke-opacity: 0.5 !important;
+    }
+    .messageText, text.messageText {
+        fill: #f1f5f9 !important;
+        stroke: none !important;
+    }
+    .messageLine0, .messageLine1, line.messageLine0, line.messageLine1 {
+        stroke: #94a3b8 !important;
+    }
+    .actor line, line.actor-line {
+        stroke: #64748b !important;
+    }
+    .note, rect.note {
+        fill: #2d3748 !important;
+        stroke: #4a5568 !important;
+    }
+    .noteText, text.noteText {
+        fill: #f7fafc !important;
+    }
+}
+
+/* 消除 Prism code-toolbar 与 Mermaid 容器的重叠冲突 */
+.article-content .code-toolbar:has(.mermaid-container),
+.code-toolbar:has(.mermaid-container) {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.article-content .code-toolbar:has(.mermaid-container) > .toolbar,
+.code-toolbar:has(.mermaid-container) > .toolbar,
+.article-content .mermaid-container + .toolbar,
+.article-content .mermaid-container ~ .toolbar,
+.article-content .mermaid-container .toolbar:not(.mermaid-toolbar) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 .article-content img {

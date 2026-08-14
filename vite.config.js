@@ -41,6 +41,9 @@ export default defineConfig({
                         if (id.includes('marked')) {
                             return 'marked';
                         }
+                        if (id.includes('mermaid')) {
+                            return 'mermaid';
+                        }
                         if (id.includes('@fortawesome')) {
                             return 'fontawesome';
                         }

@@ -1,11 +1,26 @@
 <template>
     <transition name="fade">
-        <div v-if="visible" class="image-preview-overlay" @click.self="handleClose">
+        <div
+            v-if="visible"
+            class="image-preview-overlay"
+            :class="customClass"
+            @click.self="handleClose"
+        >
             <div class="preview-container">
-                <img :src="imageUrl" alt="Preview" class="preview-img"
-                    :style="{ transform: `translate(${translateX}px, ${translateY}px) scale(${scale})` }"
-                    @wheel.prevent="handleWheel" @mousedown="handleMouseDown" @touchstart="handleTouchStart"
-                    @touchmove="handleTouchMove" @touchend="handleTouchEnd" @click.stop />
+                <img
+                    :src="imageUrl"
+                    alt="Preview"
+                    class="preview-img"
+                    :style="{
+                        transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
+                    }"
+                    @wheel.prevent="handleWheel"
+                    @mousedown="handleMouseDown"
+                    @touchstart="handleTouchStart"
+                    @touchmove="handleTouchMove"
+                    @touchend="handleTouchEnd"
+                    @click.stop
+                />
             </div>
             <button class="close-btn" @click="handleClose">
                 <font-awesome-icon icon="xmark" />
@@ -20,12 +35,16 @@ export default {
     props: {
         visible: {
             type: Boolean,
-            default: false
+            default: false,
         },
         imageUrl: {
             type: String,
-            default: ''
-        }
+            default: '',
+        },
+        customClass: {
+            type: [String, Array, Object],
+            default: '',
+        },
     },
     data() {
         return {
@@ -37,93 +56,93 @@ export default {
             lastTranslate: { x: 0, y: 0 },
             initialDistance: 0,
             lastScale: 1,
-        };
+        }
     },
     watch: {
         visible(val) {
             if (val) {
-                this.resetState();
-                document.body.style.overflow = 'hidden';
+                this.resetState()
+                document.body.style.overflow = 'hidden'
             } else {
-                document.body.style.overflow = '';
+                document.body.style.overflow = ''
             }
-        }
+        },
     },
     methods: {
         resetState() {
-            this.scale = 1;
-            this.translateX = 0;
-            this.translateY = 0;
-            this.lastTranslate = { x: 0, y: 0 };
-            this.lastScale = 1;
+            this.scale = 1
+            this.translateX = 0
+            this.translateY = 0
+            this.lastTranslate = { x: 0, y: 0 }
+            this.lastScale = 1
         },
         handleClose() {
-            this.$emit('close');
+            this.$emit('close')
         },
         handleWheel(e) {
-            const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            const newScale = this.scale + delta;
+            const delta = e.deltaY > 0 ? -0.1 : 0.1
+            const newScale = this.scale + delta
             if (newScale >= 0.5 && newScale <= 5) {
-                this.scale = newScale;
+                this.scale = newScale
             }
         },
         handleMouseDown(e) {
-            e.preventDefault();
-            this.isDragging = true;
-            this.startPoint = { x: e.clientX, y: e.clientY };
-            this.lastTranslate = { x: this.translateX, y: this.translateY };
+            e.preventDefault()
+            this.isDragging = true
+            this.startPoint = { x: e.clientX, y: e.clientY }
+            this.lastTranslate = { x: this.translateX, y: this.translateY }
 
-            document.addEventListener('mousemove', this.handleMouseMove);
-            document.addEventListener('mouseup', this.handleMouseUp);
+            document.addEventListener('mousemove', this.handleMouseMove)
+            document.addEventListener('mouseup', this.handleMouseUp)
         },
         handleMouseMove(e) {
-            if (!this.isDragging) return;
-            const deltaX = e.clientX - this.startPoint.x;
-            const deltaY = e.clientY - this.startPoint.y;
-            this.translateX = this.lastTranslate.x + deltaX;
-            this.translateY = this.lastTranslate.y + deltaY;
+            if (!this.isDragging) return
+            const deltaX = e.clientX - this.startPoint.x
+            const deltaY = e.clientY - this.startPoint.y
+            this.translateX = this.lastTranslate.x + deltaX
+            this.translateY = this.lastTranslate.y + deltaY
         },
         handleMouseUp() {
-            this.isDragging = false;
-            document.removeEventListener('mousemove', this.handleMouseMove);
-            document.removeEventListener('mouseup', this.handleMouseUp);
+            this.isDragging = false
+            document.removeEventListener('mousemove', this.handleMouseMove)
+            document.removeEventListener('mouseup', this.handleMouseUp)
         },
         // Touch events for mobile
         handleTouchStart(e) {
             if (e.touches.length === 1) {
-                this.isDragging = true;
-                this.startPoint = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                this.lastTranslate = { x: this.translateX, y: this.translateY };
+                this.isDragging = true
+                this.startPoint = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+                this.lastTranslate = { x: this.translateX, y: this.translateY }
             } else if (e.touches.length === 2) {
-                this.isDragging = false;
-                this.initialDistance = this.getDistance(e.touches[0], e.touches[1]);
-                this.lastScale = this.scale;
+                this.isDragging = false
+                this.initialDistance = this.getDistance(e.touches[0], e.touches[1])
+                this.lastScale = this.scale
             }
         },
         handleTouchMove(e) {
-            e.preventDefault(); // Prevent scrolling
+            e.preventDefault() // Prevent scrolling
             if (e.touches.length === 1 && this.isDragging) {
-                const deltaX = e.touches[0].clientX - this.startPoint.x;
-                const deltaY = e.touches[0].clientY - this.startPoint.y;
-                this.translateX = this.lastTranslate.x + deltaX;
-                this.translateY = this.lastTranslate.y + deltaY;
+                const deltaX = e.touches[0].clientX - this.startPoint.x
+                const deltaY = e.touches[0].clientY - this.startPoint.y
+                this.translateX = this.lastTranslate.x + deltaX
+                this.translateY = this.lastTranslate.y + deltaY
             } else if (e.touches.length === 2) {
-                const currentDistance = this.getDistance(e.touches[0], e.touches[1]);
-                const scaleFactor = currentDistance / this.initialDistance;
-                let newScale = this.lastScale * scaleFactor;
+                const currentDistance = this.getDistance(e.touches[0], e.touches[1])
+                const scaleFactor = currentDistance / this.initialDistance
+                let newScale = this.lastScale * scaleFactor
                 // Limit scale
-                if (newScale < 0.5) newScale = 0.5;
-                if (newScale > 5) newScale = 5;
-                this.scale = newScale;
+                if (newScale < 0.5) newScale = 0.5
+                if (newScale > 5) newScale = 5
+                this.scale = newScale
             }
         },
         handleTouchEnd() {
-            this.isDragging = false;
+            this.isDragging = false
         },
         getDistance(touch1, touch2) {
-            return Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-        }
-    }
+            return Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY)
+        },
+    },
 }
 </script>
 
@@ -135,6 +154,7 @@ export default {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(8px);
     z-index: 9999;
     display: flex;
     justify-content: center;
@@ -162,6 +182,26 @@ export default {
 
 .preview-img:active {
     cursor: grabbing;
+}
+
+/* Mermaid 流程图预览定制浅色/深色背景 */
+.image-preview-overlay.mermaid-preview-light .preview-img {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.image-preview-overlay.mermaid-preview-dark .preview-img {
+    background-color: #1e1e2e;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .close-btn {
