@@ -1,3 +1,4 @@
+import './utils/polyfills'
 import './assets/styles/main.css'
 // 异步加载字体，避免阻塞首屏渲染
 import('./utils/fonts.js')

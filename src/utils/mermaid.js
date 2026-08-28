@@ -139,7 +139,7 @@ export function isMermaidElement(el) {
     const codeEl = el.querySelector ? el.querySelector('code') : null
     const codeClassName = (codeEl?.getAttribute?.('class') || '').toLowerCase()
 
-    return (
+    const isClassMatched =
         className.includes('language-mermaid') ||
         className.includes('brush:mermaid') ||
         className.includes('brush: mermaid') ||
@@ -149,7 +149,24 @@ export function isMermaidElement(el) {
         codeClassName.includes('brush:mermaid') ||
         codeClassName === 'mermaid' ||
         codeClassName.includes(' mermaid')
-    )
+
+    if (isClassMatched) {
+        return true
+    }
+
+    // 针对无 class 或类名被覆盖的情况，检测代码文本是否为 Mermaid 语法
+    const rawText = ((codeEl ? codeEl.textContent : el.textContent) || '').trim()
+    if (rawText) {
+        const isSyntaxMatched =
+            /^\s*(graph\s|flowchart\s|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|pie|gitGraph|mindmap|timeline|journey|quadrantChart|C4Context|requirementDiagram|zenuml|architecture)\b/i.test(
+                rawText
+            )
+        if (isSyntaxMatched) {
+            return true
+        }
+    }
+
+    return false
 }
 
 /**

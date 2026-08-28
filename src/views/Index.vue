@@ -26,8 +26,11 @@
                 </div>
                 <h3 class="empty-title">暂无文章</h3>
                 <p class="empty-desc">这里空空如也，博主可能正在闭关修炼中...</p>
-                <button class="back-home-btn" @click="$router.push('/')"
-                    v-if="$route.params.categoryId || $route.query.q">
+                <button
+                    class="back-home-btn"
+                    @click="$router.push('/')"
+                    v-if="$route.params.categoryId || $route.query.q"
+                >
                     返回首页
                 </button>
             </div>
@@ -90,17 +93,29 @@
                 <div class="page-label">{{ totalArticles }}篇文章, 共{{ totalPages }}页</div>
 
                 <div class="pagination-wrapper">
-                    <button class="page-btn nav-btn" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
+                    <button
+                        class="page-btn nav-btn"
+                        @click="changePage(currentPage - 1)"
+                        :disabled="currentPage === 1"
+                    >
                         <font-awesome-icon icon="chevron-left" class="mr-1" />
                     </button>
                     <div class="page-numbers">
-                        <button v-for="pageNum in paginationPages()" :key="pageNum" class="page-btn number-btn"
-                            :class="{ 'active': pageNum === currentPage }" @click="changePage(pageNum)">
+                        <button
+                            v-for="pageNum in paginationPages()"
+                            :key="pageNum"
+                            class="page-btn number-btn"
+                            :class="{ active: pageNum === currentPage }"
+                            @click="changePage(pageNum)"
+                        >
                             {{ pageNum }}
                         </button>
                     </div>
-                    <button class="page-btn nav-btn" @click="changePage(currentPage + 1)"
-                        :disabled="currentPage === totalPages">
+                    <button
+                        class="page-btn nav-btn"
+                        @click="changePage(currentPage + 1)"
+                        :disabled="currentPage === totalPages"
+                    >
                         <font-awesome-icon icon="chevron-right" class="ml-1" />
                     </button>
                 </div>
@@ -110,7 +125,11 @@
         <!-- Right: Sidebar -->
         <aside class="sidebar-column" :class="{ 'mobile-open': sidebarOpen }">
             <!-- Mobile Vertical Sidebar Toggle Button -->
-            <button class="mobile-sidebar-toggle-btn" :class="{ 'sidebar-open': sidebarOpen }" @click="toggleSidebar">
+            <button
+                class="mobile-sidebar-toggle-btn"
+                :class="{ 'sidebar-open': sidebarOpen }"
+                @click="toggleSidebar"
+            >
                 <span>分类&链接</span>
             </button>
 
@@ -118,9 +137,15 @@
                 <div class="sidebar-content">
                     <!-- Categories -->
                     <div class="sidebar-card" v-if="categories.length > 0">
-                        <h3 class="sidebar-title"><font-awesome-icon icon="folder" class="sidebar-icon" />分类目录</h3>
+                        <h3 class="sidebar-title">
+                            <font-awesome-icon icon="folder" class="sidebar-icon" />分类目录
+                        </h3>
                         <ul class="sidebar-list">
-                            <li v-for="category in categories" :key="category.id" class="sidebar-item group">
+                            <li
+                                v-for="category in categories"
+                                :key="category.id"
+                                class="sidebar-item group"
+                            >
                                 <RouterLink :to="category.url" class="sidebar-link">
                                     {{ category.name }}
                                 </RouterLink>
@@ -131,10 +156,18 @@
 
                     <!-- Top 10 -->
                     <div class="sidebar-card" v-if="top10.length > 0">
-                        <h3 class="sidebar-title"><font-awesome-icon icon="fire" class="sidebar-icon" />点击排行</h3>
+                        <h3 class="sidebar-title">
+                            <font-awesome-icon icon="fire" class="sidebar-icon" />点击排行
+                        </h3>
                         <ul class="ranking-list">
-                            <li v-for="(article, index) in top10" :key="article.id" class="ranking-item">
-                                <span class="rank-number">{{ String(index + 1).padStart(2, '0') }}</span>
+                            <li
+                                v-for="(article, index) in top10"
+                                :key="article.id"
+                                class="ranking-item"
+                            >
+                                <span class="rank-number">{{
+                                    String(index + 1).padStart(2, '0')
+                                }}</span>
                                 <RouterLink :to="article.url" class="rank-link line-clamp-2">
                                     <div>{{ article.title }}</div>
                                     <small>{{ article.read }}次阅读</small>
@@ -145,10 +178,17 @@
 
                     <!-- Links -->
                     <div class="sidebar-card">
-                        <h3 class="sidebar-title"><font-awesome-icon icon="link" class="sidebar-icon" />友情链接</h3>
+                        <h3 class="sidebar-title">
+                            <font-awesome-icon icon="link" class="sidebar-icon" />友情链接
+                        </h3>
                         <div class="tags-cloud">
-                            <a v-for="(link, index) in links" :key="index" :href="link.path" target="_blank"
-                                class="tag-link">
+                            <a
+                                v-for="(link, index) in links"
+                                :key="index"
+                                :href="link.path"
+                                target="_blank"
+                                class="tag-link"
+                            >
                                 {{ link.name }}
                             </a>
                         </div>
@@ -156,23 +196,33 @@
 
                     <!-- Contact -->
                     <div class="sidebar-card">
-                        <h3 class="sidebar-title"><font-awesome-icon icon="address-card" class="sidebar-icon" />联系我</h3>
+                        <h3 class="sidebar-title">
+                            <font-awesome-icon icon="address-card" class="sidebar-icon" />联系我
+                        </h3>
                         <div class="social-links">
-                            <a href="https://github.com/lzqwebsoft" target="_blank"
-                                class="social-icon"><font-awesome-icon :icon="['fab', 'github']" /></a>
-                            <a href="https://twitter.com/lzqwebsoft" target="_blank"
-                                class="social-icon"><font-awesome-icon :icon="['fab', 'x-twitter']" /></a>
-                            <a :href="'mailto:' + blogInfo.email" class="social-icon"><font-awesome-icon
-                                    icon="envelope" /></a>
+                            <a
+                                href="https://github.com/lzqwebsoft"
+                                target="_blank"
+                                class="social-icon"
+                                ><font-awesome-icon :icon="['fab', 'github']"
+                            /></a>
+                            <a
+                                href="https://twitter.com/lzqwebsoft"
+                                target="_blank"
+                                class="social-icon"
+                                ><font-awesome-icon :icon="['fab', 'x-twitter']"
+                            /></a>
+                            <a :href="'mailto:' + blogInfo.email" class="social-icon"
+                                ><font-awesome-icon icon="envelope"
+                            /></a>
                         </div>
                     </div>
-
                 </div>
             </div>
         </aside>
 
         <!-- Mobile Overlay -->
-        <div class="sidebar-overlay" :class="{ 'visible': sidebarOpen }" @click="toggleSidebar"></div>
+        <div class="sidebar-overlay" :class="{ visible: sidebarOpen }" @click="toggleSidebar"></div>
     </div>
 </template>
 
@@ -214,18 +264,20 @@ export default {
         eventBus.off('toggle-sidebar', this.toggleSidebar)
     },
     watch: {
-        '$route': {
+        $route: {
             handler(to, from) {
                 // 当分类 ID 改变、关键字搜索改变或页码改变时，重新获取数据
-                if (to.params.categoryId !== from.params.categoryId ||
+                if (
+                    to.params.categoryId !== from.params.categoryId ||
                     to.query.q !== from.query.q ||
-                    to.query.page !== from.query.page) {
+                    to.query.page !== from.query.page
+                ) {
                     this.currentPage = parseInt(to.query.page) || 1
                     this.fetchHomeData()
                     window.scrollTo({ top: 0, behavior: 'smooth' })
                 }
-            }
-        }
+            },
+        },
     },
     methods: {
         formatDate,
@@ -246,21 +298,23 @@ export default {
                 const res = await getHomeData(q, this.currentPage, this.pageSize, typeId)
                 const { articleTypes, page, top10Articles, links } = res.data
 
-                this.categories = (articleTypes || []).filter((type) => type.article_count > 0).map((type) => ({
-                    name: type.name,
-                    num: type.article_count,
-                    url: `/select/${type.id}`,
-                    id: type.id
-                }))
+                this.categories = (articleTypes || [])
+                    .filter((type) => type.article_count > 0)
+                    .map((type) => ({
+                        name: type.name,
+                        num: type.article_count,
+                        url: `/select/${type.id}`,
+                        id: type.id,
+                    }))
                 // 由类型ID与类型列表得到文章类型名称
                 const categoryMap = this.categories.reduce((acc, cur) => {
-                    acc[cur.id] = cur.name;
-                    return acc;
-                }, {});
+                    acc[cur.id] = cur.name
+                    return acc
+                }, {})
 
-                this.articles = (page.data || []).map(article => ({
+                this.articles = (page.data || []).map((article) => ({
                     ...article,
-                    category_name: categoryMap[article.type_id]
+                    category_name: categoryMap[article.type_id],
                 }))
                 this.currentPage = page.pageNo || 1
                 this.totalArticles = page.totalCount || 0
@@ -270,13 +324,13 @@ export default {
                     title: article.title,
                     read: formatReadCount(article.readed_num),
                     url: `/show/${article.id}.html`,
-                    id: article.id
+                    id: article.id,
                 }))
 
-                this.links = (links || [
+                this.links = links || [
                     { path: 'https://github.com/lzqwebsoft', name: 'GitHub' },
-                    { path: 'https://stackoverflow.com/users/lzqwebsoft', name: 'StackOverflow' }
-                ]);
+                    { path: 'https://stackoverflow.com/users/lzqwebsoft', name: 'StackOverflow' },
+                ]
             } catch (error) {
                 console.error('获取首页数据失败:', error)
             } finally {
@@ -298,7 +352,7 @@ export default {
         changePage(pageNum) {
             if (pageNum >= 1 && pageNum <= this.totalPages && pageNum !== this.currentPage) {
                 this.$router.push({
-                    query: { ...this.$route.query, page: pageNum }
+                    query: { ...this.$route.query, page: pageNum },
                 })
             }
         },
@@ -329,7 +383,7 @@ export default {
                 console.error('删除文章失败:', error)
                 alert('删除失败，请重试')
             }
-        }
+        },
     },
 }
 </script>
@@ -362,13 +416,17 @@ export default {
     border-radius: 0.75rem;
     padding: 1.5rem;
     box-shadow: var(--shadow-color) 0px 4px 20px -2px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
     border: 1px solid transparent;
     margin-bottom: 2rem;
 }
 
 .article-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 :root.dark-theme .article-card {
@@ -568,7 +626,7 @@ export default {
 }
 
 .page-btn.active {
-    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     border-color: transparent;
     color: white;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
@@ -645,7 +703,7 @@ export default {
 }
 
 .count-badge {
-    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
     color: var(--text-color);
     font-size: 0.75rem;
     padding: 0.125rem 0.6rem;
@@ -655,8 +713,8 @@ export default {
 }
 
 :root.dark-theme .count-badge {
-    background: linear-gradient(135deg, #374151 0%, #1F2937 100%);
-    border-color: #4B5563;
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    border-color: #4b5563;
 }
 
 /* Ranking List */
@@ -879,7 +937,6 @@ export default {
 }
 
 @keyframes float {
-
     0%,
     100% {
         transform: translateY(0);
@@ -1041,9 +1098,10 @@ export default {
     }
 
     .mobile-sidebar-toggle-btn {
-        display: flex;
+        display: inline-flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         position: absolute;
         left: 1px;
         /* 1px overlap to ensure pixel-perfect seamless connection with no subpixel gap */
@@ -1057,14 +1115,25 @@ export default {
         border-radius: 0.75rem 0 0 0.75rem;
         cursor: pointer;
         z-index: 51;
-        box-shadow: -6px 0 10px -4px rgba(0, 0, 0, 0.08), 0 -4px 8px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -4px rgba(0, 0, 0, 0.08);
-        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease,
+            color 0.3s ease;
         font-size: 0.85rem;
         font-weight: 600;
-        letter-spacing: 0.2em;
         writing-mode: vertical-rl;
         text-orientation: upright;
         line-height: 1.4;
+    }
+
+    .mobile-sidebar-toggle-btn span {
+        display: block;
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+        letter-spacing: 0.25em;
+        line-height: 1.4;
+        white-space: nowrap;
+        user-select: none;
     }
 }
 
