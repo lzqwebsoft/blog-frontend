@@ -1,4 +1,4 @@
-import mermaid from 'mermaid'
+let mermaidPromise = null
 
 /**
  * 检查当前是否为深色模式
@@ -8,9 +8,20 @@ function isDarkMode() {
 }
 
 /**
+ * 异步动态加载 Mermaid 库（实现代码分割与按需加载）
+ */
+export async function getMermaid() {
+    if (!mermaidPromise) {
+        mermaidPromise = import('mermaid').then((m) => m.default || m)
+    }
+    return mermaidPromise
+}
+
+/**
  * 初始化 Mermaid 配置
  */
-export function initMermaidConfig() {
+export async function initMermaidConfig() {
+    const mermaid = await getMermaid()
     const isDark = isDarkMode()
     mermaid.initialize({
         startOnLoad: false,
@@ -210,8 +221,9 @@ export async function renderMermaidBlocks(containerSelector = '.article-content'
 
     if (mermaidElements.length === 0) return
 
-    // 初始化配置
-    initMermaidConfig()
+    // 初始化配置并加载 Mermaid 实例
+    const mermaid = await getMermaid()
+    await initMermaidConfig()
 
     for (let index = 0; index < mermaidElements.length; index++) {
         const el = mermaidElements[index]
@@ -377,7 +389,8 @@ export async function reRenderMermaidTheme(containerSelector = '.article-content
     const renderedContainers = Array.from(container.querySelectorAll('.mermaid-container[data-mermaid-code]'))
     if (renderedContainers.length === 0) return
 
-    initMermaidConfig()
+    const mermaid = await getMermaid()
+    await initMermaidConfig()
 
     for (let index = 0; index < renderedContainers.length; index++) {
         const wrapper = renderedContainers[index]
