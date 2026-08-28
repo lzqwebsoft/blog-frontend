@@ -87,8 +87,6 @@ export default {
 .edit-header {
     height: 64px;
     background: var(--header-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: fixed;

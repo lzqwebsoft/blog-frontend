@@ -146,6 +146,15 @@ export function applyTheme(isDark) {
     } else {
         document.documentElement.classList.remove('dark-theme')
     }
+    // 同步更新 meta theme-color，方便移动端/WebView 状态栏读取并同步渲染
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]')
+    if (!metaThemeColor) {
+        metaThemeColor = document.createElement('meta')
+        metaThemeColor.name = 'theme-color'
+        document.head.appendChild(metaThemeColor)
+    }
+    metaThemeColor.setAttribute('content', isDark ? '#171717' : '#ffffff')
+
     // 保存到 localStorage
     setWithExpiry(THEME_STORAGE_KEY, isDark, THEME_EXPIRY_DAYS)
 }
