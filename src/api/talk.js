@@ -56,8 +56,8 @@ export function deleteTalk(id) {
  * @param {string} data.content - 评论内容
  * @param {string} [data.parent_id] - 父评论ID（回复时）
  * @param {string} [data.root_id] - 根评论ID（回复时）
- * @param {string} [data.captchaCode] - 验证码（非登录用户必填）
- * @param {string} [data.captchaID] - 验证码ID（非登录用户必填）
+ * @param {string} [data.captchaID] - 滑动验证码ID（非登录用户必填）
+ * @param {string} [data.slideX] - 滑动验证码终点X（非登录用户必填）
  */
 export function addTalkComment(data) {
     return request.post('/talk/comment/add', data, {

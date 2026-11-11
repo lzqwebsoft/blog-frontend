@@ -258,16 +258,6 @@
                     </div>
 
                     <div class="footer-row">
-                        <div class="captcha-section" v-if="showCaptcha && !isAuthenticated">
-                            <div class="input-wrapper captcha-wrapper">
-                                <font-awesome-icon icon="shield-halved" class="input-icon" />
-                                <input type="text" class="form-control captcha-input" v-model="captchaCode"
-                                    placeholder="验证码" required />
-                            </div>
-                            <img v-if="captchaImage" :src="captchaImage" alt="验证码" class="captcha-image"
-                                @click="refreshCaptcha" title="点击刷新验证码" />
-                        </div>
-
                         <div class="submit-section">
                             <button type="submit" class="action-btn submit-btn">
                                 <font-awesome-icon icon="paper-plane" />
@@ -277,6 +267,7 @@
                     </div>
                 </div>
             </form>
+            <SlideCaptchaDialog ref="captchaDialog" />
         </section>
 
         <!-- 图片预览组件 -->
@@ -349,11 +340,11 @@ import {
     deleteComment as deleteCommentApi,
     deleteArticle as deleteArticleApi,
 } from '@/api/article'
-import { getCaptcha } from '@/api/user'
 import { isAuthenticated } from '@/utils/auth'
 import { formatDate, formatDateTime, formatReadCount, getPatternType, removePathSuffix } from '@/utils/tools'
 import TableOfContents from '../components/TableOfContents.vue'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
+import SlideCaptchaDialog from '@/components/SlideCaptchaDialog.vue'
 import { renderMermaidBlocks, reRenderMermaidTheme, isMermaidElement } from '@/utils/mermaid'
 
 export default {
@@ -362,7 +353,8 @@ export default {
         SNSShares,
         ImagePreview,
         TableOfContents,
-        MarkdownEditor
+        MarkdownEditor,
+        SlideCaptchaDialog
     },
     data() {
         return {
@@ -396,10 +388,6 @@ export default {
             replyTo: null,
             comments: [],
             isAuthenticated: false,
-            captchaImage: '',
-            captchaId: '',
-            captchaCode: '',
-            showCaptcha: false,
             previewVisible: false,
             previewImage: '',
             previewCustomClass: '',
@@ -800,31 +788,12 @@ export default {
             }
         },
 
-        async handleCommentFocus() {
+        handleCommentFocus() {
             this.isCommentFocused = true
-            if (!this.isAuthenticated && !this.captchaImage) {
-                await this.loadCaptcha()
-            }
         },
 
         handleCommentBlur() {
             this.isCommentFocused = false
-        },
-
-        async loadCaptcha() {
-            try {
-                const res = await getCaptcha()
-                this.captchaImage = res.data.captcha
-                this.captchaId = res.data.captcha_id
-                this.showCaptcha = true
-            } catch (error) {
-                console.error('获取验证码失败:', error)
-            }
-        },
-
-        async refreshCaptcha() {
-            this.captchaCode = ''
-            await this.loadCaptcha()
         },
 
         async submitComment() {
@@ -841,9 +810,11 @@ export default {
                 alert('请输入评论内容')
                 return
             }
-            if (!this.isAuthenticated && this.showCaptcha && !this.captchaCode.trim()) {
-                alert('请输入验证码')
-                return
+            let ticket = null
+            if (!this.isAuthenticated) {
+                // 点击确定后才弹出人机验证；取消则放弃本次提交
+                ticket = await this.$refs.captchaDialog.verify('comment')
+                if (!ticket) return
             }
 
             try {
@@ -852,7 +823,7 @@ export default {
                 formData.append('article_id', this.articleId)
                 formData.append('content', this.comment)
 
-                // 非登录用户需要提供昵称和验证码
+                // 非登录用户需要提供昵称与一次性滑块验证凭证
                 if (!this.isAuthenticated) {
                     formData.append('reviewer', this.nickname)
                     if (this.website) {
@@ -861,8 +832,8 @@ export default {
                     if (this.email) {
                         formData.append('email', this.email)
                     }
-                    formData.append('captchaCode', this.captchaCode)
-                    formData.append('captchaID', this.captchaId)
+                    formData.append('captchaID', ticket.captchaID)
+                    formData.append('slideX', ticket.slideX)
                 }
 
                 // 处理回复逻辑
@@ -889,31 +860,19 @@ export default {
 
                     // 清空表单
                     this.comment = ''
-                    this.captchaCode = ''
                     this.replyTo = null
 
                     if (!this.isAuthenticated) {
                         this.nickname = ''
                         this.email = ''
                         this.website = ''
-                        this.showCaptcha = false
-                        this.captchaImage = ''
-                        this.captchaId = ''
                     }
                 } else {
                     alert(res.message || '评论提交失败，请重试')
-                    // 刷新验证码
-                    if (!this.isAuthenticated) {
-                        await this.refreshCaptcha()
-                    }
                 }
             } catch (error) {
                 console.error('提交评论失败:', error)
                 alert(error.response?.data?.message || '评论提交失败，请重试')
-                // 刷新验证码
-                if (!this.isAuthenticated) {
-                    await this.refreshCaptcha()
-                }
             }
         },
 
@@ -2219,34 +2178,6 @@ export default {
     @media (max-width: 640px) {
         flex-direction: column;
         align-items: stretch;
-    }
-}
-
-.captcha-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex: 1;
-
-    .captcha-wrapper {
-        max-width: 160px;
-
-        .form-control {
-            padding-left: 2.75rem;
-        }
-    }
-
-    .captcha-image {
-        height: 42px;
-        border-radius: 6px;
-        cursor: pointer;
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
-
-        &:hover {
-            opacity: 0.8;
-            border-color: var(--primary-color);
-        }
     }
 }
 

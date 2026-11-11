@@ -24,18 +24,37 @@
 
                 <a class="nav-item rss-button" href="/feed.xml" target="_blank" title="RSS 订阅">
                     <font-awesome-icon icon="square-rss" fixed-width />
+                    <span class="nav-item-label">RSS</span>
                 </a>
 
                 <RouterLink class="nav-item about-link" to="/shuoshuo" title="说说">
                     <font-awesome-icon icon="comment-dots" fixed-width />
+                    <span class="nav-item-label">说说</span>
                 </RouterLink>
                 <RouterLink class="nav-item about-link" to="/about" title="关于">
                     <font-awesome-icon icon="circle-info" fixed-width />
+                    <span class="nav-item-label">关于</span>
                 </RouterLink>
 
-                <button class="nav-item theme-toggle" @click="toggleTheme" :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
-                    <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" fixed-width />
-                </button>
+                <!-- 主题切换：PC 两段式分段按钮（仅图标），窄屏沿用单按钮图标切换 -->
+                <div class="theme-control">
+                    <div class="theme-segments" role="group" aria-label="主题模式">
+                        <button type="button" class="nav-item theme-segment" data-theme="light" title="浅色模式"
+                            aria-label="浅色模式" :aria-pressed="!isDark" :class="{ active: !isDark }"
+                            @click="setTheme(false)">
+                            <font-awesome-icon icon="sun" fixed-width />
+                        </button>
+                        <button type="button" class="nav-item theme-segment" data-theme="dark" title="深色模式"
+                            aria-label="深色模式" :aria-pressed="isDark" :class="{ active: isDark }"
+                            @click="setTheme(true)">
+                            <font-awesome-icon icon="moon" fixed-width />
+                        </button>
+                    </div>
+                    <button class="nav-item theme-toggle" @click="toggleTheme"
+                        :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
+                        <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" fixed-width />
+                    </button>
+                </div>
 
                 <!-- 已登录：显示下拉菜单 -->
                 <div v-if="isAuthenticated" class="dropdown" ref="dropdownRef">
@@ -55,6 +74,7 @@
                 <!-- 未登录：显示登录按钮 -->
                 <button v-else @click="$router.push('/login')" class="nav-item" title="博主登录">
                     <font-awesome-icon icon="right-to-bracket" fixed-width />
+                    <span class="nav-item-label">登录</span>
                 </button>
             </div>
         </nav>
@@ -157,14 +177,16 @@ export default {
             this.previousTop = currentTop
             this.scrolling = false
         },
-        toggleTheme() {
-            this.isDark = !this.isDark
+        setTheme(isDark) {
+            this.isDark = isDark
             applyTheme(this.isDark)
+        },
+        toggleTheme() {
+            this.setTheme(!this.isDark)
         },
         initializeTheme() {
             // 使用智能主题检测工具，跨平台适配
-            this.isDark = detectTheme()
-            applyTheme(this.isDark)
+            this.setTheme(detectTheme())
         },
         handleClickOutside(event) {
             const dropdown = this.$refs.dropdownRef
@@ -437,8 +459,9 @@ export default {
     color: var(--text-color);
 }
 
-:root.dark-theme .nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+:root.dark-theme .nav-item:not(.theme-segment):hover {
+    background-color: var(--hover-bg);
+    color: var(--primary-color);
 }
 
 .search-dialog {
@@ -478,6 +501,8 @@ export default {
 }
 
 .dialog-search-input {
+    flex: 1 1 auto;
+    min-width: 0;
     padding: 0.8rem 1.2rem 0.8rem 3rem;
     border: 2px solid var(--border-color);
     font-size: 1rem;
@@ -493,7 +518,12 @@ export default {
 
 .dialog-search-button {
     flex-shrink: 0;
-    padding: 0.5rem;
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    padding: 0.5rem 1.2rem;
     background: var(--primary-color);
     color: white;
     border: none;
@@ -557,6 +587,134 @@ export default {
 
     #mobile-menu-btn {
         display: block;
+    }
+}
+
+/* ===== PC 宽屏导航：图标 + 文字胶囊（小屏保持纯图标） ===== */
+.nav-item-label {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .header-search {
+        min-width: 0;
+        margin: 0 1.5rem 0 2rem;
+    }
+
+    .nav-menu {
+        gap: 0.5rem;
+    }
+
+    .nav-item {
+        width: auto;
+        height: 2.5rem;
+        padding: 0 0.85rem;
+        gap: 0.45rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-color);
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-item :deep(svg:not(.menu)) {
+        width: 1.05rem !important;
+        height: 1.05rem !important;
+    }
+
+    .nav-item-label {
+        display: inline;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .nav-item:not(.theme-segment):hover,
+    :root.dark-theme .nav-item:not(.theme-segment):hover {
+        background-color: var(--hover-bg);
+        color: var(--primary-color);
+    }
+
+    .dropdown .nav-item {
+        width: auto;
+        height: 2.5rem;
+        padding: 0 0.6rem;
+        gap: 0.35rem;
+    }
+
+    .dropdown .nav-item:hover {
+        transform: none;
+        background-color: var(--hover-bg);
+    }
+}
+
+/* 1024-1279px：搜索框与菜单同时收窄，避免中等宽度互相挤压 */
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .header-search {
+        max-width: 260px;
+        margin: 0 1rem 0 1.25rem;
+    }
+
+    .nav-menu {
+        gap: 0.25rem;
+    }
+
+    .nav-item {
+        padding: 0 0.6rem;
+        gap: 0.35rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* ===== 主题切换：PC 两段式分段按钮 / 窄屏单图标切换 ===== */
+.theme-control {
+    display: inline-flex;
+    align-items: center;
+}
+
+.theme-segments {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .theme-control > .theme-toggle {
+        display: none;
+    }
+
+    .theme-segments {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        padding: 2px;
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        background-color: var(--hover-bg);
+        box-sizing: border-box;
+    }
+
+    .theme-segments .theme-segment {
+        width: 2.1rem;
+        height: 2.1rem;
+        padding: 0;
+        border-radius: 999px;
+        color: var(--text-secondary);
+    }
+
+    .theme-segments .theme-segment:not(.active):hover{
+        color: var(--primary-color);
+    }
+
+    :root.dark-theme .theme-segment:not(.active):hover  {
+        color: #facc15;
+    }
+
+    .theme-segments .theme-segment.active {
+        background-color: var(--header-bg);
+        color: var(--primary-color);
+        box-shadow: 0 1px 3px var(--shadow-color);
+    }
+
+    .theme-segments .theme-segment[data-theme="light"].active {
+        color: #facc15;
     }
 }
 </style>

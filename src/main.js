@@ -82,6 +82,7 @@ import {
     faHouse,
     faTrashCan,
     faFolderOpen,
+    faPlus,
 } from '@fortawesome/free-solid-svg-icons'
 import {
     faQq,
@@ -179,6 +180,7 @@ library.add(
     faHouse,
     faTrashCan,
     faFolderOpen,
+    faPlus,
 )
 
 const app = createApp(App)

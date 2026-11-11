@@ -2,7 +2,7 @@
     <div class="fullscreen-page">
         <EditHeader :useMarkdown="useMarkdown" :isDark="isDark" :submitting="submitting"
             :autoSaveStatus="autoSaveStatus" :statusLabel="statusLabel" @toggle-mode="toggleEditorMode"
-            @toggle-theme="toggleTheme" @save-draft="saveAsDraft" @publish="handleSubmit" @preview="handlePreview" />
+            @toggle-theme="toggleTheme" @set-theme="setTheme" @save-draft="saveAsDraft" @publish="handleSubmit" @preview="handlePreview" />
 
         <div class="edit-article-page">
             <!-- 消息提示区域 -->
@@ -483,14 +483,16 @@ export default {
             }
         },
         // Theme methods
-        toggleTheme() {
-            this.isDark = !this.isDark
+        setTheme(isDark) {
+            this.isDark = isDark
             applyTheme(this.isDark)
+        },
+        toggleTheme() {
+            this.setTheme(!this.isDark)
         },
         initializeTheme() {
             // 使用智能主题检测工具，跨平台适配
-            this.isDark = detectTheme()
-            applyTheme(this.isDark)
+            this.setTheme(detectTheme())
         },
         handlePreview() {
             const targetId = this.form.id

@@ -9,8 +9,8 @@ import request from '@/utils/request'
  * @param {Object} data - 登录参数
  * @param {string} data.userName - 用户名
  * @param {string} data.password - 密码
- * @param {string} [data.captchaCode] - 验证码（错误3次后需要）
- * @param {string} [data.captchaID] - 验证码ID（错误3次后需要）
+ * @param {string} data.captchaID - 滑动验证码ID
+ * @param {string} data.slideX - 滑动验证码终点X
  */
 export function signIn(data) {
     // 将数据转换为 x-www-form-urlencoded 格式
@@ -34,11 +34,15 @@ export function signOut() {
 }
 
 /**
- * 获取图片验证码
- * @returns {Promise<{captcha: string, captcha_id: string}>}
+ * 获取滑动验证码
+ * @param {string} action - 业务动作：login / comment / talk，服务端据此绑定凭证
+ * @returns {Promise<{captcha_id: string, image: string, thumb: string,
+ *   thumb_x: number, thumb_y: number, thumb_width: number, thumb_height: number}>}
  */
-export function getCaptcha() {
-    return request.get('/captcha')
+export function getSlideCaptcha(action = '') {
+    // 附带时间戳参数，避免线上 Nginx /api/ 的 proxy_cache 把同一 action 的
+    // GET 响应缓存住（服务端同时返回 Cache-Control: no-store 双保险）。
+    return request.get('/slide-captcha', { params: { action, _: Date.now() } })
 }
 
 /**

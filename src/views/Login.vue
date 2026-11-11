@@ -42,29 +42,6 @@
                     <div v-if="fieldErrors.password" class="field-error">{{ fieldErrors.password }}</div>
                 </div>
 
-                <!-- 验证码区域（错误登录次数≥3时显示） -->
-                <div v-if="errorLoginCount >= 3" class="form-group captcha-section">
-                    <div class="input-group">
-                        <span class="input-icon">
-                            <font-awesome-icon icon="shield-halved" />
-                        </span>
-                        <input v-model="formData.captchaCode" type="text" class="form-control" placeholder="请输入验证码"
-                            required @focus="clearError('captchaCode')" />
-                    </div>
-                    <div class="captcha-display">
-                        <div class="captcha-image" @click="refreshCaptcha">
-                            <div v-if="captchaLoading" class="captcha-loading">
-                                <div class="spinner"></div>
-                            </div>
-                            <img v-else :src="captchaImageSrc" alt="验证码" title="点击刷新验证码" />
-                        </div>
-                        <button type="button" class="refresh-btn" @click="refreshCaptcha">
-                            看不清，换一张
-                        </button>
-                    </div>
-                    <div v-if="fieldErrors.captchaCode" class="field-error">{{ fieldErrors.captchaCode }}</div>
-                </div>
-
                 <!-- 忘记密码链接 -->
                 <div class="form-group forgot-password">
                     <router-link to="/forget_pwd" class="forgot-link">忘记密码？</router-link>
@@ -78,69 +55,36 @@
                     <span v-else>登 录</span>
                 </button>
 
-                <!-- 登录状态提示 -->
-                <div v-if="errorLoginCount > 0 && errorLoginCount < 3" class="login-attempts">
-                    <p class="warning-text">
-                        登录失败 {{ errorLoginCount }} 次，失败 {{ 3 - errorLoginCount }} 次后将需要验证码
-                    </p>
-                </div>
             </form>
+            <SlideCaptchaDialog ref="captchaDialog" />
         </div>
     </div>
 </template>
 
 <script>
-import { signIn, getCaptcha } from '@/api/user'
+import { signIn } from '@/api/user'
 import { saveAuthData } from '@/utils/auth'
+import SlideCaptchaDialog from '@/components/SlideCaptchaDialog.vue'
 
 export default {
     name: 'LoginView',
+    components: { SlideCaptchaDialog },
     data() {
         return {
             formData: {
                 userName: '',
-                password: '',
-                captchaCode: ''
+                password: ''
             },
-            captchaID: '',
-            captchaImageSrc: '',
-            captchaLoading: false,
             showPassword: false,
             isSubmitting: false,
-            errorLoginCount: 0,
             fieldErrors: {
                 userName: '',
-                password: '',
-                captchaCode: ''
+                password: ''
             },
             loginErrors: []
         }
     },
-    mounted() {
-        const savedCount = localStorage.getItem('login_error_count')
-        if (savedCount) {
-            this.errorLoginCount = parseInt(savedCount, 10)
-            if (this.errorLoginCount >= 3) {
-                this.refreshCaptcha()
-            }
-        }
-    },
     methods: {
-        async refreshCaptcha() {
-            if (this.captchaLoading) return
-
-            this.captchaLoading = true
-            try {
-                const res = await getCaptcha()
-                this.captchaImageSrc = res.data.captcha
-                this.captchaID = res.data.captcha_id
-            } catch (error) {
-                console.error('获取验证码失败:', error)
-            } finally {
-                this.captchaLoading = false
-            }
-        },
-
         clearError(fieldName) {
             this.fieldErrors[fieldName] = ''
             const index = this.loginErrors.findIndex((err) => err.includes(fieldName))
@@ -152,7 +96,7 @@ export default {
         validateForm() {
             let isValid = true
 
-            this.fieldErrors = { userName: '', password: '', captchaCode: '' }
+            this.fieldErrors = { userName: '', password: '' }
             this.loginErrors = []
 
             if (!this.formData.userName.trim()) {
@@ -175,50 +119,33 @@ export default {
                 isValid = false
             }
 
-            if (this.errorLoginCount >= 3 && !this.formData.captchaCode) {
-                this.fieldErrors.captchaCode = '验证码不能为空'
-                this.loginErrors.push('验证码不能为空')
-                isValid = false
-            }
-
             return isValid
         },
 
         async handleSubmit() {
             if (!this.validateForm()) return
 
+            // 点击确定后才弹出人机验证；取消则放弃本次提交
+            const ticket = await this.$refs.captchaDialog.verify('login')
+            if (!ticket) return
+
             this.isSubmitting = true
             this.loginErrors = []
 
             try {
-                const loginData = {
+                const res = await signIn({
                     userName: this.formData.userName,
-                    password: this.formData.password
-                }
-
-                if (this.errorLoginCount >= 3) {
-                    loginData.captchaCode = this.formData.captchaCode
-                    loginData.captchaID = this.captchaID
-                }
-
-                const res = await signIn(loginData)
+                    password: this.formData.password,
+                    captchaID: ticket.captchaID,
+                    slideX: ticket.slideX
+                })
 
                 saveAuthData(res.data)
-
-                this.errorLoginCount = 0
-                localStorage.removeItem('login_error_count')
 
                 const redirect = this.$route.query.redirect || '/'
                 this.$router.push(redirect)
             } catch (error) {
-                this.errorLoginCount++
-                localStorage.setItem('login_error_count', this.errorLoginCount.toString())
-
                 this.loginErrors.push(error.message || '用户名或密码错误，请检查您的登录信息')
-
-                if (this.errorLoginCount >= 3) {
-                    this.refreshCaptcha()
-                }
             } finally {
                 this.isSubmitting = false
             }
@@ -349,79 +276,10 @@ input.form-control:focus {
     margin-left: 5px;
 }
 
-/* 验证码区域 */
-.captcha-section {
-    background-color: var(--hover-bg);
-    padding: 20px;
-    border-radius: 8px;
-    margin-top: 25px;
-    transition: background-color 0.3s ease;
-}
-
-.captcha-display {
-    display: flex;
-    align-items: center;
-    margin-top: 15px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.captcha-image {
-    width: 150px;
-    height: 50px;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    background-color: var(--card-bg);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.3s ease;
-}
-
-.captcha-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.captcha-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-}
-
-.spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(59, 130, 246, 0.2);
-    border-top-color: var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
     to {
         transform: rotate(360deg);
     }
-}
-
-.refresh-btn {
-    background-color: transparent;
-    border: none;
-    color: var(--primary-color);
-    font-size: 14px;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-}
-
-.refresh-btn:hover {
-    background-color: var(--hover-bg);
 }
 
 /* 忘记密码链接 */
@@ -503,21 +361,6 @@ input.form-control:focus {
     margin-bottom: 5px;
 }
 
-/* 登录尝试提示 */
-.login-attempts {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.warning-text {
-    color: #ff9800;
-    font-size: 14px;
-    margin: 0;
-    padding: 10px;
-    background-color: rgba(255, 152, 0, 0.1);
-    border-radius: 6px;
-}
-
 /* 响应式设计 - 小屏模式 */
 @media (max-width: 768px) {
     .login-wrapper {
@@ -560,23 +403,6 @@ input.form-control:focus {
 
     .login-header h2 {
         font-size: 22px;
-    }
-
-    .captcha-display {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .captcha-image {
-        width: 100%;
-        max-width: 200px;
-    }
-
-    .refresh-btn {
-        margin-left: 0;
-        width: 100%;
-        max-width: 200px;
     }
 
     .submit-btn {

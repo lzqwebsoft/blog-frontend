@@ -23,11 +23,25 @@
                         <font-awesome-icon :icon="useMarkdown ? 'code' : 'font'" />
                     </button>
 
-                    <!-- 主题切换 -->
-                    <button class="icon-btn theme-toggle" @click="$emit('toggle-theme')"
-                        :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
-                        <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
-                    </button>
+                    <!-- 主题切换：PC 两段式分段按钮 / 窄屏单图标切换 -->
+                    <div class="theme-control">
+                        <div class="theme-segments" role="group" aria-label="主题模式">
+                            <button type="button" class="icon-btn theme-segment" data-theme="light" title="浅色模式"
+                                aria-label="浅色模式" :aria-pressed="!isDark" :class="{ active: !isDark }"
+                                @click="$emit('set-theme', false)">
+                                <font-awesome-icon icon="sun" />
+                            </button>
+                            <button type="button" class="icon-btn theme-segment" data-theme="dark" title="深色模式"
+                                aria-label="深色模式" :aria-pressed="isDark" :class="{ active: isDark }"
+                                @click="$emit('set-theme', true)">
+                                <font-awesome-icon icon="moon" />
+                            </button>
+                        </div>
+                        <button class="icon-btn theme-toggle" @click="$emit('toggle-theme')"
+                            :title="isDark ? '切换到浅色模式' : '切换到深色模式'">
+                            <font-awesome-icon :icon="isDark ? 'sun' : 'moon'" />
+                        </button>
+                    </div>
 
                     <div class="v-divider"></div>
 
@@ -79,7 +93,7 @@ export default {
             default: ''
         }
     },
-    emits: ['toggle-mode', 'toggle-theme', 'preview', 'save-draft', 'publish']
+    emits: ['toggle-mode', 'toggle-theme', 'set-theme', 'preview', 'save-draft', 'publish']
 }
 </script>
 
@@ -228,6 +242,61 @@ export default {
 
 .theme-toggle .fa-sun {
     color: #facc15;
+}
+
+/* ===== 主题切换：PC 两段式分段按钮 / 窄屏单图标切换 ===== */
+.theme-control {
+    display: inline-flex;
+    align-items: center;
+}
+
+.theme-segments {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .theme-control > .theme-toggle {
+        display: none;
+    }
+
+    .theme-segments {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        padding: 2px;
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        background-color: var(--hover-bg);
+        box-sizing: border-box;
+    }
+
+    .theme-segments .theme-segment {
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border-radius: 999px;
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    .theme-segments .theme-segment:not(.active):hover {
+        background-color: transparent;
+        color: var(--primary-color);
+    }
+
+    .theme-segments .theme-segment[data-theme="light"]:hover {
+        color: #facc15;
+    }
+
+    .theme-segments .theme-segment.active {
+        background-color: var(--header-bg);
+        color: var(--primary-color);
+        box-shadow: 0 1px 3px var(--shadow-color);
+    }
+
+    .theme-segments .theme-segment[data-theme="light"].active {
+        color: #facc15;
+    }
 }
 
 .v-divider {

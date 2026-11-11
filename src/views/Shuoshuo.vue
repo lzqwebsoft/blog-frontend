@@ -44,9 +44,7 @@
                     <!-- 网格中添加图片的占位按钮 (不超过9张) -->
                     <div v-if="selectedFiles.length < 9" class="add-image-placeholder" @click="triggerFileInput"
                         title="选择图片">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" class="add-icon">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                        </svg>
+                        <font-awesome-icon icon="plus" class="add-icon" style="width:24px;height:24px" />
                         <span>{{ selectedFiles.length }}/9</span>
                     </div>
                 </div>
@@ -238,16 +236,6 @@
                                         </div>
                                     </div>
 
-                                    <div class="captcha-row" v-if="captchaImage">
-                                        <div class="meta-input-group captcha-input-group">
-                                            <font-awesome-icon icon="shield-halved" class="meta-icon" />
-                                            <input type="text" v-model="captchaCode" placeholder="验证码 (*)"
-                                                class="meta-input" />
-                                        </div>
-                                        <div class="captcha-img-box" @click="refreshCaptcha" title="点击刷新验证码">
-                                            <img :src="captchaImage" alt="验证码" />
-                                        </div>
-                                    </div>
                                 </div>
                             </transition>
 
@@ -343,21 +331,24 @@
                 <span class="message-text">{{ msg.text }}</span>
             </div>
         </transition-group>
+
+        <SlideCaptchaDialog ref="captchaDialog" />
     </div>
 </template>
 
 <script>
 import { getTalkList, saveTalk, deleteTalk, addTalkComment, deleteTalkComment } from '@/api/talk'
 import { uploadImage } from '@/api/image'
-import { getCaptcha } from '@/api/user'
 import { isAuthenticated } from '@/utils/auth'
 import AppPagination from '@/components/AppPagination.vue'
+import SlideCaptchaDialog from '@/components/SlideCaptchaDialog.vue'
 import md5 from 'blueimp-md5'
 
 export default {
     name: 'ShuoshuoView',
     components: {
-        AppPagination
+        AppPagination,
+        SlideCaptchaDialog
     },
     data() {
         return {
@@ -384,11 +375,6 @@ export default {
             website: '',
             commentText: '',
             replyTo: null, // 当前正在回复的评论对象
-
-            // 验证码数据
-            captchaImage: '',
-            captchaId: '',
-            captchaCode: '',
 
             // 大图灯箱 (Lightbox) 数据
             lightboxVisible: false,
@@ -588,30 +574,10 @@ export default {
             }
         },
 
-        async onCommentFocus() {
+        onCommentFocus() {
             if (!this.isAuthenticated) {
                 this.showMetaInputs = true
-                if (!this.captchaImage) {
-                    await this.loadCaptcha()
-                }
             }
-        },
-
-        async loadCaptcha() {
-            try {
-                const res = await getCaptcha()
-                if (res.code === 0 && res.data) {
-                    this.captchaImage = res.data.captcha
-                    this.captchaId = res.data.captcha_id
-                }
-            } catch (error) {
-                console.error('获取验证码失败:', error)
-            }
-        },
-
-        async refreshCaptcha() {
-            this.captchaCode = ''
-            await this.loadCaptcha()
         },
 
         replyComment(comment) {
@@ -632,6 +598,7 @@ export default {
         async submitComment(talkID) {
             if (!this.commentText.trim()) return
 
+            let ticket = null
             if (!this.isAuthenticated) {
                 if (!this.nickname.trim()) {
                     this.showWarning('请输入您的昵称')
@@ -641,10 +608,9 @@ export default {
                     this.showWarning('请输入您的电子邮箱')
                     return
                 }
-                if (!this.captchaCode.trim()) {
-                    this.showWarning('请输入验证码')
-                    return
-                }
+                // 点击确定后才弹出人机验证；取消则放弃本次提交
+                ticket = await this.$refs.captchaDialog.verify('talk')
+                if (!ticket) return
             }
 
             try {
@@ -658,8 +624,8 @@ export default {
                     if (this.website) {
                         formData.append('website', this.website)
                     }
-                    formData.append('captchaCode', this.captchaCode)
-                    formData.append('captchaID', this.captchaId)
+                    formData.append('captchaID', ticket.captchaID)
+                    formData.append('slideX', ticket.slideX)
                 }
 
                 if (this.replyTo) {
@@ -680,26 +646,14 @@ export default {
 
                     // 清空评论框
                     this.commentText = ''
-                    this.captchaCode = ''
                     this.replyTo = null
                     this.showMetaInputs = false
-
-                    if (!this.isAuthenticated) {
-                        this.captchaImage = ''
-                        this.captchaId = ''
-                    }
                 } else {
                     this.showError(res.message || '评论提交失败，请重试')
-                    if (!this.isAuthenticated) {
-                        await this.refreshCaptcha()
-                    }
                 }
             } catch (error) {
                 console.error('提交说说评论失败:', error)
                 this.showError(error.message || '评论发表失败，请重试')
-                if (!this.isAuthenticated) {
-                    await this.refreshCaptcha()
-                }
             }
         },
 
@@ -1793,32 +1747,6 @@ export default {
     outline: none;
 }
 
-.captcha-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.captcha-input-group {
-    width: 160px;
-    flex-shrink: 0;
-}
-
-.captcha-img-box {
-    height: 34px;
-    width: 100px;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-}
-
-.captcha-img-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
 .comment-form-footer {
     display: flex;
     justify-content: space-between;
@@ -2302,26 +2230,6 @@ export default {
     .meta-row {
         grid-template-columns: 1fr;
         gap: 6px;
-    }
-
-    .captcha-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 6px;
-    }
-
-    .captcha-input-group {
-        width: 100%;
-    }
-
-    .captcha-img-box {
-        width: 100%;
-        height: 38px;
-    }
-
-    .captcha-img-box img {
-        object-fit: contain;
-        background: var(--bg-color);
     }
 
     .comment-form-footer {

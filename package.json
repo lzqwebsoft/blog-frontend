@@ -8,7 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "gen:ssg-icons": "node scripts/gen-ssg-icons.mjs",
+    "check:ssg-icons": "node scripts/gen-ssg-icons.mjs --check",
+    "gen:ssg-emoji": "node scripts/gen-ssg-emoji-data.mjs",
+    "check:ssg-emoji": "node scripts/gen-ssg-emoji-data.mjs --check"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
@@ -21,6 +25,7 @@
     "@fortawesome/vue-fontawesome": "^3.1.1",
     "axios": "^1.13.2",
     "blueimp-md5": "^2.19.0",
+    "go-captcha-vue": "2.0.7",
     "marked": "^17.0.1",
     "mermaid": "^10.9.3",
     "pinia": "^3.0.3",
