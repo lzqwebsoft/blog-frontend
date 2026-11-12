@@ -114,7 +114,7 @@
                     <div v-if="talk.images_list && talk.images_list.length > 0" class="card-images-grid"
                         :class="getImageGridClass(talk.images_list.length)">
                         <div v-for="(imgUrl, imgIndex) in talk.images_list" :key="imgIndex" class="grid-image-item"
-                            @click="openLightbox(talk.images_list, imgIndex)">
+                            @click="openImagePreview(talk.images_list, imgIndex)">
                             <img :src="imgUrl" alt="说说图片" loading="lazy" />
                         </div>
                     </div>
@@ -257,68 +257,8 @@
         <AppPagination v-if="totalPages > 1" :current-page="currentPage" :total-pages="totalPages" :total-items="total"
             @page-change="onPageChange" />
 
-        <!-- 5. 全屏手势遮罩层查看器 (Lightbox) -->
-        <transition name="lightbox-zoom">
-            <div v-if="lightboxVisible" class="lightbox-overlay" @click="closeLightbox" @wheel="onWheel"
-                @mousemove="onDrag" @mouseup="stopDrag" @mouseleave="stopDrag">
-                <!-- 控制面板按钮 (阻止事件冒泡防止遮罩层关闭) -->
-                <div class="lightbox-controls" @click.stop>
-                    <button class="ctrl-btn" @click="zoomIn" title="放大">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path
-                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm.5-7H9v2H7v1h2v2h1v-2h2V9h-2V7z" />
-                        </svg>
-                    </button>
-                    <button class="ctrl-btn" @click="zoomOut" title="缩小">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path
-                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7V9z" />
-                        </svg>
-                    </button>
-                    <button class="ctrl-btn" @click="rotateLeft" title="向左旋转">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path
-                                d="M7.11 8.53L5.7 7.12C4.62 8.44 4 10.14 4 12c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8c-2.12 0-4.05.83-5.5 2.17L6.5 4H2v4.5h4.5l.61-.61zM12 6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6c0-1.21.36-2.34 1-3.28l1.41 1.42C7.16 10.8 7 11.38 7 12c0 2.76 2.24 5 5 5s5-2.24 5-5-2.24-5-5-5v3l-4-4 4-4v3z" />
-                        </svg>
-                    </button>
-                    <button class="ctrl-btn" @click="rotateRight" title="向右旋转">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path
-                                d="M16.89 8.53l1.41-1.41C19.38 8.44 20 10.14 20 12c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8c2.12 0 4.05.83 5.5 2.17L17.5 4H22v4.5h-4.5l-.61-.61zM12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6c0-1.21-.36-2.34-1-3.28l-1.41 1.42c.43.66.59 1.24.59 1.86 0 2.76-2.24 5-5 5s-5-2.24-5-5 2.24-5 5-5v-3l4 4-4 4v-3z" />
-                        </svg>
-                    </button>
-                    <button class="ctrl-btn" @click="resetImage" title="重置">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path
-                                d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
-                        </svg>
-                    </button>
-                    <button class="ctrl-btn close-btn" @click="closeLightbox" title="关闭">
-                        <font-awesome-icon icon="times" />
-                    </button>
-                </div>
-
-                <!-- 大图显示区域 -->
-                <div class="lightbox-stage">
-                    <img :src="lightboxImages[lightboxIndex]" alt="全图预览" class="lightbox-img" :style="imgTransformStyle"
-                        @mousedown.stop="startDrag" @click.stop />
-                </div>
-
-                <!-- 切换上一张/下一张按钮 (阻止冒泡) -->
-                <button v-if="lightboxIndex > 0" class="nav-arrow prev-arrow" @click.stop="prevImage" title="上一张">
-                    <font-awesome-icon icon="chevron-left" />
-                </button>
-                <button v-if="lightboxIndex < lightboxImages.length - 1" class="nav-arrow next-arrow"
-                    @click.stop="nextImage" title="下一张">
-                    <font-awesome-icon icon="chevron-right" />
-                </button>
-
-                <!-- 当前页指示码 -->
-                <div class="lightbox-indicator" @click.stop>
-                    {{ lightboxIndex + 1 }} / {{ lightboxImages.length }}
-                </div>
-            </div>
-        </transition>
+        <!-- 5. 全屏图片查看器：共享灯箱组件 -->
+        <ImagePreview ref="imagePreview" />
 
         <!-- 6. 全局自定义 Message 提示弹框组 -->
         <transition-group name="message-fade" tag="div" class="message-container">
@@ -342,13 +282,15 @@ import { uploadImage } from '@/api/image'
 import { isAuthenticated } from '@/utils/auth'
 import AppPagination from '@/components/AppPagination.vue'
 import SlideCaptchaDialog from '@/components/SlideCaptchaDialog.vue'
+import ImagePreview from '@/components/ImagePreview.vue'
 import md5 from 'blueimp-md5'
 
 export default {
     name: 'ShuoshuoView',
     components: {
         AppPagination,
-        SlideCaptchaDialog
+        SlideCaptchaDialog,
+        ImagePreview,
     },
     data() {
         return {
@@ -376,18 +318,6 @@ export default {
             commentText: '',
             replyTo: null, // 当前正在回复的评论对象
 
-            // 大图灯箱 (Lightbox) 数据
-            lightboxVisible: false,
-            lightboxImages: [],
-            lightboxIndex: 0,
-            zoomScale: 1,
-            rotateDeg: 0,
-            translateX: 0,
-            translateY: 0,
-            isDragging: false,
-            startX: 0,
-            startY: 0,
-
             // 自定义消息弹框列表
             messages: []
         }
@@ -395,13 +325,6 @@ export default {
     computed: {
         hasUnfinishedUploads() {
             return this.selectedFiles.some(item => item.uploading)
-        },
-        imgTransformStyle() {
-            return {
-                transform: `translate(${this.translateX}px, ${this.translateY}px) scale(${this.zoomScale}) rotate(${this.rotateDeg}deg)`,
-                cursor: this.isDragging ? 'grabbing' : 'grab',
-                transition: this.isDragging ? 'none' : 'transform 0.15s ease-out'
-            }
         }
     },
     mounted() {
@@ -684,80 +607,9 @@ export default {
             }
         },
 
-        // --- 全屏灯箱 (Lightbox) 交互方法 ---
-        openLightbox(images, index) {
-            this.lightboxImages = images
-            this.lightboxIndex = index
-            this.resetImage()
-            this.lightboxVisible = true
-            // 禁止背景滑动
-            document.body.style.overflow = 'hidden'
-        },
-
-        closeLightbox() {
-            this.lightboxVisible = false
-            document.body.style.overflow = ''
-        },
-
-        onWheel(e) {
-            const zoomSpeed = 0.12
-            let newScale = this.zoomScale + (e.deltaY < 0 ? zoomSpeed : -zoomSpeed)
-            this.zoomScale = Math.max(0.4, Math.min(newScale, 6))
-        },
-
-        startDrag(e) {
-            if (e.button !== 0) return
-            this.isDragging = true
-            this.startX = e.clientX - this.translateX
-            this.startY = e.clientY - this.translateY
-        },
-
-        onDrag(e) {
-            if (!this.isDragging) return
-            this.translateX = e.clientX - this.startX
-            this.translateY = e.clientY - this.startY
-        },
-
-        stopDrag() {
-            this.isDragging = false
-        },
-
-        zoomIn() {
-            this.zoomScale = Math.min(this.zoomScale + 0.3, 6)
-        },
-
-        zoomOut() {
-            this.zoomScale = Math.max(this.zoomScale - 0.3, 0.4)
-        },
-
-        rotateLeft() {
-            this.rotateDeg -= 90
-        },
-
-        rotateRight() {
-            this.rotateDeg += 90
-        },
-
-        resetImage() {
-            this.zoomScale = 1
-            this.rotateDeg = 0
-            this.translateX = 0
-            this.translateY = 0
-            this.isDragging = false
-        },
-
-        nextImage() {
-            if (this.lightboxIndex < this.lightboxImages.length - 1) {
-                this.lightboxIndex++
-                this.resetImage()
-            }
-        },
-
-        prevImage() {
-            if (this.lightboxIndex > 0) {
-                this.lightboxIndex--
-                this.resetImage()
-            }
+        // --- 全屏图片查看器：委托给共享灯箱组件 ---
+        openImagePreview(images, index) {
+            this.$refs.imagePreview.open(images, index)
         },
 
         // --- 辅助格式化与显示工具方法 ---
@@ -1855,135 +1707,6 @@ export default {
 .empty-icon {
     font-size: 2.5rem;
     color: var(--primary-color);
-}
-
-/* 4. 灯箱 (Lightbox) 样式 */
-.lightbox-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.88);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    z-index: 12000;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    user-select: none;
-}
-
-.lightbox-controls {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 12100;
-}
-
-.ctrl-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: none;
-    color: rgba(255, 255, 255, 0.85);
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.ctrl-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    transform: scale(1.05);
-}
-
-.ctrl-btn.close-btn {
-    background: rgba(220, 53, 69, 0.15);
-    color: #ff4d4f;
-}
-
-.ctrl-btn.close-btn:hover {
-    background: #ff4d4f;
-    color: white;
-}
-
-.lightbox-stage {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-}
-
-.lightbox-img {
-    max-width: 90vw;
-    max-height: 80vh;
-    object-fit: contain;
-    user-select: none;
-    -webkit-user-drag: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
-}
-
-.nav-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
-    font-size: 1.25rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    z-index: 12200;
-}
-
-.nav-arrow:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-50%) scale(1.05);
-}
-
-.prev-arrow {
-    left: 24px;
-}
-
-.next-arrow {
-    right: 24px;
-}
-
-.lightbox-indicator {
-    padding: 10px;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 12100;
-}
-
-/* 灯箱淡入淡出动画 */
-.lightbox-zoom-enter-active,
-.lightbox-zoom-leave-active {
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.lightbox-zoom-enter-from,
-.lightbox-zoom-leave-to {
-    opacity: 0;
-    transform: scale(0.97);
 }
 
 /* 自定义消息弹框组 (简洁、大方、共同性) */

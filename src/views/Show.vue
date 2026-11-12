@@ -270,9 +270,8 @@
             <SlideCaptchaDialog ref="captchaDialog" />
         </section>
 
-        <!-- 图片预览组件 -->
-        <ImagePreview :visible="previewVisible" :image-url="previewImage" :custom-class="previewCustomClass"
-            @close="closePreview" />
+        <!-- 图片预览组件（共享灯箱） -->
+        <ImagePreview ref="imagePreview" />
 
         <!-- 目录组件 -->
         <TableOfContents v-if="!loading && !error" container-selector=".article-content"
@@ -388,9 +387,6 @@ export default {
             replyTo: null,
             comments: [],
             isAuthenticated: false,
-            previewVisible: false,
-            previewImage: '',
-            previewCustomClass: '',
             isCommentFocused: false,
             error: false,
             themeObserver: null,
@@ -673,16 +669,15 @@ export default {
         async initMermaidRendering() {
             await renderMermaidBlocks('.article-content', {
                 onPreviewImage: (url, meta) => {
-                    this.previewImage = url
+                    let className = 'mermaid-preview-light'
                     if (typeof meta === 'string') {
-                        this.previewCustomClass = meta
+                        className = meta
                     } else if (meta && meta.className) {
-                        this.previewCustomClass = meta.className
-                    } else {
-                        const isDark = document.documentElement.classList.contains('dark-theme')
-                        this.previewCustomClass = isDark ? 'mermaid-preview-dark' : 'mermaid-preview-light'
+                        className = meta.className
+                    } else if (document.documentElement.classList.contains('dark-theme')) {
+                        className = 'mermaid-preview-dark'
                     }
-                    this.previewVisible = true
+                    this.$refs.imagePreview.open([url], 0, { className })
                 },
             })
 
@@ -718,6 +713,9 @@ export default {
 
         initImageProcessing() {
             const images = document.querySelectorAll('.article-content img')
+            const imageUrls = Array.from(images)
+                .filter((img) => img.src.includes('/images/show/'))
+                .map((img) => img.src)
             images.forEach((img) => {
                 if (!img.src.includes('/images/show/')) return
                 // 如果已经包裹了就不再处理
@@ -745,16 +743,10 @@ export default {
                 img.style.cursor = 'zoom-in'
                 img.addEventListener('click', (e) => {
                     e.stopPropagation()
-                    this.previewImage = img.src
-                    this.previewCustomClass = ''
-                    this.previewVisible = true
+                    const index = imageUrls.indexOf(img.src)
+                    this.$refs.imagePreview.open(imageUrls, index < 0 ? 0 : index)
                 })
             })
-        },
-
-        closePreview() {
-            this.previewVisible = false
-            this.previewCustomClass = ''
         },
 
         initSNSShare() {

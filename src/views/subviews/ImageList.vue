@@ -25,8 +25,8 @@
             <p>暂无图片</p>
         </div>
 
-        <!-- Image Preview -->
-        <ImagePreview :visible="lightboxVisible" :imageUrl="lightboxSrc" @close="closeLightbox" />
+        <!-- Image Preview（共享灯箱） -->
+        <ImagePreview ref="imagePreview" />
     </div>
 </template>
 
@@ -49,8 +49,6 @@ export default {
             pageSize: 12,
             totalPageCount: 0,
             totalCount: 0,
-            lightboxVisible: false,
-            lightboxSrc: '',
         }
     },
     mounted() {
@@ -91,12 +89,9 @@ export default {
             return `/images/show/${id}.jpg`
         },
         openLightbox(src) {
-            this.lightboxSrc = src
-            this.lightboxVisible = true
-        },
-        closeLightbox() {
-            this.lightboxVisible = false
-            this.lightboxSrc = ''
+            const urls = this.images.map((image) => this.getImageUrl(image.id))
+            const index = urls.indexOf(src)
+            this.$refs.imagePreview.open(urls, index < 0 ? 0 : index)
         },
         async handleDeleteImage(image) {
             if (!confirm('确定要删除这张图片吗？')) return
